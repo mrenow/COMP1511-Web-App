@@ -1,0 +1,15 @@
+Users:
+As a teenager looking to socialise, I would like to be able to easily access profiles so I can get a better understanding of who I'm communicating with.
+
+As a user, I want a way to represent myself on the internet so that I can speak with strangers anonymously if needed.
+
+As a 30 year old white collar worker, I want to be able to switch between identities or names, so I can speak with strangers and/or friends at a moments notice. 
+
+As a teenager looking to socialise, I want a way to artistically represent myself so I am able to better convey what type of person I am.
+
+Login:
+As a single woman, I would like to be able to login safely so I can use slackr without worrying about strangers looking at my private messages.
+
+As a busy school boy, I want to have an easy time remembering my login details so I wouldn't have to make the extra effort to remember it myself.
+
+As a forgetful middle aged man, I would like to able to recover my password so I have a way to recover my account if I forget my password.
