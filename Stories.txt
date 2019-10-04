@@ -13,3 +13,24 @@ As a single woman, I would like to be able to login safely so I can use slackr w
 As a busy school boy, I want to have an easy time remembering my login details so I wouldn't have to make the extra effort to remember it myself.
 
 As a forgetful middle aged man, I would like to able to recover my password so I have a way to recover my account if I forget my password.
+
+
+Messaging:
+As a team member, I would like to be able to send and receive messages from my group for the purpose of discussion.
+
+As the sender, peers should be able to like my message as an efficient way to express their opinion.
+
+As a team member, I should be able to change my actions (edit, delete unpin or unreact) in case I make mistake.
+
+As an announcer, I should be able to set a time at which to send a particular message so I do not run the risk of forgetting
+to make an announcement.
+
+As a moderator, I would like to delete messages so that I can clean inappropriate content from the discussion.
+
+As a team member, I would like to be able to search for past messages so that I am able to retrieve information from past discussion.
+
+A a moderator, I would like the ability to pin particular messages so that important information is made easy to find.
+
+Standups:
+
+As a project manager, I would like my team to perform standups so I can efficiently be brought up to date on what the team is up to
