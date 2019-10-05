@@ -15,6 +15,7 @@ TEST_VALID_CHANNEL_ID = "TODO"
 TEST_INVALID_CHANNEL_ID = "TODO"
 TEST_VALID_CHANNEL_OWNER = "TODO"
 
+TEST_VALID_REACT = 0
 
 
 
@@ -56,13 +57,13 @@ def message_remove(token, message_id):
     return {}
 def message_edit(token, message_id, message):
     return {}
-def message_react(email, password):
+def message_react(token, message_id, react_id):
     return {}
-def message_unreact(email, password):
+def message_unreact(token, message_id, react_id):
     return {}
-def message_pin(token, message_id, react_id):
+def message_pin(token, message_id):
     return {}
-def message_unpin(token, message_id, react_id):
+def message_unpin(token, message_id):
     return {}
 def user_profile(token):
     return {}
