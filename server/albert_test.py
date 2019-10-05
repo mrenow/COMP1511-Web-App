@@ -1,5 +1,6 @@
 from server import *
 from AccessError import AccessError
+import pytest
 '''
 
 //def channel_addowner(token, channel_id, u_id):
@@ -10,11 +11,11 @@ def admin_userpermission_change(token, u_id, permission_id):
     pass
 def channel_invite(token, channel_id, u_id):
     pass
-def channel_details(token, channel_id):
+//def channel_details(token, channel_id):
     pass
 def channel_leave(token, channel_id):
     pass
-def channel_join(token, channel_id):
+//def channel_join(token, channel_id):
     pass
 def channels_list(token):
     pass
@@ -24,16 +25,23 @@ def channels_list(token):
 def search(token, query_str):
     pass
 '''
+#parts of channel_detail tested
 def test_channel_create_and_list_all():
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]
 
+    #check if channel is listed after creation
     channel_1 = channels_create(token, "channel1", True)
     lst = channels_listall(token)
     assert lst["channels"][0]["name"] == "channel1"
     assert lst["channels"][0]["id"] == channel_1
+
+    #check if channel name shown in channel details
+    channel1_details = channel_details(token, channel_1)
+    assert channel1_details["name"][0] == "channel1"
     
+    #check if channel is listed after creation
     channel_2 = channels_create(token, "channel2", True)
     lst = channels_listall(token)
     assert lst["channels"][0]["name"] == "channel1"
@@ -41,24 +49,86 @@ def test_channel_create_and_list_all():
     assert lst["channels"][1]["name"] == "channel2"
     assert lst["channels"][1]["id"] == channel_2
 
-    with pytest.raise(ValueError):
-        channel_3 = channels_create(token, channelfdahfldkajdfhlakdjfhalkdjfhlajdf, True)
+    #check if channel name shown in channel details
+    channel2_details = channel_details(token, channel_2)
+    assert channel2_details["name"][1] == "channel2"
 
-    auth_logout(token)
+    #check if ValueError raised if name is over 20 characters
+    with pytest.raises(ValueError):
+        channel_3 = channels_create(token, "channelfdahfldkajdfhlakdjfhalkdjfhlajdf", True)
+
     login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
     userID2 = login2["u_id"]
     token2 = login2["token"]
 
-    with pytest.raise(AccessError):
-        channel_3 = channels_create(token2, channelfdahfldkajdfhlakdjfhalkdjfhlajdf, True)
+    #check whcih error is raised when two parameters are wrong
+    with pytest.raises(ValueError):
+        channel_3 = channels_create(token2, "channelfdahfldkajdfhlakdjfhalkdjfhlajdf", True)
+    with pytest.raises(AccessError):
+        channel_3 = channels_create(token2, "channelf2", True)
+    
+#parts of channel_detail tested
+def test_channel_join():
+    login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
+    userID = login["u_id"]
+    token = login["token"]
+
+    channel_1 = channels_create(token, "channel1", True)
+    channel_2 = channels_create(token, "channel2", False)
+
+    login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
+    userID2 = login2["u_id"]
+    token2 = login2["token"]
+
+    channel_join(token2, channel_1)
+    channel1_details = channel_details(token2, channel_1)
+    assert channel1_details["all_members"][0]["u_id"] == userID
+    assert channel1_details["all_members"][1]["u_id"] == userID2
+    with pytest.raises(AccessError):
+        channel_join(token2, channel_2)
+    channel2_details = channel_details(token, channel_2)
+    assert len(channel2_details["allmembers"]) == 1
+
+    with pytest.raises(ValueError):
+        channel_join(token2, 123456)
+
+def test_channel_leave():
+    login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
+    userID = login["u_id"]
+    token = login["token"]
+
+    channel_1 = channels_create(token, "channel1", True)
+
+    login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
+    userID2 = login2["u_id"]
+    token2 = login2["token"]
+
+    channel_join(token2, channel_1)
+    channel1_details = channel_details(token2, channel_1)
+    assert channel1_details["all_members"][0]["u_id"] == userID
+    assert channel1_details["all_members"][1]["u_id"] == userID2
+
+    channel_leave(token2, channel_1)
+    assert len(channel1_details["allmembers"]) == 1
+
+
+
+
+def test_channel_list():
+    login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
+    userID = login["u_id"]
+    token = login["token"]
+
+    channel_1 = channels_create(token, "channel1", True)
+    channel1_details = channel_details(token, channel_1)
+    assert 
 
 
 
 
 
 
-
-
+#parts of channel_detail tested
 def test_channel_addowner():
 
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
@@ -67,14 +137,14 @@ def test_channel_addowner():
 
     #check if server owner/channel creator is listed as channel owner
     channel_1 = channels_create (token, "channel1", True)
-    channel1_details = channel1_details(token, channel_1)
+    channel1_details = channel_details(token, channel_1)
     assert channel1_details["owner_members"][0]["u_id"] == userID
 
     #check if adding channel owner as channel owner raises ValueError
     with pytest.raises(ValueError):
         channel_addowner(token,channel_1, userID) 
 
-    auth_logout(token)
+
     login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
     userID2 = login2["u_id"]
     token2 = login2["token"]
@@ -85,28 +155,20 @@ def test_channel_addowner():
     with pytest.raises(AccessError):
         channel_addowner(token2,channel_1, userID)
 
-    auth_logout(token)
-    login = auth_login("albertyeh199909@gmail.com", "fksafkljfg1111")
-    userID = login["u_id"]
-    token = login["token"]
-
     #checks if second channel owner successfully adds by checking channel owner list
     channel_addowner(token,channel_1, userID2)
-    channel1_details = channel1_details(token, channel_1)
+    channel1_details = channel_details(token, channel_1)
     assert channel1_details["owner_members"][1]["u_id"] == userID2
+    
 
     #check if second channel owner successfully adds by adding again and see if ValueError is raised
     with pytest.raises(ValueError):
         channel_addowner(token,channel_1, userID2)
     
-    auth_logout(token)
+
     login3 = auth_register("jason@gmail.com", "dafadkh;lktlk444", "Jason", "Xing")
     userID3 = login3["u_id"]
     token3 = login3["token"]
-
-    login = auth_login("albertyeh199909@gmail.com", "fksafkljfg1111")
-    userID = login["u_id"]
-    token = login["token"]
 
     #check if ValueError is raised when channel id is unknown
     channels_delete(token, channel_1)
