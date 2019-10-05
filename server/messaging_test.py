@@ -25,7 +25,7 @@ def message_env():
 
 def channel_owner_env(admintok, channel):
     auth_response = auth_register("owner@email.com", "owner", "first", "last")
-    ownertok, owner = auth_response["token"], auth_respoonse["u_id"]
+    ownertok, owner = auth_response["token"], auth_response["u_id"]
 
     channel_addowner(admintok, channel, owner)
     return ownertok, owner
@@ -43,7 +43,11 @@ def assert_message(token, channel, messages, users, start = 0):
     message_list, list_start, list_end = message_response["messages"], message_response["start"], message_response["end"] 
     # Check lengths
     assert start == list_start
-    assert (len(message_list) < 50)) if end == -1 else (end == start + 50)
+    if list_end == -1:
+        assert len(message_list) < 50
+    else:
+        assert list_end == start + 50
+
     assert len(message_list) <= 50, "Channel messages returned too many entries"
     assert len(message_list) == len(messages) == len(users), f"Length mismatch:\n exp {(messages, users)}\n got {message_list}"
     # Check content
@@ -65,9 +69,9 @@ def channel_messages_test():
         message_send(admintok, channel, "PROFANITY")
 
     assert_message(admintok, channel, ["SPAM"]*50, [user]*50, start = 50)
-    assert_message(admintok, channel, ["PROFANITY"]*25 + ["SPAM"]*25, start = 25)
+    assert_message(admintok, channel, ["PROFANITY"]*25 + ["SPAM"]*25, [admin]*25 + [user]*25, start = 25)
 
-    private_channel = channel_create(admintok, "shhhh", ispublic = False)
+    private_channel = channels_create(admintok, "shhhh", is_public = False)
 
     # Cannot access private channel
     with pytest.raises(AccessError):
@@ -124,6 +128,7 @@ def send_test():
 # Tests message order on send later
 def send_later_test():
     admintok, admin, usertok, user, channel = message_env()
+    user1tok, user1 = extra_member_env(1)
 
     message_send(usertok, channel, "1")
     message_sendlater(admintok, channel, "2", ms_offset(1600))
@@ -140,14 +145,14 @@ def send_later_test():
 
     # Bad channel
     with pytest.raises(ValueError):
-        message_send_later(admintok, -1, "sudo rm -rf", ms_offset(100))
+        message_sendlater(admintok, -1, "sudo rm -rf", ms_offset(100))
     # Bad time
     with pytest.raises(ValueError):
-        message_send_later(admintok, channel, "One day, I, the admin, will superceed time itself", ms_offset(-10))
+        message_sendlater(admintok, channel, "One day, I, the admin, will superceed time itself", ms_offset(-10))
 
     # Not in channel
     with pytest.raises(AccessError):
-        message_send_later(user1tok, channel, "can i have mod", ms_offset(100))
+        message_sendlater(user1tok, channel, "can i have mod", ms_offset(100))
 
 def edit_message_test():
     admintok, admin, usertok, user, channel = message_env()
@@ -200,7 +205,7 @@ def edit_message_test():
     # Not in channel
     channel_leave(admintok, channel)
     with pytest.raises(AccessError):
-        message_edit(admintok, initial_messages[], "I wuz here")
+        message_edit(admintok, initial_messages[3], "I wuz here")
 
     # Assert that edits did not go through
     assert_message(admintok, channel, ["c", "3", "2", "e"], [user, owner, user, admin])
@@ -261,26 +266,26 @@ def pin_test():
     admintok, admin, usertok, user, channel = message_env()
     message_send(usertok, channel, "ello")
 
-    message_pin(admintok, get_message_id(0))
+    message_pin(admintok, get_message_id(admintok, channel, 0))
     # Check if pinned
     with pytest.raises(ValueError):
-        message_pin(usertok, get_message_id(0))
+        message_pin(usertok, get_message_id(admintok, channel, 0))
     # Also check if pinned (would raise value error otherwise)
     with pytest.raises(AccessError):
-        message_unpin(usertok)
+        message_unpin(usertok, get_message_id(admintok, channel, 0))
 
-    message_unpin(admintok, get_message_id(0))
+    message_unpin(admintok, get_message_id(admintok, channel, 0))
     # Check if unpinned
     with pytest.raises(ValueError):
-        message_unpin(usertok, get_message_id(0))
+        message_unpin(usertok, get_message_id(admintok, channel, 0))
     # Also check if unpinned (would raise value error otherwise)
     with pytest.raises(AccessError):
-        message_pin(usertok)
+        message_pin(usertok, get_message_id(admintok, channel, 0))
 
     # Not in channel
     channel_leave(admintok, channel)
     with pytest.raises(AccessError):
-        message_pin(admintok, get_message_id(0))
+        message_pin(admintok, get_message_id(admintok, channel, 0))
 
 # To consider: how should remove, edit, etc function within a standup
 def standup_test():
