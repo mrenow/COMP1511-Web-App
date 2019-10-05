@@ -113,6 +113,7 @@ def test_user_profiles_uploadphoto():
 	userId1, token1 = auth_register("good1@email.com", "12345", "jason", "xing")
 	auth_login("good1@email.com", "12345")
 	# HTTP status other than 200
+	# Probably untestable at this point
 
 	# x and y values are too big
 	with pytest.raises(ValueError):
