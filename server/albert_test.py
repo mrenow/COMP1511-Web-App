@@ -13,7 +13,7 @@ def channel_invite(token, channel_id, u_id):
     pass
 //def channel_details(token, channel_id):
     pass
-def channel_leave(token, channel_id):
+//def channel_leave(token, channel_id):
     pass
 //def channel_join(token, channel_id):
     pass
@@ -122,6 +122,7 @@ def test_channel_list():
     channel_1 = channels_create(token, "channel1", True)
     channel1_details = channel_details(token, channel_1)
     assert 
+
 
 
 
