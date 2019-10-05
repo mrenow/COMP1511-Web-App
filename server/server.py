@@ -19,66 +19,66 @@ TEST_VALID_CHANNEL_OWNER = "TODO"
 
 
 def auth_login(email, password):
-    pass
+    return {}
 def auth_logout(token):
-    pass
+    return {}
 def auth_register(email, password, name_first, name_last):
-    pass
+    return {}
 def auth_passwordreset_request(email):
-    pass
+    return {}
 def auth_passwordreset_reset(reset_code, new_password):
-    pass
+    return {}
 def channel_invite(token, channel_id, u_id):
-    pass
+    return {}
 def channel_details(token, channel_id):
-    pass
+    return {}
 def channel_messages(token, channel_id, start):
-    pass
+    return {}
 def channel_leave(token, channel_id):
-    pass
+    return {}
 def channel_join(token, channel_id):
-    pass
+    return {}
 def channel_addowner(token, channel_id, u_id):
-    pass
+    return {}
 def channel_removeowner(token, channel_id, u_id):
-    pass
+    return {}
 def channels_list(token):
-    pass
+    return {}
 def channels_listall(token):
-    pass
+    return {}
 def channels_create(token, name, is_public):
-    pass
+    return {}
 def message_sendlater(token, channel_id, message, time_sent):
-    pass
+    return {}
 def message_send(token, channel_id, message):
-    pass
+    return {}
 def message_remove(token, message_id):
-    pass
+    return {}
 def message_edit(token, message_id, message):
-    pass
+    return {}
 def message_react(email, password):
-    pass
+    return {}
 def message_unreact(email, password):
-    pass
+    return {}
 def message_pin(token, message_id, react_id):
-    pass
+    return {}
 def message_unpin(token, message_id, react_id):
-    pass
+    return {}
 def user_profile(token):
-    pass
+    return {}
 def user_profile_setname(token, name_first, name_last):
-    pass
+    return {}
 def user_profile_setemail(token, email):
-    pass
+    return {}
 def user_profile_sethandle(token, handle_str):
-    pass
+    return {}
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
-    pass
+    return {}
 def standup_start(token, channel_id):
-    pass
+    return {}
 def standup_send(token, channel_id, message):
-    pass
+    return {}
 def search(token, query_str):
-    pass
+    return {}
 def admin_userpermission_change(token, u_id, permission_id):
-    pass
+    return {}
