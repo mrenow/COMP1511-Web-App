@@ -50,30 +50,33 @@ def test_auth_passwordreset_request():
 def test_auth_passwordreset_reset():
     # Set up
     userId1, token1 = auth_register("good@email.com", "12345", "jason", "xing")
-
 	# Test if new password is valid
 	with pytest.raises(ValueError):
-		auth_passwordreset_reset("12345", "12345X")
+		auth_passwordreset_reset("12345", "123X")
 
 def test_user_profile():
 	# Set up
 	userId1, token1 = auth_register("good1@email.com", "12345", "jason", "xing")
-	auth_login("good1@email.com", "12345")
+	userId2, token2 = auth_login("good1@email.com", "12345")
 	# Not a valid user
 	with pytest.raises(ValueError):
 		user_profile(token1, userId2)
-	
+	# Check token is invalid (login token)
+	auth_logout(token2)
+	with pytest.raises(AccessError):
+		user_profile(token2)
+
 def test_user_profile_setname():
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "12345", "jason", "xing")
-	auth_login("good1@email.com", "12345")
+	userId2, token2 = auth_login("good1@email.com", "12345")
 	# Invalid first name
 	with pytest.raises(ValueError):
 		user_profile_setname(token1, "0"*51, "xing")
 	# Invalid last name
 	with pytest.raises(ValueError):
 		user_profile_setname(token1, "jason", "0"*51)
-	# Check token is valid
+	# Check token is invalid (register token)
 	auth_logout(token1)
 	with pytest.raises(AccessError):
 		user_profile_setname(token1, "jason", "xing")
@@ -82,28 +85,28 @@ def test_user_profile_setemail():
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "12345", "jason", "xing")
 	userId2, token2 = auth_register("good2@email.com", "12345", "jason", "xing")
-	auth_login("good1@email.com", "12345")
+	userId3, token3 = auth_login("good1@email.com", "12345")
 	# Email not valid
 	with pytest.raises(ValueError):
 		user_profile_setemail(token1, "bademail.com")
 	# Email in use
 	with pytest.raises(ValueError):
 		user_profile_setemail(token1, "good2@email.com")
-	# Check token is valid
-	auth_logout(token1)
+	# Check token is invalid (login token)
+	auth_logout(token3)
 	with pytest.raises(AccessError):
-		user_profile_setname(token1, "jasonxing@email.com")
+		user_profile_setname(token3, "jasonxing@email.com")
 	
 def test_user_profile_sethandle():
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "12345", "jason", "xing")
-	auth_login("good1@email.com", "12345")
+	userId2, token2 = auth_login("good1@email.com", "12345")
 	# Edge case
 	user_profile_sethandle(token1, "0"*20)
 	# Handle is too long
 	with pytest.raises(ValueError):
 		user_profile_sethandle(token1, "0"*21)
-	# Check token is valid
+	# Check token is valid (register token)
 	auth_logout(token1)
 	with pytest.raises(AccessError):
 		user_profile_sethandle(token1, "jason")
@@ -111,14 +114,14 @@ def test_user_profile_sethandle():
 def test_user_profiles_uploadphoto():
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "12345", "jason", "xing")
-	auth_login("good1@email.com", "12345")
+	userId2, token2 = auth_login("good1@email.com", "12345")
 	# HTTP status other than 200
 	# Probably untestable at this point
 
 	# x and y values are too big
 	with pytest.raises(ValueError):
 		user_profiles_uploadphoto(token1, "https://assets.pernod-ricard.com/nz/media_images/test.jpg?hUV74FvXQrWUBk1P2.fBvzoBUmjZ1wct", 0 , 0, 700, 700)
-	# Check token is valid
-	auth_logout(token1)
+	# Check token is valid (login token)
+	auth_logout(token2)
 	with pytest.raises(AccessError):
-		user_profiles_uploadphoto(token1, "https://assets.pernod-ricard.com/nz/media_images/test.jpg?hUV74FvXQrWUBk1P2.fBvzoBUmjZ1wct", 0 , 0, 600, 600)
+		user_profiles_uploadphoto(token2, "https://assets.pernod-ricard.com/nz/media_images/test.jpg?hUV74FvXQrWUBk1P2.fBvzoBUmjZ1wct", 0 , 0, 600, 600)
