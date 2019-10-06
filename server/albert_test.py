@@ -25,6 +25,34 @@ def admin_userpermission_change(token, u_id, permission_id):
 def search(token, query_str):
     pass
 '''
+def test_admin_userpermission_change():
+    login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
+    userID = login["u_id"]
+    token = login["token"]
+    
+    login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
+    userID2 = login2["u_id"]
+    token2 = login2["token"]
+
+    with pytest.raises(AccessError):
+        admin_userpermission_change(token2, userID, permission_id1)
+    with pytest.raises(ValueError):
+        admin_userpermission_change(token2, userID, 123456)
+    with pytest.raises(ValueError):
+        admin_userpermission_change(token2, 123456, permission_id1)
+
+    admin_userpermission_change(token, userID2, permission_id2)
+    channel_1 = channel_create(token2, "channel1", True)
+
+    admin_userpermission_change(token2, userID, permission_id3)
+    with pytest.raises(AccessError):
+        channel_1 = channel_create(token2, "channel1", True)
+
+def test_search():
+    
+    
+    
+
 #parts of channel_detail tested
 def test_channel_create_and_list_all():
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
@@ -80,15 +108,19 @@ def test_channel_join():
     userID2 = login2["u_id"]
     token2 = login2["token"]
 
+    #check if second user listed in channel member after channel_join
     channel_join(token2, channel_1)
     channel1_details = channel_details(token2, channel_1)
     assert channel1_details["all_members"][0]["u_id"] == userID
     assert channel1_details["all_members"][1]["u_id"] == userID2
+
+    #check if AccessError raised when attempting to join private channel
     with pytest.raises(AccessError):
         channel_join(token2, channel_2)
     channel2_details = channel_details(token, channel_2)
     assert len(channel2_details["allmembers"]) == 1
 
+    #check if ValueError raised when given unknown channel ID
     with pytest.raises(ValueError):
         channel_join(token2, 123456)
 
@@ -103,14 +135,17 @@ def test_channel_leave():
     userID2 = login2["u_id"]
     token2 = login2["token"]
 
+    #checks if user 2 successfully joins
     channel_join(token2, channel_1)
     channel1_details = channel_details(token, channel_1)
     assert channel1_details["all_members"][0]["u_id"] == userID
     assert channel1_details["all_members"][1]["u_id"] == userID2
 
+    #checks if user successfully left
     channel_leave(token2, channel_1)
     channel1_details = channel_details(token, channel_1)
     assert len(channel1_details["allmembers"]) == 1
+    assert channel1_details["all_members"][0]["u_id"] == userID
 
 def test_channel_invite():
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
@@ -127,19 +162,23 @@ def test_channel_invite():
     userID3 = login3["u_id"]
     token3 = login3["token"]
 
+    #checks if ValueError raised if non-member attempts to invite
     with pytest.raises(ValueError):
         channel_invite(token2, channel_1, userID3)
-    channel_invite(token, channel_1, userID3)
+    #checks if invite successful
+    channel_invite(token, channel_1, userID2)
     channel1_details = channel_details(token, channel_1)
     assert channel1_details["all_members"][0]["u_id"] == userID
     assert channel1_details["all_members"][1]["u_id"] == userID2
 
+    #checks if user2, now a member can invite user3
     channel_invite(token2, channel_1, userID3)
     channel1_details = channel_details(token, channel_1)
     assert channel1_details["all_members"][0]["u_id"] == userID
     assert channel1_details["all_members"][1]["u_id"] == userID2
     assert channel1_details["all_members"][2]["u_id"] == userID3
 
+    #checks if ValueError if channel_id unknown
     with pytest.raises(ValueError):
         channel_join(token2, channel_1,123456)
 
@@ -158,17 +197,20 @@ def test_channel_list():
     lst = channel_list(token)
     assert lst["channels"][0]["id"] == channel_1
 
+    #check if creator of channel_1 and channel_2 is part of two channels
     channel_2 = channels_create(token, "channel2", True)
     lst = channel_list(token)
     assert lst["channels"][0]["id"] == channel_1
     assert lst["channels"][1]["id"] == channel_2
 
-    channel_join(token, channel_1)
+    #check if channel_1 is listed for user2 after join
+    channel_join(token2, channel_1)
     lst = channel_list(token2)
     assert lst["channels"][0]["id"] == channel_1
 
+    #check if channel_2 is listed fo ruser2 after invite
     channel_invite(token, channel_2, userID2)
-    lst = channel_list(token)
+    lst = channel_list(token2)
     assert lst["channels"][0]["id"] == channel_1
     assert lst["channels"][1]["id"] == channel_2
 
