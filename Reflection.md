@@ -1,6 +1,6 @@
-#Reflection
+# Reflection
 
-##Organization / Planning:
+## Organization / Planning:
 
 * Fairly evenly distributed workload
 
