@@ -45,7 +45,7 @@ channel_join
 ```
 
 ### Stage 3: Write remaining functionality according to user stories (???)
-We hould be able to immediately test each function that we write from here.
+We should be able to immediately test each function that we write from here.
 
 
 

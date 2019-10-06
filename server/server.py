@@ -49,6 +49,8 @@ def channels_listall(token):
     return {}
 def channels_create(token, name, is_public):
     return {}
+def channels_delete(token, channel_id):
+    return {}
 def message_sendlater(token, channel_id, message, time_sent):
     return {}
 def message_send(token, channel_id, message):
@@ -65,7 +67,7 @@ def message_pin(token, message_id):
     return {}
 def message_unpin(token, message_id):
     return {}
-def user_profile(token):
+def user_profile(token, u_id):
     return {}
 def user_profile_setname(token, name_first, name_last):
     return {}

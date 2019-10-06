@@ -3,11 +3,8 @@
 ## Organization / Planning:
 
 * Fairly evenly distributed workload
-
 * Created a discord channel with good organization
-
 * Created and shared a team google drive for plan and reflection
-
 * Collected and compiled everyone’s emails, and timetables in one place
 
 * Sorted different information into separate discord text channels for better accessibility
@@ -24,11 +21,8 @@ Overall organization was mediocre, which was not surprising considering that thi
 ## Communication:
 
 * Had fairly frequent team meetings at university ( 2 to be precise )
-
 * Had online voice call meetings when not available for offline ones
-
 * Meetings are of decent length ( 1 - 2 hours at a time )
-
 * Frequent team communication during the programming process
 
 * Need to check in more frequently on discord
@@ -45,4 +39,4 @@ Communication was excellent (In comparison to many other teams we have experienc
 * Specification was read incorrectly and it took a while to figure out how to write the tests
 
 ### Summary
- Only very minor hiccups occurred. There was not many difficulties in terms of technical. Since we had excellent communication we easily solved a problem when a group member had an issue. We figured out our general direction of testing after one meeting and only had to scrap a small amount of work. All coding completed on time.
+ Only very minor hiccups occurred. There was not many difficulties in terms of technical. Since we had excellent communication we easily solved a problem when a group member had an issue. We figured out our general direction of testing after one meeting and only had to scrap a small amount of work. All coding was completed on time.
