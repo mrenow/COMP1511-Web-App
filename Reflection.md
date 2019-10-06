@@ -1,10 +1,15 @@
 Organization / Planning:
 
 Fairly evenly distributed workload
+
 Created a discord channel with good organization
+
 Created and shared a team google drive for plan and reflection
+
 Collected and compiled everyone’s emails, and timetables in one place
+
 Sorted different information into separate discord text channels for better accessibility
+
 Separated workload logically and grouped specific sections together for less overlap of workload 
 
 Started too late 
