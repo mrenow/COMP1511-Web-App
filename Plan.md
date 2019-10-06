@@ -18,7 +18,7 @@ Write internal functions that will allow these general functionalities:
 ```
 _user_create
 _channel_create
-_message_create (internal function)
+_message_create
 _channel_get_details
 _server_get_channels
 _user_get_profile
