@@ -8,30 +8,32 @@ from server import *
 def get_message_id(token, channel, index):
     return channel_messages(token, channel, start = 0)["messages"][index]["message_id"]
 
+# Creates an environment where a user and admin are members of a channel
 def message_env():
-    auth_response = auth_register("admin@email.com", "admin", "first", "last")
+    auth_response = auth_register("admin@email.com", "adminpass", "first", "last")
     admintok, admin = auth_response["token"], auth_response["u_id"]
     
-    auth_response = auth_register("user@email.com", "user", "first", "last")
+    auth_response = auth_register("user@email.com", "userpass", "first", "last")
     usertok, user = auth_response["token"], auth_response["u_id"]
 
     channel = channels_create(admintok, "channel1", True)
+
     channel_join(usertok, channel)
     channel_join(admintok, channel)
-    
-
 
     return admintok, admin, usertok, user, channel
 
+# Adds an owner to the specified channel
 def channel_owner_env(admintok, channel):
-    auth_response = auth_register("owner@email.com", "owner", "first", "last")
+    auth_response = auth_register("owner@email.com", "ownerpass", "first", "last")
     ownertok, owner = auth_response["token"], auth_response["u_id"]
 
     channel_addowner(admintok, channel, owner)
     return ownertok, owner
 
+# Adds a regular member with no permissions
 def extra_member_env(id):
-    auth_response = auth_register(f"user{id}@email.com", f"user{id}", "first", "last")
+    auth_response = auth_register(f"user{id}@email.com", f"user{id}pass", "first", "last")
     return auth_response["token"], auth_response["u_id"]
 
 
