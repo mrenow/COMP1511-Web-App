@@ -26,7 +26,6 @@ Overall organization was mediocre, which was not surprising considering that thi
 * Had online voice call meetings when not available for offline ones
 * Meetings are of decent length ( 1 - 2 hours at a time )
 * Frequent team communication during the programming process
-    
 * Need to check in more frequently on discord
 
 Communication was excellent (In comparison to many other teams we have experienced). This was in part due to the fact that our team size is small (3) and it was very easy to all be available simultaneously. Our frequent presence on discord allow team members to post alerts (eg. we had a space where assumptions could be dumped as we wrote the tests). Voice calls were used so that we could easily ask each other for help, or opinions and this made sure the tests were acceptable quality. 
