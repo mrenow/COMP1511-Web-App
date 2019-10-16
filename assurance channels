@@ -1,0 +1,24 @@
+Be able to see a list of channels
+    list of channels should display on left hand panel by default
+    channel names are displayed on the list
+    private channels are indicated on a list by a symbol
+    
+
+Be able to display members of a channel
+    permission level of members should be indicated
+    members of the same permission level or roles are grouped together on the list
+    
+
+Be able to make a channel private
+    channel cannot receive messages from non-members
+    channel cannot be viewed by non-members
+    private channel should be indicated by a symbol next to its name
+    
+Be able to create a channel
+    be able to name the channel on creation
+    be able to
+    
+Be able to invite people to a channel
+    once invited the member is automatically added to the channel
+    member should be added to the member list 
+    private channel owners can invite non-members to join
