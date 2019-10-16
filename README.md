@@ -13,6 +13,13 @@ A video describing this project and the background here can be found here.
 
 ## Changelog (cleared 5th October in git hash "84cc5a9099")
 
+* 11/10/2019: Search function clarified that it searches over all channels a user is in
+* 13/10/2019: name_first and name_last length requirement inverted to make more sense
+* 14/10/2019: standup/send errors updated to make more sense. One ValueError modified, one AccessError modified
+* 15/10/2019: standup/start has error "An active standup is currently running in this channel" added to it
+* 16/10/2019: is_unread removed from the message structure
+
+## Overview
 
 An overview of this background and this project can be found in a short video found [HERE](https://youtu.be/Mzg3UGv3TSw).
 
@@ -114,7 +121,7 @@ When you submit, the following commands will be executed in the root of your rep
 
     Generates a simple report based on the above test run.
 
-* `pylint3 server`
+* `pylint3 server/*`
 
     Runs pylint over the all files in `server`.
 
@@ -179,7 +186,7 @@ Details will be released in week 7
 |has suffix **_str**|string|
 |has suffix **end**|integer|
 |has suffix **start**|integer|
-|(outputs only) named exactly **messages**|List of dictionaries, where each dictionary contains types { message_id, u_id, message, time_created, is_unread, reacts, is_pinned,  }|
+|(outputs only) named exactly **messages**|List of dictionaries, where each dictionary contains types { message_id, u_id, message, time_created, reacts, is_pinned,  }|
 |(outputs only) named exactly **reacts**|List of dictionaries, where each dictionary contains types { react_id, u_ids, is_this_user_reacted } where react_id is the id of a react, and u_ids is a list of user id's of people who've reacted for that react. is_this_user_reacted is whether or not the authorised user has been one of the reacts to this post |
 |(outputs only) named exactly **channels**|List of dictionaries, where each dictionary contains types { channel_id, name }|
 |(outputs only) named exactly **members**|List of dictionaries, where each dictionary contains types { u_id, name_first, name_last }|
@@ -211,6 +218,22 @@ The AccessError is not one of Python's built in types. For iteration one, you ca
    3) Members, who do not have any special permissions (permission_id 3)
  * All slackr members are by default members, except for the very first user who signs up, who is an owner
 
+### Standups
+
+Once standups are finished, all of the messages sent to standup/send are packaged together in *one single message* posted by *the user who started the standup* and sent as a message to the channel the standup was started in, timestamped at the moment the standup finished.
+
+The structure of the packaged message is like this:
+[message_sender1_handle]: [message1]
+[message_sender2_handle]: [message2]
+[message_sender3_handle]: [message3]
+[message_sender4_handle]: [message4]
+
+For example
+hayden: I ate a catfish
+rob: I went to kmart
+michelle: I ate a toaster
+isaac: my catfish ate a toaster
+
 ### Interface
 
 |HTTP Request|Endpoint name|Parameters|Return type|Exception|Description|
@@ -219,7 +242,7 @@ The AccessError is not one of Python's built in types. For iteration one, you ca
 |GET|echo/get|(echo)|{echo}||Returns the input|
 |POST|auth/login|(email, password)|{ u_id, token }|**ValueError** when:<ul><li>Email entered is not a valid email using the method provided [here](https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/) (unless you feel you have a better method)</li><li>Email entered does not belong to a user</li><li>Password is not correct</li></ul> | Given a registered users' email and password and generates a valid token for the user to remain authenticated |
 |POST|auth/logout|(token)|{ is_success }|N/A|Given an active token, invalidates the taken to log the user out. If a valid token is given, and the user is successfully logged out, it returns true, otherwise false. |
-|POST|auth/register|(email, password, name_first, name_last)|{ u_id, token }|**ValueError** when:<ul><li>Email entered is not a valid email using the method provided [here](https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/) (unless you feel you have a better method).</li><li>Email address is already being used by another user</li><li>Password entered is less than 6 characters long</li><li>name_first is between 1 and 50 characters</li><li>name_last is between 1 and 50 characters</ul>|Given a user's first and last name, email address, and password, create a new account for them and return a new token for authentication in their session. A handle is generated that is the concatentation of a lowercase-only first name and last name. If the handle is already taken, a number is added to the end of the handle to make it unique. |
+|POST|auth/register|(email, password, name_first, name_last)|{ u_id, token }|**ValueError** when:<ul><li>Email entered is not a valid email using the method provided [here](https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/) (unless you feel you have a better method).</li><li>Email address is already being used by another user</li><li>Password entered is less than 6 characters long</li><li>name_first not is between 1 and 50 characters in length</li><li>name_last is not between 1 and 50 characters in length</ul>|Given a user's first and last name, email address, and password, create a new account for them and return a new token for authentication in their session. A handle is generated that is the concatentation of a lowercase-only first name and last name. If the handle is already taken, a number is added to the end of the handle to make it unique. |
 |POST|auth/passwordreset/request|(email)|{}|N/A|Given an email address, if the user is a registered user, send's them a an email containing a specific secret code, that when entered in auth_passwordreset_reset, shows that the user trying to reset the password is the one who got sent this email.|
 |POST|auth/passwordreset/reset|(reset_code, new_password)|{}|**ValueError** when:<ul><li>reset_code is not a valid reset code</li><li>Password entered is not a valid password</li>|Given a reset code for a user, set that user's new password to the password provided|
 |POST|channel/invite|(token, channel_id, u_id)|{}|**ValueError** when:<ul><li>channel_id does not refer to a valid channel that the authorised user is part of.</li><li>u_id does not refer to a valid user</li></ul>**AccessError** when<ul><li>the authorised user is not already a member of the channel</li>|Invites a user (with user id u_id) to join a channel with ID channel_id. Once invited the user is added to the channel immediately|
@@ -234,20 +257,20 @@ The AccessError is not one of Python's built in types. For iteration one, you ca
 |POST|channels/create|(token, name, is_public)|{ channel_id }|**ValueError** when:<ul><li>Name is more than 20 characters long</li></ul>|Creates a new channel with that name that is either a public or private channel|
 |POST|message/sendlater|(token, channel_id, message, time_sent)|{ message_id }|**ValueError** when:<ul><li>Channel ID is not a valid channel</li><li>Message is more than 1000 characters</li><li>Time sent is a time in the past</li></ul>**AccessError** when: <li> the authorised user has not joined the channel they are trying to post to</li></ul>|Send a message from authorised_user to the channel specified by channel_id automatically at a specified time in the future|
 |POST|message/send|(token, channel_id, message)|{ message_id }|**ValueError** when:<ul><li>Message is more than 1000 characters</li></ul>**AccessError** when: <li> the authorised user has not joined the channel they are trying to post to</li></ul>|Send a message from authorised_user to the channel specified by channel_id|
-|DELETE|message/remove|(token, message_id)|{}|**ValueError** when:<ul><li>Message (based on ID) no longer exists</li></ul>**AccessError** when all of the following are not true<ul><li>Message with message_id was not sent by the authorised user making this request</li><li>Message with message_id was not sent by an owner of this channel</li><li>Message with message_id was not sent by an admin or owner of the slack</li></ul>|Given a message_id for a message, this message is removed from the channel|
-|PUT|message/edit|(token, message_id, message)|{}|**ValueError** when all of the following are not true:<ul><li>Message with message_id was not sent by the authorised user making this request</li><li>Message with message_id was not sent by an owner of this channel</li><li>Message with message_id was not sent by an admin or owner of the slack</li></ul>|Given a message, update it's text with new text|
+|DELETE|message/remove|(token, message_id)|{}|**ValueError** when:<ul><li>Message (based on ID) no longer exists</li></ul>**AccessError** when none of the following are true:<ul><li>Message with message_id was sent by the authorised user making this request</li><li>The authorised user is an admin or owner of this channel or the slackr</li></ul>|Given a message_id for a message, this message is removed from the channel|
+|PUT|message/edit|(token, message_id, message)|{}|**AccessError** when none of the following are true:<ul><li>Message with message_id was sent by the authorised user making this request</li><li>The authorised user is an admin or owner of this channel or the slackr</li></ul>|Given a message, update it's text with new text|
 |POST|message/react|(token, message_id, react_id)|{}|**ValueError** when:<ul><li>message_id is not a valid message within a channel that the authorised user has joined</li><li>react_id is not a valid React ID</li><li>Message with ID message_id already contains an active React with ID react_id</li></ul>|Given a message within a channel the authorised user is part of, add a "react" to that particular message|
 |POST|message/unreact|(token, message_id, react_id)|{}|**ValueError** when:<ul><li>message_id is not a valid message within a channel that the authorised user has joined</li><li>react_id is not a valid React ID</li><li>Message with ID message_id does not contain an active React with ID react_id</li></ul>|Given a message within a channel the authorised user is part of, remove a "react" to that particular message|
 |POST|message/pin|(token, message_id)|{}|**ValueError** when:<ul><li>message_id is not a valid message</li><li>The authorised user is not an admin</li><li>Message with ID message_id is already pinned</li></ul>**AccessError** when<ul><li>The authorised user is not a member of the channel that the message is within</li></ul>|Given a message within a channel, mark it as "pinned" to be given special display treatment by the frontend|
 |POST|message/unpin|(token, message_id)|{}|**ValueError** when:<ul><li>message_id is not a valid message</li><li>The authorised user is not an admin</li><li>Message with ID message_id is already unpinned</li></ul>**AccessError** when<ul><li>The authorised user is not a member of the channel that the message is within</li></ul>|Given a message within a channel, remove it's mark as unpinned|
 |GET|user/profile|(token, u_id)|{ email, name_first, name_last, handle_str }|**ValueError** when:<ul><li>User with u_id is not a valid user</li></ul>|For a valid user, returns information about their email, first name, last name, and handle|
-|PUT|user/profile/setname|(token, name_first, name_last)|{}|**ValueError** when:<ul><li>name_first is between 1 and 50 characters</li><li>name_last is between 1 and 50 characters</ul></ul>|Update the authorised user's first and last name|
+|PUT|user/profile/setname|(token, name_first, name_last)|{}|**ValueError** when:<ul><li>name_first is not between 1 and 50 characters in length</li><li>name_last is not between 1 and 50 characters in length</ul></ul>|Update the authorised user's first and last name|
 |PUT|user/profile/setemail|(token, email)|{}|**ValueError** when:<ul><li>Email entered is not a valid email using the method provided [here](https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/) (unless you feel you have a better method).</li><li>Email address is already being used by another user</li>|Update the authorised user's email address|
 |PUT|user/profile/sethandle|(token, handle_str)|{}|**ValueError** when:<ul><li>handle_str must be between 3 and 20 characters</li><li>handle is already used by another user</li></ul>|Update the authorised user's handle (i.e. display name)|
 |POST|user/profiles/uploadphoto|(token, img_url, x_start, y_start, x_end, y_end)|{}|**ValueError** when:<ul><li>img_url is returns an HTTP status other than 200.</li><li>any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL.</li></ul>|Given a URL of an image on the internet, crops the image within bounds (x_start, y_start) and (x_end, y_end). Position (0,0) is the top left.|
-|POST|standup/start|(token, channel_id)|{ time_finish }|**ValueError** when:<ul><li>Channel ID is not a valid channel</li></ul>**AccessError** when<ul><li>The authorised user is not a member of the channel that the message is within</li></ul>|For a given channel, start the standup period whereby for the next 15 minutes if someone calls "standup_send" with a message, it is buffered during the 15 minute window then at the end of the 15 minute window a message will be added to the message queue in the channel from the user who started the standup. |
-|POST|standup/send|(token, channel_id, message)|{}|**ValueError** when:<ul><li>Channel ID is not a valid channel</li><li>Message is more than 1000 characters</li><li>An active standup is currently running in this channel</li></ul>**AccessError** when<ul><li>The authorised user is not a member of the channel that the message is within</li><li>If the standup time has stopped</li></ul>|Sending a message to get buffered in the standup queue, assuming a standup is currently active|
-|GET|search|(token, query_str)|{ messages }|N/A|Given a query string, return a collection of messages that match the query|
+|POST|standup/start|(token, channel_id)|{ time_finish }|**ValueError** when:<ul><li>Channel ID is not a valid channel</li><li>An active standup is currently running in this channel</li></ul>**AccessError** when<ul><li>The authorised user is not a member of the channel that the message is within</li></ul>|For a given channel, start the standup period whereby for the next 15 minutes if someone calls "standup_send" with a message, it is buffered during the 15 minute window then at the end of the 15 minute window a message will be added to the message queue in the channel from the user who started the standup. |
+|POST|standup/send|(token, channel_id, message)|{}|**ValueError** when:<ul><li>Channel ID is not a valid channel</li><li>Message is more than 1000 characters</li><li>An active standup is not currently running in this channel</li></ul>**AccessError** when<ul><li>The authorised user is not a member of the channel that the message is within</li></ul>|Sending a message to get buffered in the standup queue, assuming a standup is currently active|
+|GET|search|(token, query_str)|{ messages }|N/A|Given a query string, return a collection of messages in all of the channels that the user has joined that match the query|
 |POST|admin/userpermission/change|(token, u_id, permission_id)|{}|**ValueError** when:<ul><li>u_id does not refer to a valid user<li>permission_id does not refer to a value permission</li></ul>**AccessError** when<ul><li>The authorised user is not an admin or owner</li></ul>|Given a User by their user ID, set their permissions to new permissions described by permission_id|
 
 ### Errors for all functions
