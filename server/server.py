@@ -98,8 +98,12 @@ def channel_invite(token, channel_id, u_id):
     return {}
 def channel_details(token, channel_id):
     return {}
-def channel_messages(token, channel_id, start):
-    return {}
+def channel_messages(token, channel_id, start): 
+    u_id = tokcheck
+
+
+
+    return 
 def channel_leave(token, channel_id):
     return {}
 def channel_join(token, channel_id):
@@ -219,6 +223,9 @@ def message_pin(token, message_id):
     
     return {}
 
+'''
+Ezra: done 
+'''
 def message_unpin(token, message_id):   
     u_id = tokcheck(token)
     mess = messages[message_id]
