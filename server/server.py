@@ -12,6 +12,14 @@ messages = {} # message_id: message obj
 
 private_key = "secure password"
 
+
+'''
+Raises an Access error if all of the conditions specified are not met.
+Usage:
+Only allow if is ( owner of channel or admin or particular user ) and in channel:
+>>> authcheck(u_id, user = particular_u_id, chowner = channel_id,  admin = True)
+>>> authcheck(u_id, user = channel_id) 
+'''
 def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
     auth = False 
 
@@ -102,7 +110,8 @@ def channels_create(token, name, is_public):
     authcheck(u_id, channel = channel_id)
     
     return {}
-def channels_delete(token, channel_id):u_id = tok(token)
+def channels_delete(token, channel_id):
+    u_id = tok(token)
     authcheck(u_id, channel = channel_id)
     
     return {}
