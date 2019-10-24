@@ -12,17 +12,25 @@ messages = {} # message_id: message obj
 
 private_key = "secure password"
 
-def authcheck(u_id, user = None, channel = None, chowner = False, admin = False):
-    
-    if user != None and user != u_id:
+def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
+    auth = False 
+
+    if user != None and user == u_id:
+        auth = True
+    if channel != None and channel in users[user].get_channels():
+        auth = True
+    if chowner != None and user in channels[chowner].get_owners():
+        auth = True
+    if admin and users[u_id].is_admin():
+        auth = True
+    if auth:
+        
         raise AccessError(f"auth: User {u_id} is not {user}.")
-    if channel != None and not users[u_id].is_admin:
-        if channel not in users[user].get_channels():+
-            raise AccessError(f"auth: User {u_id} is not in channel {channel}")
-        if chowner and user not in channels[channel].get_owners():
-            raise AccessError(f"auth: User {u_id} is in channel {channel} but is not an owner.")  
-    if admin and not users[u_id].is_admin():
         raise AccessError(f"auth: User {u_id} is not admin")
+        raise AccessError(f"auth: User {u_id} is in channel {channel} but is not an owner.")  
+        raise AccessError(f"auth: User {u_id} is not in channel {channel}")
+
+
 
 def tokcheck(token):
     payload = jwt.decode(token, private_key)
@@ -105,36 +113,25 @@ def message_send(token, channel_id, message):
 
 def message_remove(token, message_id):
     u_id = tok(token)
-    authcheck(u_id, channel = channel_id)
+    mess = messages[message_id]
+    authcheck(u_id, channel = mess.get_id(), user )
 
     return {}
+
+
 def message_edit(token, message_id, message):
     return {}
 def message_react(token, message_id, react_id): 
     
-    if react in self._reacts and user in self._reacts.get(react)._u_ids:
-            raise ValueError(f"message_react: User {user} already has react_id {react} on message {self._message_id}: '{self._message[:10]}...'")
-     
     return {}
 def message_unreact(token, message_id, react_id):
 
 
-
-    if react not in self._reacts or user not in self._reacts.get(react)._u_ids:
-            raise ValueError(f"message_unreact: User {user} already has react_id {react} on message {self._message_id}: '{self._message[:10]}...'")
-        
     return {}
 def message_pin(token, message_id):        
     
-    
-    if self._is_pinned:
-        raise ValueError(f"message.pin: Message {self._message_id} '{self._message[:10]}...' is already pinned.")
-    else:
     return {}
 def message_unpin(token, message_id):
-    if self._is_pinned:
-        raise ValueError(f"message.unpin: Message {self._message_id} '{self._message[:10]}...' is not pinned.")
-    else:
     
     return {}
 def user_profile(token, u_id):
