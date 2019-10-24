@@ -318,10 +318,41 @@ def user_profile_setname(token, name_first, name_last):
 
     return {}
 def user_profile_setemail(token, email):
+    # Check for authorisation
+    user_id = tokcheck(token)
+    authcheck(user_id)
+    # Check if email is in correct format
+    if(re.search(regex,email)):  
+        global users
+        # Check for email address duplicates
+        for user in users:
+            if user.get_email == email:
+                raise ValueError("Email already in use")
+
+        user_id.set_email(email)
     
+    else:  
+        raise ValueError("Invalid Email Address")
 
     return {}
 def user_profile_sethandle(token, handle_str):
+    # Check for authorisation
+    user_id = tokcheck(token)
+    authcheck(user_id)
+    # Check if handle str is the right len
+    if len(handle_str) > 20:
+        raise ValueError("Handle name is too long")  
+    if len(handle_str) < 3:
+        raise ValueError("Handle name is too short")
+    # Check if handle str is already in use by another user
+    global users
+    for user in users:
+        if user.get_handle_str == handle_str:
+            raise ValueError("Handle name already in use")
+    
+    user_id.set_handle_str(handle_str)
+    
+
     return {}
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     return {}
