@@ -92,7 +92,8 @@ def channels_listall(token):
     authcheck(u_id, channel = channel_id)
     
     return {}
-def channels_create(token, name, is_public):u_id = tok(token)
+def channels_create(token, name, is_public):
+    u_id = tok(token)
     authcheck(u_id, channel = channel_id)
     
     return {}
