@@ -9,6 +9,7 @@ messages = {} # message_id: message obj
 
 from objects.messages import Message
 from objects.channels_object import Channel
+from objects.users_object import User
 import jwt
 from server.AccessError import AccessError
 
@@ -36,7 +37,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         auth = True
     if auth:
         return
-    
+
     if user != None:
         raise AccessError(f"auth: User {u_id} is not user {user}.")
     if channel != None:
@@ -237,10 +238,33 @@ def message_unpin(token, message_id):
     
     return {}
 def user_profile(token, u_id):
+    # Check for authorisation
+    user_id = tokcheck(token)
+    authcheck(user_id)
+    # Check for valid user
+    global users
+    for id in users:
+        if u_id == users:
+            # Need to do this part with dumps 
+            return u_id.get_email(), u_id.get_name_first(), u_id.get_name_last(), u_id.get_handle_str()
+    raise ValueError("Invalid User id or User does not exist")    
+    return {}
+
+def user_profile_setname(token, name_first, name_last):
+    # Check for authorisation
+    user_id = tokcheck(token)
+    authcheck(user_id)
+    # Check if first and last names are within length restrictions otherwise return a ValueError
+    if len(name_first) > 50: 
+        raise ValueError("First name provide is too long")
+    if len(name_last) > 50: 
+        raise ValueError("Last name provide is too long")
+    if len(name_first) < 1: 
+        raise ValueError("First name provide is too short")
+    if len(name_last) < 1: 
+        raise ValueError("Last name provide is too short")
     
 
-    return {}
-def user_profile_setname(token, name_first, name_last):
     return {}
 def user_profile_setemail(token, email):
     return {}

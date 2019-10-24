@@ -12,6 +12,8 @@ class User:
         self._handle_str = name_first + name_last
         self._profile_picture = None
         self._channels = {}
+        self._admin_channels = {}
+        self._owner_channels = {}
         user_count += 1
 
     def get_name_first(self, user):
@@ -35,9 +37,23 @@ class User:
     def get_channels(self, user):
         return self._channels
 
+    def get_admin_channels(self, user):
+        return self._admin_channels
+    
+    def get_owner_channels(self, user):
+        return self._owner_channels
+    
     def add_channel(self, user, channel_id):
         global channels
         self._channels[channel_id] = channels[channel_id]
+
+    def add_admin_channel(self, user, channel_id):
+        global channels
+        self._admin_channels[channel_id] = channels[channel_id]
+
+    def add_owner_channel(self, user, channel_id):
+        global channels
+        self._owner_channels[channel_id] = channels[channel_id]
 
     def get_handle_str(self, user):
         return self._handle_str
