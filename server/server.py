@@ -7,6 +7,8 @@ users = {} # u_id: user obj
 channels = {} # chann
 messages = {} # message_id: message obj
 
+import re # used for checking email formating
+
 from objects.messages import Message
 from objects.channels_object import Channel
 from objects.users_object import User
@@ -310,17 +312,13 @@ def user_profile_setname(token, name_first, name_last):
         raise ValueError("First name provided is too short")
     if len(name_last) < 1: 
         raise ValueError("Last name provided is too short")
+    
     user_id.set_name_first(name_first)
     user_id.set_name_last(name_last)
 
     return {}
 def user_profile_setemail(token, email):
-    # Check for authorisation
-    user_id = tokcheck(token)
-    authcheck(user_id)
-    # Check if email is in correct format
     
-
 
     return {}
 def user_profile_sethandle(token, handle_str):
