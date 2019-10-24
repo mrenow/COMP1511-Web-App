@@ -42,10 +42,8 @@ class Channel:
         
 
     def delete_message(self, message_id):
-        for x in self.message_list:
-            if x.get_id == message_id:
-                self.message_list.remove(x)
-                break
+        # Raises value if messages_id is not in list.
+        self.message_list.remove(message_id)
     
     def join(self, u_id):
         self.members.add(u_id) 
@@ -67,31 +65,25 @@ class Channel:
             last_name = Users[x].get_name_last())   
         members = ()
         members.append()
-        details = dict(name = self.name,
-        owner_members = owner_members,
-        members = members
-        )
+        details = dict( name = self.name,
+                        owner_members = owner_members,
+                        members = members)
 
     def leave(self, u_id):
         global Users
-        for x in self.members:
-            if x == u_id:
-                self.members.discard(x) 
-        for x in self.owners:
-            if x == u_id:
-                self.owners.discard(x)
+        self.members.discard(u_id)
+        if u_id in owners:
+            self.owners.discard(x)
         Users[u_id].get_channels().discard(self.id)
 
 
     def add_owner(self, u_id):
         global Users
-        self.owners.add(u_id)            
+        self.owners.add(u_id)          
         Users[u_id].get_owners().add(self.id)
 
     def remove_owner(self, u_id):
-        for x in self.owners:
-            if x == u_id:
-                self.owners.discard(x)
+        self.owners.discard(x)
 
    
 

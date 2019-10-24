@@ -1,5 +1,5 @@
 from datetime import datetime
-from server.server import messages
+from server.server import messages, channels
 
 
 # { react_id, u_ids, is_this_user_reacted } 
@@ -13,6 +13,7 @@ class message:
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         self._message = text
         self._u_id = sender
+        self._channel_id = channel
         self._time_created = time
         self._is_sent = time <= datetime.now()
         self._message_id = next_id
@@ -27,12 +28,19 @@ class message:
     
     def get_id(self):
         return self._message_id
-    
+
+    def get_channel(self):
+        return self._channel_id
+
     def is_sent(self):
         return self._is_sent
 
     def is_pinned(self):
         return self._is_pinned
+
+    def delete(self):
+        channels[self._channel_id].delete_message(self._message_id)
+        del messages[self._message_id]
 
     def pin(self, user):
         if self._is_pinned:
@@ -64,7 +72,7 @@ class message:
 
     # Returns the reacts list as in specification
     def get_reacts(self, user): 
-        return [react.details(user) for react in self._reacts.values()]
+        return [react.to_json(user) for react in self._reacts.values()]
 
     def to_json(self, user):
         return dict(message_id = self._message_id,
