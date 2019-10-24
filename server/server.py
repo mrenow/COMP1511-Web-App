@@ -2,7 +2,8 @@ import sys
 from flask_cors import CORS
 from json import dumps
 from flask import Flask, request
-from objects import *
+from objects.messages import Message
+from objects.channels_object import Channel
 import jwt
 from AccessError import AccessError
 
@@ -35,7 +36,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         return
     
     if user != None:
-        raise AccessError(f"auth: User {u_id} is not {user}.")
+        raise AccessError(f"auth: User {u_id} is not user {user}.")
     if channel != None:
         raise AccessError(f"auth: User {u_id} is not in channel {channel}")
     if chowner != None:
@@ -95,6 +96,7 @@ def channel_addowner(token, channel_id, u_id):
     return {}
 def channel_removeowner(token, channel_id, u_id):
     return {}
+
 def channels_list(token):
     u_id = tok(token)
     authcheck(u_id, channel = channel_id)
@@ -110,43 +112,100 @@ def channels_create(token, name, is_public):
     authcheck(u_id, channel = channel_id)
     
     return {}
+
+'''
+Added to the specification.
+'''
+
 def channels_delete(token, channel_id):
-    u_id = tok(token)
+    u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
     
     return {}
+
 def message_sendlater(token, channel_id, message, time_sent):
     
     return {}
 
-def message_send(token, channel_id, message):
-    u_id = tok(token)
+
+'''
+Ezra: done
+'''
+def message_send(token, channel_id, message): 
+    u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
-    channels[channel].send_message(u_id, message)
+    channels[channel_id].send_message(u_id, message)
     return {}
 
-
+'''
+Ezra: done 
+'''
 def message_remove(token, message_id):
-    u_id = tok(token)
+    u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_id(), user )
-
+    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    mess.remove()
     return {}
 
 
 def message_edit(token, message_id, message):
+    u_id = tokcheck(token)
+    mess = messages[message_id]
+    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    mess.set_message(message)
     return {}
+
 def message_react(token, message_id, react_id): 
+    u_id = tokcheck(token)
+    mess = messages[message_id]
+    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    
+    if react_id in mess.get_reacts() and u_id in mess._reacts.get(react_id).get_users():
+        raise ValueError(f"message_react: User {u_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+    mess.add_react(u_id, react_id)
     
     return {}
+
 def message_unreact(token, message_id, react_id):
+    u_id = tokcheck(token)
+    mess = messages[message_id]
+    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
 
-
-    return {}
-def message_pin(token, message_id):        
+    if react_id not in mess.get_reacts():
+        raise ValueError(f"message_unreact: React_id {react_id} not on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+       
+    if u_id not in mess._reacts.get(react_id).get_users():
+        raise ValueError(f"message_unreact: User {u_id} does not have react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+    
+    mess.remove_react(u_id, react_id)
     
     return {}
-def message_unpin(token, message_id):
+
+def message_pin(token, message_id):        
+    u_id = tokcheck(token)
+    mess = messages[message_id]
+    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    
+    if mess.is_pinned():
+        raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
+    mess.set_pin(True)
+    
+    return {}
+
+def message_unpin(token, message_id):   
+    u_id = tokcheck(token)
+    mess = messages[message_id]
+    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    
+    if mess.is_pinned():
+        raise ValueError(f"message_unpin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is not pinned.")
+    mess.set_pin(False)
     
     return {}
 def user_profile(token, u_id):
