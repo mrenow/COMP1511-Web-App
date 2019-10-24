@@ -24,11 +24,16 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
     if admin and users[u_id].is_admin():
         auth = True
     if auth:
-        
+        return
+    
+    if user != None:
         raise AccessError(f"auth: User {u_id} is not {user}.")
-        raise AccessError(f"auth: User {u_id} is not admin")
-        raise AccessError(f"auth: User {u_id} is in channel {channel} but is not an owner.")  
+    if channel != None:
         raise AccessError(f"auth: User {u_id} is not in channel {channel}")
+    if chowner != None:
+        raise AccessError(f"auth: User {u_id} is not an owner of {channel}.")  
+    if admin:
+        raise AccessError(f"auth: User {u_id} is not admin")
 
 
 
