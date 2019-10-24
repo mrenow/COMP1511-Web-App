@@ -323,6 +323,7 @@ def user_profile(token, u_id):
         if u_id == users:
             # Need to do this part with dumps 
             return u_id.get_email(), u_id.get_name_first(), u_id.get_name_last(), u_id.get_handle_str()
+            
     raise ValueError("Invalid User id or User does not exist")    
     return {}
 
