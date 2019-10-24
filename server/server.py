@@ -95,36 +95,90 @@ def channel_invite(token, channel_id, u_id):
         raise AccessError((f"auth: User is not a member of this channel"))
     
     channels[channel_id].join(u_id)
-    
+
     return {}
+
 def channel_details(token, channel_id):
-    return {}
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    if requester not in channels[channel_id].get_members():
+        raise AccessError((f"auth: User is not a member of this channel"))
+    
+    return channels[channel_id].get_details()
+
 def channel_messages(token, channel_id, start):
-    return {}
+     requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    if requester not in channels[channel_id].get_members():
+        raise AccessError((f"auth: User is not a member of this channel"))
+    
+
+    return {"message" : channels[channel_id].channel_messages(start),
+            "start" = -start - 1,
+            "end" = start -51}
+
 def channel_leave(token, channel_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    channels[channel_id].leave(requester)
     return {}
+
 def channel_join(token, channel_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    channels[channel_id].join(requester)
     return {}
 def channel_addowner(token, channel_id, u_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    authcheck (requester, chowner = channel_id, admin = True)
+    if u_id in channels[channel_id].get_owners():
+        raise ValueError("User already an owner")
+    channels[channel_id].add_owner(u_id)
+
     return {}
+
 def channel_removeowner(token, channel_id, u_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    authcheck (requester, chowner = channel_id, admin = True)
+    if u_id not in channels[channel_id].get_owners():
+        raise ValueError("User is not an owner")
+    channels[channel_id].remove_owner(u_id)
+
     return {}
 
 def channels_list(token):
     u_id = tok(token)
-    authcheck(u_id, channel = channel_id)
+    channels_list = []
+    for x in users[u_id].get_channels():
+        channels_list.append(channels[x].details())
     
-    return {}
+    return {"channels": channels_list}
+
 def channels_listall(token):
     u_id = tok(token)
-    authcheck(u_id, channel = channel_id)
+    channels_list = []
+    for x in channels[
+        channels_list.append(channels[x].details())
     
-    return {}
+    return {"channels": channels_list}
+
 def channels_create(token, name, is_public):
     u_id = tok(token)
     authcheck(u_id, channel = channel_id)
+    if len(name) > 20:
+        raise ValueError("Name cannot be over 20 characters")
     
-    return {}
+    obj = Channel(name, u_id, is_public)
+    
+    return {obj.get_id}
 
 '''
 Added to the specification.
