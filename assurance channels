@@ -1,7 +1,7 @@
 Be able to see a list of channels
-    list of channels should display on left hand panel by default
+    list of channels should display by default
     channel names are displayed on the list
-    private channels are indicated on a list by a symbol
+    private channels are indicated
     
 
 Be able to display members of a channel
@@ -10,13 +10,12 @@ Be able to display members of a channel
     
 
 Be able to make a channel private
-    channel cannot receive messages from non-members
+    channel cannot be joined by non-members
     channel cannot be viewed by non-members
-    private channel should be indicated by a symbol next to its name
-    
+
 Be able to create a channel
     be able to name the channel on creation
-    be able to
+    be able to change the name of a channel
     
 Be able to invite people to a channel
     once invited the member is automatically added to the channel
