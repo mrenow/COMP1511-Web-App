@@ -1,15 +1,17 @@
 import sys
-from flask_cors import CORS
 from json import dumps
 from flask import Flask, request
-from objects.messages import Message
-from objects.channels_object import Channel
-import jwt
-from AccessError import AccessError
+
 
 users = {} # u_id: user obj
 channels = {} # chann
 messages = {} # message_id: message obj
+
+from objects.messages import Message
+from objects.channels_object import Channel
+import jwt
+from server.AccessError import AccessError
+
 
 private_key = "secure password"
 
@@ -135,6 +137,7 @@ def message_send(token, channel_id, message):
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
     channels[channel_id].send_message(u_id, message)
+
     return {}
 
 '''
@@ -149,6 +152,9 @@ def message_remove(token, message_id):
     return {}
 
 
+'''
+Ezra: done 
+'''
 def message_edit(token, message_id, message):
     u_id = tokcheck(token)
     mess = messages[message_id]
@@ -157,11 +163,13 @@ def message_edit(token, message_id, message):
     mess.set_message(message)
     return {}
 
+'''
+Ezra: done 
+'''
 def message_react(token, message_id, react_id): 
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_id())
-    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
     
     if react_id in mess.get_reacts() and u_id in mess._reacts.get(react_id).get_users():
         raise ValueError(f"message_react: User {u_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
@@ -169,11 +177,13 @@ def message_react(token, message_id, react_id):
     
     return {}
 
+'''
+Ezra: done 
+'''
 def message_unreact(token, message_id, react_id):
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_id())
-    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
 
     if react_id not in mess.get_reacts():
         raise ValueError(f"message_unreact: React_id {react_id} not on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
@@ -185,11 +195,13 @@ def message_unreact(token, message_id, react_id):
     
     return {}
 
+'''
+Ezra: done 
+'''
 def message_pin(token, message_id):        
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_id())
-    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    authcheck(u_id, chowner = mess.get_channel(), admin = True)
     
     if mess.is_pinned():
         raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
@@ -200,8 +212,7 @@ def message_pin(token, message_id):
 def message_unpin(token, message_id):   
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_id())
-    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    authcheck(u_id, chowner = mess.get_channel(), admin = True)
     
     if mess.is_pinned():
         raise ValueError(f"message_unpin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is not pinned.")
