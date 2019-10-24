@@ -8,6 +8,7 @@ channels = {} # chann
 messages = {} # message_id: message obj
 
 import re # used for checking email formating
+regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 
 from objects.messages import Message
 from objects.channels_object import Channel
@@ -78,10 +79,36 @@ TEST_VALID_REACT = 0
 
 
 def auth_login(email, password):
+
     return {}
 def auth_logout(token):
     return {}
 def auth_register(email, password, name_first, name_last):
+    # Check if email is good
+    global regex
+    if(re.search(regex,email)):  
+        # Check if email is used by another user
+        global users
+        for user in users:
+            if user.get_email == email:
+                raise ValueError("Email already in use")
+
+        # Password
+        if len(password) < 6:
+            raise ValueError("Password too short")
+
+        # First and last name within 1 and 50 characters
+        if len(name_first) > 50:
+            raise ValueError("First name is too long")
+        if len(name_lasst) > 50:
+            raise ValueError("Last name is too long")
+        if len(name_first) < 1:
+            raise ValueError("First name is too short")
+        if len(name_last) < 1:
+            raise ValueError("Last name is too short")
+        # TODO : RETURN A VALID TOKEN
+    else:  
+        raise ValueError("Invalid Email Address")
     return {}
 def auth_passwordreset_request(email):
     return {}
@@ -322,6 +349,7 @@ def user_profile_setemail(token, email):
     user_id = tokcheck(token)
     authcheck(user_id)
     # Check if email is in correct format
+    global regex
     if(re.search(regex,email)):  
         global users
         # Check for email address duplicates
@@ -351,7 +379,6 @@ def user_profile_sethandle(token, handle_str):
             raise ValueError("Handle name already in use")
     
     user_id.set_handle_str(handle_str)
-    
 
     return {}
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
