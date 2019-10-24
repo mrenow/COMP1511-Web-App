@@ -83,6 +83,16 @@ def auth_passwordreset_request(email):
 def auth_passwordreset_reset(reset_code, new_password):
     return {}
 def channel_invite(token, channel_id, u_id):
+    requester = tokcheck(token) 
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    if u_id not in users:
+        raise ValueError((f"channel_invite: User does not exist."))
+    if requester not in channels[channel_id].get_members():
+        raise AccessError((f"auth: User is not a member of this channel"))
+    
+    channels[channel_id].join(u_id)
+    
     return {}
 def channel_details(token, channel_id):
     return {}
