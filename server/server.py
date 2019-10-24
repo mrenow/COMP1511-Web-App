@@ -249,17 +249,25 @@ def user_profile_setname(token, name_first, name_last):
     authcheck(user_id)
     # Check if first and last names are within length restrictions otherwise return a ValueError
     if len(name_first) > 50: 
-        raise ValueError("First name provide is too long")
+        raise ValueError("First name provided is too long")
     if len(name_last) > 50: 
-        raise ValueError("Last name provide is too long")
+        raise ValueError("Last name provided is too long")
     if len(name_first) < 1: 
-        raise ValueError("First name provide is too short")
+        raise ValueError("First name provided is too short")
     if len(name_last) < 1: 
-        raise ValueError("Last name provide is too short")
-    
+        raise ValueError("Last name provided is too short")
+    user_id.set_name_first(name_first)
+    user_id.set_name_last(name_last)
 
     return {}
 def user_profile_setemail(token, email):
+    # Check for authorisation
+    user_id = tokcheck(token)
+    authcheck(user_id)
+    # Check if email is in correct format
+    
+
+
     return {}
 def user_profile_sethandle(token, handle_str):
     return {}

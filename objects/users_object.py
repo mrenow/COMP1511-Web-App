@@ -11,9 +11,9 @@ class User:
         self._email = email
         self._handle_str = name_first + name_last
         self._profile_picture = None
-        self._channels = {}
-        self._admin_channels = {}
-        self._owner_channels = {}
+        self._channels = set()
+        self._admin_channels = set()
+        self._owner_channels = set()
         user_count += 1
 
     def get_name_first(self, user):
