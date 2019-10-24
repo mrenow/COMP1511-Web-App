@@ -1,22 +1,26 @@
 from datetime import datetime
+from server.server import messages
+
 
 # { react_id, u_ids, is_this_user_reacted } 
-num_messages = 0
+next_id = 0
 MAX_LEN = 1000
 class message:
 
-    def __init__(self, text, sender, time = datetime.now()):
-        global num_messages
+    def __init__(self, text, channel, sender, time = datetime.now()):
+        global next_id, messages
         if MAX_LEN < text:
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         self._message = text
         self._u_id = sender
         self._time_created = time
         self._is_sent = time <= datetime.now()
-        self._message_id = num_messages
+        self._message_id = next_id
         self._is_pinned = False
         self._reacts = {} # Dictionary of react id: react object.
-        num_messages += 1
+        next_id += 1
+        messages[self._u_id] = self 
+
     
     def get_time(self):
         return self._time_created
@@ -62,7 +66,7 @@ class message:
     def get_reacts(self, user): 
         return [react.details(user) for react in self._reacts.values()]
 
-    def details(self, user):
+    def to_json(self, user):
         return dict(message_id = self._message_id,
                     u_id = self._u_id,
                     message = self._message,
@@ -74,7 +78,7 @@ class react:
         self._u_ids = set(user)
         self._react_id = id
 
-    def details(self, user):
+    def to_json(self, user):
         return dict(u_ids = list(self._u_ids),
                     react_id = self._react_id,
                     is_this_user_reacted = (user in self._u_ids))

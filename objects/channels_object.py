@@ -14,7 +14,7 @@ class Channel:
         self.is_private = is_private
         self.id = channel_id
         channel_id += 1 
-        self.message_list = ()
+        self.message_list = []
         Channels[self.id] = self
         Users[owner].get_channels.add(self.id)
 
@@ -36,9 +36,9 @@ class Channel:
         return self.is_private
     
     def send_message(self, text, sender):
-        curr_message = message(text, sender)
+        curr_message = message(text, self.id, sender)
         self.message_list.append(curr_message)
-        return curr_message.get_id
+        return curr_message.get_id()
         
 
     def delete_message(self, message_id):
@@ -56,15 +56,15 @@ class Channel:
         global Users
         for x in self.owners:
              = dict(u_id = x,
-            first_name = Users[x].get_name_first,
-            last_name = Users[x].get_name_last)
-        owner_members = ()
+            first_name = Users[x].get_name_first(),
+            last_name = Users[x].get_name_last())
+        owner_members = []
         owner_members.append()
 
         for x in self.members:
              = dict(u_id = x,
-            first_name = Users[x].get_name_first,
-            last_name = Users[x].get_name_last)   
+            first_name = Users[x].get_name_first(),
+            last_name = Users[x].get_name_last())   
         members = ()
         members.append()
         details = dict(name = self.name,
@@ -80,13 +80,13 @@ class Channel:
         for x in self.owners:
             if x == u_id:
                 self.owners.discard(x)
-        Users[u_id].get_channels.discard(self.channel_id)
+        Users[u_id].get_channels().discard(self.id)
 
 
     def add_owner(self, u_id):
-        self.owners.add(u_id)            
         global Users
-        Users[u_id].get_owners.add(self.channel_id)
+        self.owners.add(u_id)            
+        Users[u_id].get_owners().add(self.id)
 
     def remove_owner(self, u_id):
         for x in self.owners:
