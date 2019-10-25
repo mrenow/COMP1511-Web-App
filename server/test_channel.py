@@ -1,5 +1,5 @@
-from server import *
-from AccessError import AccessError
+from server.server import *
+from server.AccessError import AccessError
 import pytest
 
 permissions = ["owner", "admin", "member"]

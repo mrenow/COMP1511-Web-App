@@ -76,7 +76,7 @@ class Message:
                     is_pinned = self._is_pinned)
 class react:
     def __init__(self, id, user):
-        self._u_ids = set(user)
+        self._u_ids = set([user])
         self._react_id = id
 
     def to_json(self, user):

@@ -1,11 +1,15 @@
 import sys
 from json import dumps
 from flask import Flask, request
+from datetime import datetime
 
 
 users = {} # u_id: user obj
 channels = {} # chann
 messages = {} # message_id: message obj
+
+import re # used for checking email formating
+regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 
 from objects.messages import Message
 from objects.channels_object import Channel
@@ -50,8 +54,11 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
 
 def tokcheck(token):
-    payload = jwt.decode(token, private_key)
+    payload = jwt.decode(token.decode("utf_8"), private_key)
     return payload["u_id"]
+def maketok(u_id):
+    payload = {"u_id": u_id, "time" : str(datetime.now())}
+    return jwt.encode(payload, private_key)
 
 
 
@@ -76,11 +83,39 @@ TEST_VALID_REACT = 0
 
 
 def auth_login(email, password):
+
     return {}
 def auth_logout(token):
     return {}
 def auth_register(email, password, name_first, name_last):
-    return {}
+    # Check if email is good
+    global regex
+    if(not re.search(regex,email)):
+        raise ValueError("Invalid Email Address")
+    else:
+        # Check if email is used by another user
+        global users
+        for user in users:
+            if user.get_email == email:
+                raise ValueError("Email already in use")
+
+        # Password
+        if len(password) < 6:
+            raise ValueError("Password too short")
+
+        # First and last name within 1 and 50 characters
+        if len(name_first) > 50:
+            raise ValueError("First name is too long")
+        if len(name_last) > 50:
+            raise ValueError("Last name is too long")
+        if len(name_first) < 1:
+            raise ValueError("First name is too short")
+        if len(name_last) < 1:
+            raise ValueError("Last name is too short")
+        
+        u_id = User(name_first, name_last, email).get_id()
+        return dict(token = maketok(u_id), u_id = u_id)
+
 def auth_passwordreset_request(email):
     return {}
 def auth_passwordreset_reset(reset_code, new_password):
@@ -95,40 +130,89 @@ def channel_invite(token, channel_id, u_id):
         raise AccessError((f"auth: User is not a member of this channel"))
     
     channels[channel_id].join(u_id)
-    
+
     return {}
+
 def channel_details(token, channel_id):
-    return {}
-def channel_messages(token, channel_id, start): 
-    u_id = tokcheck
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    if requester not in channels[channel_id].get_members():
+        raise AccessError((f"auth: User is not a member of this channel"))
+    
+    return channels[channel_id].get_details()
 
+def channel_messages(token, channel_id, start):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    if requester not in channels[channel_id].get_members():
+        raise AccessError((f"auth: User is not a member of this channel"))
+    
 
+    return dict(message  = channels[channel_id].channel_messages(start),
+            start = - start - 1,
+            end = start -51)
 
-    return 
 def channel_leave(token, channel_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    channels[channel_id].leave(requester)
     return {}
+
 def channel_join(token, channel_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    channels[channel_id].join(requester)
     return {}
 def channel_addowner(token, channel_id, u_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    authcheck (requester, chowner = channel_id, admin = True)
+    if u_id in channels[channel_id].get_owners():
+        raise ValueError("User already an owner")
+    channels[channel_id].add_owner(u_id)
+
     return {}
+
 def channel_removeowner(token, channel_id, u_id):
+    requester = tokcheck(token)
+    if channel_id not in channels:
+        raise ValueError((f"channel_invite: Channel does not exist."))
+    authcheck (requester, chowner = channel_id, admin = True)
+    if u_id not in channels[channel_id].get_owners():
+        raise ValueError("User is not an owner")
+    channels[channel_id].remove_owner(u_id)
+
     return {}
 
 def channels_list(token):
-    u_id = tok(token)
-    authcheck(u_id, channel = channel_id)
+    u_id = tokcheck(token)
+    channels_list = []
+    for x in users[u_id].get_channels():
+        channels_list.append(channels[x].details())
     
-    return {}
+    return {"channels": channels_list}
+
 def channels_listall(token):
-    u_id = tok(token)
-    authcheck(u_id, channel = channel_id)
+    u_id = tokcheck(token)
+    channels_list = []
+    for x in channels:
+        channels_list.append(channels[x].details())
     
-    return {}
+    return {"channels": channels_list}
+
 def channels_create(token, name, is_public):
-    u_id = tok(token)
-    authcheck(u_id, channel = channel_id)
+    u_id = tokcheck(token)
+    if len(name) > 20:
+        raise ValueError("Name cannot be over 20 characters")
     
-    return {}
+    obj = Channel(name, u_id, is_public)
+    
+    return {obj.get_id}
 
 '''
 Added to the specification.
@@ -243,10 +327,11 @@ def user_profile(token, u_id):
     authcheck(user_id)
     # Check for valid user
     global users
-    for id in users:
+    for user in users:
         if u_id == users:
             # Need to do this part with dumps 
-            return u_id.get_email(), u_id.get_name_first(), u_id.get_name_last(), u_id.get_handle_str()
+            return user.get_email(), user.get_name_first(), user.get_name_last(), user.get_handle_str()
+            
     raise ValueError("Invalid User id or User does not exist")    
     return {}
 
@@ -256,20 +341,56 @@ def user_profile_setname(token, name_first, name_last):
     authcheck(user_id)
     # Check if first and last names are within length restrictions otherwise return a ValueError
     if len(name_first) > 50: 
-        raise ValueError("First name provide is too long")
+        raise ValueError("First name provided is too long")
     if len(name_last) > 50: 
-        raise ValueError("Last name provide is too long")
+        raise ValueError("Last name provided is too long")
     if len(name_first) < 1: 
-        raise ValueError("First name provide is too short")
+        raise ValueError("First name provided is too short")
     if len(name_last) < 1: 
-        raise ValueError("Last name provide is too short")
+        raise ValueError("Last name provided is too short")
     
+    user_id.set_name_first(name_first)
+    user_id.set_name_last(name_last)
 
     return {}
 def user_profile_setemail(token, email):
+    # Check for authorisation
+    user_id = tokcheck(token)
+    authcheck(user_id)
+    # Check if email is in correct format
+    global regex
+    if(re.search(regex,email)):  
+        global users
+        # Check for email address duplicates
+        for user in users:
+            if user.get_email == email:
+                raise ValueError("Email already in use")
+
+        user_id.set_email(email)
+    
+    else:  
+        raise ValueError("Invalid Email Address")
+
     return {}
 def user_profile_sethandle(token, handle_str):
+    # Check for authorisation
+    user_id = tokcheck(token)
+    authcheck(user_id)
+    # Check if handle str is the right len
+    if len(handle_str) > 20:
+        raise ValueError("Handle name is too long")  
+    if len(handle_str) < 3:
+        raise ValueError("Handle name is too short")
+    # Check if handle str is already in use by another user
+    global users
+    for user in users:
+        if user.get_handle_str == handle_str:
+            raise ValueError("Handle name already in use")
+    
+    user_id.set_handle_str(handle_str)
+
     return {}
+
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     return {}
 def standup_start(token, channel_id):

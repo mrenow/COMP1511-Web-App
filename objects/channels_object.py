@@ -1,6 +1,5 @@
 from datetime import datetime
-from messages import message
-from server.server import users, channels, messages
+from .messages import Message
 channel_id = 0
 
 '''
@@ -14,11 +13,12 @@ class Channel:
         global users
         global channels
         self.name = name
-        self.owners = set(owner)
+        self.owners = set([owner])
         self.members = set()
         self.is_private = is_private
         self.id = channel_id
         channel_id += 1 
+        
         self.message_list = []
         channels[self.id] = self
         users[owner].get_channels.add(self.id)
@@ -102,3 +102,7 @@ owner = dict(u_id = owners,
         first_name = users[owners].get_name_first,
         last_name = users[owners].get_name_last)
 '''
+
+
+
+from server.server import users, channels, messages

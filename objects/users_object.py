@@ -3,19 +3,22 @@ user_count = 0
 
 class User:
 
-    def __init__(self, name_first, name_last, email, u_id):
+    def __init__(self, name_first, name_last, email):
         global user_count
-        self._u_id = u_id
+        self._u_id = user_count
         self._name_first = name_first
         self._name_last = name_last
         self._email = email
         self._handle_str = name_first + name_last
         self._profile_picture = None
-        self._channels = {}
-        self._admin_channels = {}
-        self._owner_channels = {}
+        self._channels = set()
+        self._admin_channels = set()
+        self._owner_channels = set()
         user_count += 1
 
+    def get_id(self):
+        return self._u_id
+        
     def get_name_first(self, user):
         return self._name_first
 
