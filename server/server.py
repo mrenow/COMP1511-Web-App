@@ -66,13 +66,12 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
 
 def tokcheck(token):
-    payload = jwt.decode(token.encode("utf-8"), private_key)
+    payload = jwt.decode(token, private_key, algorithms= ["HS256"])
     return payload["u_id"]
 
 def maketok(u_id):
     payload = {"u_id": u_id, "time" : str(datetime.now())}
-    return jwt.encode(payload, private_key).decode("utf-8")
-
+    return jwt.encode(payload, private_key, algorithm= "HS256")
 
 
 TEST_OWNER_EMAIL = "TODO"
