@@ -1,6 +1,6 @@
 from datetime import datetime
 
-# { react_id, u_ids, is_this_user_reacted } 
+# { react_id, u_ids, is_this_user_reacted } datetime
 next_id = 0
 MAX_LEN = 1000
 class Message:
@@ -83,10 +83,10 @@ class react:
         return dict(u_ids = list(self._u_ids),
                     react_id = self._react_id,
                     is_this_user_reacted = (user in self._u_ids))
-    def get_users():
+    def get_users(self):
         return self._u_ids
     
-    def get_id():
+    def get_id(self):
         return self._react_id
 
 if __name__ == "__main__":

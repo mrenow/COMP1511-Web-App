@@ -39,9 +39,12 @@ class Channel:
 
     def get_is_private(self):
         return self.is_private
+
+    def get_id(self):
+        return self.id
     
     def send_message(self, text, sender):
-        curr_message = message(text, self.id, sender)
+        curr_message = Message(text, self.id, sender)
         self.message_list.append(curr_message)
         return curr_message.get_id()
         
@@ -53,7 +56,7 @@ class Channel:
     def join(self, u_id):
         self.members.add(u_id) 
         global users
-        users[u_id].get_channels.add(self.channel_id) 
+        users[u_id].get_channels.add(self.id) 
 
     def details(self):
         global users
@@ -69,7 +72,7 @@ class Channel:
             d = dict(u_id = x,
             first_name = users[x].get_name_first(),
             last_name = users[x].get_name_last())   
-        members = ()
+        members = []
         members.append()
         details = dict( name = self.name,
                         owner_members = owner_members,
@@ -79,8 +82,8 @@ class Channel:
     def leave(self, u_id):
         global users
         self.members.discard(u_id)
-        if u_id in owners:
-            self.owners.discard(x)
+        if u_id in self.owners:
+            self.owners.discard(u_id)
         users[u_id].get_channels().discard(self.id)
 
 
@@ -90,7 +93,7 @@ class Channel:
         users[u_id].get_owners().add(self.id)
 
     def remove_owner(self, u_id):
-        self.owners.discard(x)
+        self.owners.discard(u_id)
 
    
 

@@ -3,6 +3,10 @@ from json import dumps
 from flask import Flask, request
 from datetime import datetime
 
+ADMIN = 2
+MEMBER = 3
+OWNER = 1
+
 
 users = {} # u_id: user obj
 channels = {} # chann
@@ -38,7 +42,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         auth = True
     if chowner != None and user in channels[chowner].get_owners():
         auth = True
-    if admin and users[u_id].is_admin():
+    if admin and users[u_id].get_permission() == ADMIN:
         auth = True
     if auth:
         return
