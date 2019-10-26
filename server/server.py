@@ -67,12 +67,12 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
 
 def tokcheck(token):
-    payload = jwt.decode(token.decode("utf_8"), private_key)
+    payload = jwt.decode(token.encode("utf_8"), private_key)
     return payload["u_id"]
 
 def maketok(u_id):
     payload = {"u_id": u_id, "time" : str(datetime.now())}
-    return jwt.encode(payload, private_key)
+    return jwt.decode(payload, private_key)
 
 
 
@@ -100,9 +100,9 @@ def auth_login(email, password):
     global users
     #Check in users if email exists then try to match the pw
     for user in users.values():
-        if user.email() == email:
-            if user.password() == password:
-                token = maketok(user.u_id())
+        if user._email == email:
+            if user._password == password:
+                token = maketok(user._u_id)
                 return token
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")
