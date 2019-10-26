@@ -5,7 +5,12 @@ import pytest
 permissions = ["owner", "admin", "member"]
 
 
-def test_admin_userpermission_change():
+@pytest.fixture
+def clear():
+    reset()
+
+
+def test_admin_userpermission_change(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]
@@ -30,7 +35,7 @@ def test_admin_userpermission_change():
 
 
 #parts of channel_detail tested
-def test_channels_create_and_list_all():
+def test_channels_create_and_list_all(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]
@@ -72,7 +77,7 @@ def test_channels_create_and_list_all():
         channel_3 = channels_create(token2, "channelf2", True)
     
 #parts of channel_detail tested
-def test_channel_join():
+def test_channel_join(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]
@@ -100,7 +105,7 @@ def test_channel_join():
     with pytest.raises(ValueError):
         channel_join(token2, 123456)
 
-def test_channel_leave():
+def test_channel_leave(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]
@@ -123,7 +128,7 @@ def test_channel_leave():
     assert len(channel1_details["allmembers"]) == 1
     assert channel1_details["all_members"][0]["u_id"] == userID
 
-def test_channel_invite():
+def test_channel_invite(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]
@@ -160,7 +165,7 @@ def test_channel_invite():
 
 
 
-def test_channels_list():
+def test_channels_list(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]
@@ -197,7 +202,7 @@ def test_channels_list():
 
 
 #parts of channel_detail tested
-def test_channel_addowner():
+def test_channel_addowner(clear):
 
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
@@ -259,7 +264,7 @@ def test_channel_addowner():
     with pytest.raises(ValueError):
          channel_addowner(token,channel_1, userID3)   
 
-def test_channel_removeowner():
+def test_channel_removeowner(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
     userID = login["u_id"]
     token = login["token"]

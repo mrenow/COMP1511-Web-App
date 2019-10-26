@@ -25,6 +25,14 @@ from server.AccessError import AccessError
 private_key = "secure password"
 
 
+def reset():
+    global users, channels, messages
+    users = {} # u_id: user obj
+    channels = {} # chann
+    messages = {} # message_id: message obj
+    print(users,channels, messages)
+
+
 '''
 Raises an Access error if all of the conditions specified are not met.
 Usage:
@@ -59,12 +67,12 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
 
 def tokcheck(token):
-    payload = jwt.decode(token.decode("utf_8"), private_key)
+    payload = jwt.decode(token.encode("utf_8"), private_key)
     return payload["u_id"]
 
 def maketok(u_id):
     payload = {"u_id": u_id, "time" : str(datetime.now())}
-    return jwt.encode(payload, private_key)
+    return jwt.decode(payload, private_key)
 
 
 
@@ -111,6 +119,7 @@ def auth_register(email, password, name_first, name_last):
     else:
         # Check if email is used by another user
         global users
+        print("users:", users)
         for user in users.values():
             if user.get_email() == email:
                 raise ValueError("Email already in use")
