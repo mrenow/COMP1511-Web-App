@@ -50,12 +50,11 @@ class Channel:
         self.message_list.remove(message_id)
     
     def join(self, u_id):
-        self.members.add(u_id) 
-        global users
+        self.members.add(u_id)
+        print(users)
         users[u_id].get_channels.add(self.id) 
 
     def details(self):
-        global users
         owner_members = []
         for x in self.owners:
             d = dict(u_id = x,
@@ -76,7 +75,6 @@ class Channel:
         return details
 
     def leave(self, u_id):
-        global users
         self.members.discard(u_id)
         if u_id in self.owners:
             self.owners.discard(u_id)
@@ -84,7 +82,6 @@ class Channel:
 
 
     def add_owner(self, u_id):
-        global users
         self.owners.add(u_id)          
         users[u_id].get_owners().add(self.id)
 

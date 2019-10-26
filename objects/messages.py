@@ -1,5 +1,5 @@
 from datetime import datetime
-from server.server import num_messages, inc_messages
+from server.server import num_messages, inc_messages, add_message, del_message
 
 # { react_id, u_ids, is_this_user_reacted } datetime
 
@@ -7,6 +7,7 @@ MAX_LEN = 1000
 class Message:
 
     def __init__(self, text, channel, sender, time = datetime.now()):
+        
         if MAX_LEN < text:
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         self._message = text
@@ -17,8 +18,7 @@ class Message:
         self._message_id = num_messages
         self._is_pinned = False
         self._reacts = {} # Dictionary of react id: react object.
-
-        messages[self._u_id] = self 
+        add_message(self)
         inc_messages()
         
 
@@ -46,7 +46,7 @@ class Message:
 
     def remove(self):
         channels[self._channel_id].delete_message(self._message_id)
-        del messages[self._message_id]
+        del_message(self)
 
     def set_pin(self, pin):
         self._is_pinned = pin
