@@ -125,7 +125,7 @@ def auth_register(email, password, name_first, name_last):
         if len(name_last) < 1:
             raise ValueError("Last name is too short")
         
-        u_id = User(name_first, name_last, email).get_id()
+        u_id = User(name_first, name_last, email, password).get_id()
         return dict(token = maketok(u_id), u_id = u_id)
 
 def auth_passwordreset_request(email):
