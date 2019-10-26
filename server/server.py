@@ -50,7 +50,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         auth = True
     if chowner != None and user in channels[chowner].get_owners():
         auth = True
-    if admin and users[u_id].get_permission() == ADMIN:
+    if admin and users[u_id].get_permission() in (OWNER,ADMIN): 
         auth = True
     if auth:
         return
@@ -99,9 +99,9 @@ def auth_login(email, password):
     global users
     #Check in users if email exists then try to match the pw
     for user in users.values():
-        if user.email() == email:
-            if user.password() == password:
-                token = maketok(user.u_id())
+        if user._email == email:
+            if user._password == password:
+                token = maketok(user._u_id)
                 return token
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")
@@ -231,6 +231,7 @@ def channels_listall(token):
 
 def channels_create(token, name, is_public):
     u_id = tokcheck(token)
+    authcheck(u_id, admin = True)
     if len(name) > 20:
         raise ValueError("Name cannot be over 20 characters")
     
@@ -409,6 +410,7 @@ def user_profile_sethandle(token, handle_str):
     global users
     for user in users:
         if user.get_handle_str == handle_str:
+
             raise ValueError("Handle name already in use")
     
     user_id.set_handle_str(handle_str)
@@ -424,4 +426,11 @@ def standup_send(token, channel_id, message):
 def search(token, query_str):
     return {}
 def admin_userpermission_change(token, u_id, permission_id):
+    user_id = tokcheck(token)
+    authcheck(user_id, admin = True)
+    if u_id not in users:
+        raise ValueError((f"channel_invite: User does not exist."))
+    if permission_id not in (OWNER, ADMIN, MEMBER):
+        raise ValueError("Permission ID not valid")
+    users[u_id].set_permission(permission_id)
     return {}
