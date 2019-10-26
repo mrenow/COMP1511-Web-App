@@ -19,6 +19,7 @@ num_channels = 0
 def inc_users():
     global user_count
     user_count += 1
+    print("user", user_count)
 
 def inc_channels():
     global num_channels
@@ -157,7 +158,9 @@ def auth_register(email, password, name_first, name_last):
         if len(name_last) < 1:
             raise ValueError("Last name is too short")
         
-        u_id = User(name_first, name_last, email, password).get_id()
+        obj = User(name_first, name_last, email, password)
+        u_id = obj.get_id()
+        users[u_id] = obj
         return dict(token = maketok(u_id), u_id = u_id)
 
 def auth_passwordreset_request(email):
@@ -255,9 +258,12 @@ def channels_create(token, name, is_public):
     if len(name) > 20:
         raise ValueError("Name cannot be over 20 characters")
     
+
+    global channels
     obj = Channel(name, u_id, is_public)
+    channels[obj.get_id()] = obj
     
-    return {obj.get_id}
+    return {obj.get_id()}
 
 '''
 Added to the specification.

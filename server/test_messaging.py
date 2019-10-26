@@ -15,8 +15,8 @@ def get_message_id(token, channel, index):
 # Creates an environment
 def message_env():
     global users, channels, messages
-    print(users, channels, messages)
     auth_response = auth_register("admin@email.com", "adminpass", "first", "last")
+    print(users, channels, messages)
     admintok, admin = auth_response["token"], auth_response["u_id"]
     
     auth_response = auth_register("user@email.com", "userpass", "first", "last")
