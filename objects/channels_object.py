@@ -21,7 +21,7 @@ class Channel:
         
         self.message_list = []
         channels[self.id] = self
-        users[owner].get_channels.add(self.id)
+        users[owner].get_channels().add(self.id)
 
 
     #messages(text,channel,time)
