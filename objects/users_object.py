@@ -3,9 +3,10 @@ user_count = 0
 
 class User:
 
-    def __init__(self, name_first, name_last, email):
+    def __init__(self, name_first, name_last, email, password):
         global user_count
         self._u_id = user_count
+        self._password = password
         self._name_first = name_first
         self._name_last = name_last
         self._email = email
