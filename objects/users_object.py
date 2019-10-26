@@ -42,9 +42,12 @@ class User:
 
     def set_email(self, email):
         self._email = email
-    def get_permission():
+
+    def get_permission(self):
         return self._permission_id
 
+    def set_permission(self, permission):
+        self._permission_id = permission
 
     def get_channels(self):
         return self._channels
