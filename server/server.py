@@ -692,7 +692,7 @@ class Channel:
     def get_name(self):
         return self.name
     
-    def get_owner(self):
+    def get_owners(self):
         return self.owners
 
     def get_is_private(self):
@@ -700,6 +700,9 @@ class Channel:
 
     def get_id(self):
         return self.id
+    
+    def get_members(self):
+        return self.members
     
     def send_message(self, text, sender):
         curr_message = Message(text, self.id, sender)
@@ -721,14 +724,14 @@ class Channel:
             d = dict(u_id = x,
             first_name = users[x].get_name_first(),
             last_name = users[x].get_name_last())
-            owner_members.append()
+            owner_members.append(d)
         
         members = []
         for x in self.members:
-            d = dict(u_id = x,
+            md = dict(u_id = x,
             first_name = users[x].get_name_first(),
             last_name = users[x].get_name_last())   
-            members.append()
+            members.append(md)
         details = dict( name = self.name,
                         owner_members = owner_members,
                         members = members)
