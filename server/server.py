@@ -198,7 +198,7 @@ def channel_details(token, channel_id):
 def channel_messages(token, channel_id, start):
     requester = tokcheck(token)
     if channel_id not in channels:
-        raise ValueError((f"channel_invite: Channel does not exist."))
+        raise ValueError((f"Channel does not exist."))
     if requester not in channels[channel_id].get_members():
         raise AccessError((f"auth: User is not a member of this channel"))
     
@@ -713,6 +713,9 @@ class Channel:
     def delete_message(self, message_id):
         # Raises value if messages_id is not in list.
         self.message_list.remove(message_id)
+
+    def channel_messages(self, index):
+    return self.message_list[-index-1:-index-51:-1]
     
     def join(self, u_id):
         self.members.add(u_id) 
