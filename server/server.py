@@ -88,9 +88,9 @@ def auth_login(email, password):
     global users
     #Check in users if email exists then try to match the pw
     for user in users.values():
-        if user.email == email:
-            if user.password == password:
-                token = maketok(user.u_id)
+        if user.email() == email:
+            if user.password() == password:
+                token = maketok(user.u_id())
                 return token
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")
@@ -107,8 +107,8 @@ def auth_register(email, password, name_first, name_last):
     else:
         # Check if email is used by another user
         global users
-        for user in users:
-            if user.get_email == email:
+        for user in users.values():
+            if user.get_email() == email:
                 raise ValueError("Email already in use")
 
         # Password
