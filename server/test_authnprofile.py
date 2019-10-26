@@ -13,7 +13,7 @@ def clear():
 def test_auth_login(clear):
 	# Set up
 	userId1, token1 = auth_register("good@email.com", "123456", "jason", "xing")
-	userId2, token2 = auth_register("good1@email.com", "54321", "jason", "xing")
+	userId2, token2 = auth_register("good1@email.com", "654321", "jason", "xing")
 	# Bad email
 	with pytest.raises(ValueError):
 		userId1, token1 = auth_login("bademail.com", "123456")
@@ -22,7 +22,7 @@ def test_auth_login(clear):
 		userId3, token3 = auth_login("good2@email.com", "123456")
 	# Wrong Password
 	with pytest.raises(ValueError):
-		userId2, token2 = auth_login("good1@email.com", "54321X")
+		userId2, token2 = auth_login("good1@email.com", "654321X")
 
 	
 def test_auth_logout(clear):
@@ -55,7 +55,7 @@ def test_auth_passwordreset_request(clear):
 	# Can't access email so no tests
 def test_auth_passwordreset_reset():
     # Set up
-	userId1, token1 = auth_register("good@email.com", "123456", "jason", "xing")
+	userId1, token1 = auth_register("good10@email.com", "123456", "jason", "xing")
 	# Test if new password is valid
 	with pytest.raises(ValueError):
 		auth_passwordreset_reset("123456", "123X")
@@ -91,7 +91,7 @@ def test_user_profile_setemail(clear):
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId2, token2 = auth_register("good2@email.com", "123456", "jason", "xing")
-	userId3, token3 = auth_login("good1@email.com", "123456")
+	userId3, token3 = auth_register("good3@email.com", "123456", "jason", "xing")
 	# Email not valid
 	with pytest.raises(ValueError):
 		user_profile_setemail(token1, "bademail.com")

@@ -58,16 +58,22 @@ class User:
         return self._owner_channels
     
     def add_channel(self, channel_id):
-        global channels
-        self._channels[channel_id] = channels[channel_id]
+        self._channels.add(channel_id)
 
     def add_admin_channel(self,  channel_id):
-        global channels
-        self._admin_channels[channel_id] = channels[channel_id]
+        self._admin_channels.add(channel_id)
 
     def add_owner_channel(self,  channel_id):
-        global channels
-        self._owner_channels[channel_id] = channels[channel_id]
+        self._owner_channels.add(channel_id)
+    
+    def remove_channel(self, channel_id):
+        self._channels.discard(channel_id)
+
+    def remove_admin_channel(self,  channel_id):
+        self._admin_channels.discard(channel_id)
+
+    def remove_owner_channel(self,  channel_id):
+        self._owner_channels.discard(channel_id)
 
     def get_handle_str(self):
         return self._handle_str
