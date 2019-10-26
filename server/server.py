@@ -67,12 +67,12 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
 
 def tokcheck(token):
-    payload = jwt.decode(token.encode("utf_8"), private_key)
+    payload = jwt.decode(token, private_key)
     return payload["u_id"]
 
 def maketok(u_id):
     payload = {"u_id": u_id, "time" : str(datetime.now())}
-    return jwt.decode(payload, private_key)
+    return jwt.encode(payload, private_key)
 
 
 
