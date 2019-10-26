@@ -65,14 +65,21 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         raise AccessError(f"auth: User {u_id} is not admin")
 
 
-
 def tokcheck(token):
+<<<<<<< HEAD
     payload = jwt.decode(token, private_key)
+=======
+    payload = jwt.decode(token.encode("utf-8"), private_key)
+>>>>>>> aa3b082c6aeef2fe4a2004f24d656164b4fdf389
     return payload["u_id"]
 
 def maketok(u_id):
     payload = {"u_id": u_id, "time" : str(datetime.now())}
+<<<<<<< HEAD
     return jwt.encode(payload, private_key)
+=======
+    return jwt.encode(payload, private_key).decode("utf-8")
+>>>>>>> aa3b082c6aeef2fe4a2004f24d656164b4fdf389
 
 
 
