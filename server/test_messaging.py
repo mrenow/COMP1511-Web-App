@@ -4,12 +4,18 @@ from datetime import datetime, timedelta
 from server.AccessError import AccessError
 from server.server import *
 
+@pytest.fixture
+def clear():
+    reset()
+
 # for index < 50
 def get_message_id(token, channel, index):
     return channel_messages(token, channel, start = 0)["messages"][index]["message_id"]
 
-# Creates an environment where a user and admin are members of a channel
+# Creates an environment
 def message_env():
+    global users, channels, messages
+    print(users, channels, messages)
     auth_response = auth_register("admin@email.com", "adminpass", "first", "last")
     admintok, admin = auth_response["token"], auth_response["u_id"]
     
@@ -61,7 +67,7 @@ def assert_message(token, channel, messages, users, start = 0):
         assert curr["time_created"] <= nxt["time_created"]
 
 # Tests that the correct number of messages is displayed
-def test_channel_messages():
+def test_channel_messages(clear):
     admintok, admin, usertok, user, channel = message_env()
     for _ in range(50):
         message_send(usertok, channel, "SPAM")
@@ -85,7 +91,7 @@ def test_channel_messages():
     with pytetest_st.raises(ValueError):
         channel_messages(admintok, channel, start = 101)
 
-def test_message_limit_test():
+def test_message_limit_test(clear):
     admintok, admin, usertok, user, channel = message_env()
 
     # Send is valid
@@ -103,7 +109,7 @@ def test_message_limit_test():
     
 
 # Tests message order, user id on message
-def test_send_test():
+def test_send_test(clear):
     admintok, admin, usertok, user, channel = message_env()
 
     message_send(usertok, channel, "testing")
@@ -128,7 +134,7 @@ def test_send_test():
     
 
 # Tests message order on send later
-def test_send_later_test():
+def test_send_later_test(clear):
     admintok, admin, usertok, user, channel = message_env()
     user1tok, user1 = extra_member_env(1)
 
@@ -156,7 +162,7 @@ def test_send_later_test():
     with pytest.raises(AccessError):
         message_sendlater(user1tok, channel, "can i have mod", ms_offset(100))
 
-def test_edit_message_test():
+def test_edit_message_test(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
     user1tok, user1 = extra_member_env(1)
@@ -215,7 +221,7 @@ def test_edit_message_test():
     
 #assert_message(admintok, channel, ["0","1","2","3","4","5","6","7","8"],  [owner]*3 + [user]*3 + [admin]*3)
     
-def test_remove_message_test():
+def test_remove_message_test(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
     user1tok, user1 = extra_member_env(1)
@@ -264,7 +270,7 @@ def test_remove_message_test():
     # Assert removes did not go through
     assert_message(admintok, channel, ["0","2","3","4","5","7","8"], [owner]*2 + [user]*3 + [admin]*2)
 
-def test_pin_test():
+def test_pin_test(clear):
     admintok, admin, usertok, user, channel = message_env()
     message_send(usertok, channel, "ello")
 
@@ -290,7 +296,7 @@ def test_pin_test():
         message_pin(admintok, get_message_id(admintok, channel, 0))
 
 # To consider: how should remove, edit, etc function within a standup
-def test_standup_test():
+def test_standup_test(clear):
     admintok, admin, usertok, user, channel = message_env()
     channel_leave(admintok, channel)
     

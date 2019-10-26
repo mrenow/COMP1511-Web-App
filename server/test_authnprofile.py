@@ -4,7 +4,13 @@ import pytest
 from server.AccessError import AccessError
 from server.server import *
 
-def test_auth_login():
+
+@pytest.fixture
+def clear():
+	reset()
+
+
+def test_auth_login(clear):
 	# Set up
 	userId1, token1 = auth_register("good@email.com", "123456", "jason", "xing")
 	userId2, token2 = auth_register("good1@email.com", "54321", "jason", "xing")
@@ -19,11 +25,11 @@ def test_auth_login():
 		userId2, token2 = auth_login("good1@email.com", "54321X")
 
 	
-def test_auth_logout():
+def test_auth_logout(clear):
 	# See user profile section
     pass
 
-def test_auth_register():
+def test_auth_register(clear):
 	# Edge Case
     userId, token = auth_register("good@email.com", "123456", "0"*50, "0"*50)
 	# Bad email 
@@ -43,7 +49,7 @@ def test_auth_register():
         userId6, token6 = auth_register("good@email.com", "123456", "jason", "xing")
         
 
-def test_auth_passwordreset_request():
+def test_auth_passwordreset_request(clear):
 	# Set up
     userId1, token1 = auth_register("good@email.com", "123456", "jason", "xing")
 	# Can't access email so no tests
@@ -54,7 +60,7 @@ def test_auth_passwordreset_reset():
 	with pytest.raises(ValueError):
 		auth_passwordreset_reset("123456", "123X")
 
-def test_user_profile():
+def test_user_profile(clear):
 	# Set up
 	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId2, token2 = auth_login("good1@email.com", "123456")
@@ -66,7 +72,7 @@ def test_user_profile():
 	with pytest.raises(AccessError):
 		user_profile(token2, userId2)
 
-def test_user_profile_setname():
+def test_user_profile_setname(clear):
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId2, token2 = auth_login("good1@email.com", "123456")
@@ -81,7 +87,7 @@ def test_user_profile_setname():
 	with pytest.raises(AccessError):
 		user_profile_setname(token1, "jason", "xing")
 	
-def test_user_profile_setemail():
+def test_user_profile_setemail(clear):
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId2, token2 = auth_register("good2@email.com", "123456", "jason", "xing")
@@ -97,7 +103,7 @@ def test_user_profile_setemail():
 	with pytest.raises(AccessError):
 		user_profile_setname(token3, "jasonxing@email.com", "Jyden")
 	
-def test_user_profile_sethandle():
+def test_user_profile_sethandle(clear):
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId2, token2 = auth_login("good1@email.com", "123456")
@@ -111,7 +117,7 @@ def test_user_profile_sethandle():
 	with pytest.raises(AccessError):
 		user_profile_sethandle(token1, "jason")
 
-def test_user_profiles_uploadphoto():
+def test_user_profiles_uploadphoto(clear):
     # Set up
 	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId2, token2 = auth_login("good1@email.com", "123456")

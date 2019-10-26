@@ -25,6 +25,14 @@ from server.AccessError import AccessError
 private_key = "secure password"
 
 
+def reset():
+    global users, channels, messages
+    users = {} # u_id: user obj
+    channels = {} # chann
+    messages = {} # message_id: message obj
+    print(users,channels, messages)
+
+
 '''
 Raises an Access error if all of the conditions specified are not met.
 Usage:
@@ -111,6 +119,7 @@ def auth_register(email, password, name_first, name_last):
     else:
         # Check if email is used by another user
         global users
+        print("users:", users)
         for user in users.values():
             if user.get_email() == email:
                 raise ValueError("Email already in use")
