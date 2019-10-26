@@ -12,6 +12,22 @@ users = {} # u_id: user obj
 channels = {} # chann
 messages = {} # message_id: message obj
 
+num_messages = 0
+user_count = 0
+num_channels = 0
+
+def inc_users():
+    global user_count
+    user_count += 1
+
+def inc_channels():
+    global num_channels
+    num_channels += 1
+
+def inc_messages():
+    global num_messages
+    num_messages += 1
+
 import re # used for checking email formating
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 
@@ -25,12 +41,17 @@ from server.AccessError import AccessError
 private_key = "secure password"
 
 
+
 def reset():
-    global users, channels, messages
+    global users, channels, messages, num_messages, num_channels, user_count
     users = {} # u_id: user obj
     channels = {} # chann
     messages = {} # message_id: message obj
-    print(users,channels, messages)
+    num_messages = 0
+    num_channels = 0
+    user_count = 0
+    
+    print(users,channels, messages, num_messages, num_channels, user_count)
 
 
 '''
@@ -66,12 +87,12 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
 
 def tokcheck(token):
-    payload = jwt.decode(token.encode("utf-8"), private_key)
+    payload = jwt.decode(token, private_key, algorithms= ["HS256"])
     return payload["u_id"]
 
 def maketok(u_id):
     payload = {"u_id": u_id, "time" : str(datetime.now())}
-    return jwt.encode(payload, private_key).decode("utf-8")
+    return jwt.encode(payload, private_key, algorithm= "HS256")
 
 
 

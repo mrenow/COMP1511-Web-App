@@ -1,5 +1,5 @@
-from server.server import channels, users, OWNER, ADMIN, MEMBER
-user_count = 0
+from server.server import channels, users, OWNER, ADMIN, MEMBER, user_count
+
 
 class User:
 
@@ -21,7 +21,7 @@ class User:
         self._owner_channels = set()
         users[self._u_id] = self
         user_count += 1
-        
+
 
     def get_id(self):
         return self._u_id

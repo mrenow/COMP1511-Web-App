@@ -1,6 +1,6 @@
 from datetime import datetime
 from .messages import Message
-channel_id = 0
+from server.server import num_channels, inc_channels
 
 '''
 get_channels
@@ -9,19 +9,19 @@ get_channels
 
 class Channel:
     def __init__(self, name, owner, is_private):
-        global channel_id
+        global num_channels
         global users
         global channels
         self.name = name
         self.owners = set([owner])
         self.members = set()
         self.is_private = is_private
-        self.id = channel_id
-        channel_id += 1 
+        self.id = num_channels
         
         self.message_list = []
         channels[self.id] = self
         users[owner].get_channels().add(self.id)
+        inc_channels()
 
 
     #messages(text,channel,time)
