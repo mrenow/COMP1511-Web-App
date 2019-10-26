@@ -84,18 +84,22 @@ TEST_VALID_REACT = 0
 
 def auth_login(email, password):
     global users
-    #Check in users if email exists then try to match the pw
-    for user in users:
-        if user["email"] == email:
-            if user["password"] == password:
-                token = maketok(user["u_id"])
+    global regex
+    # Check if email entered is in correct format
+    if(not re.search(regex,email)):
+        raise ValueError("Invalid Email Address")
+    # Check in users if email exists then try to match the pw
+    for user in users.values:
+        if user._email == email:
+            if user._password == password:
+                token = maketok(user._u_id)
                 return token
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")        
 
     return {}
-def auth_logout(token):
-
+def auth_log out(token):
+    
     return {}
 def auth_register(email, password, name_first, name_last):
     # Check if email is good
