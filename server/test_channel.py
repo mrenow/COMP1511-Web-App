@@ -20,16 +20,16 @@ def test_admin_userpermission_change(clear):
     token2 = login2["token"]
 
     with pytest.raises(AccessError):
-        admin_userpermission_change(token2, userID, permissions[0])
+        admin_userpermission_change(token2, userID, ADMIN)
     with pytest.raises(ValueError):
-        admin_userpermission_change(token2, userID, 123456)
+        admin_userpermission_change(token, userID2, 123456)
     with pytest.raises(ValueError):
-        admin_userpermission_change(token2, 123456, permissions[0])
+        admin_userpermission_change(token, 123456, MEMBER)
 
-    admin_userpermission_change(token, userID2, permissions[1])
+    admin_userpermission_change(token, userID2, ADMIN)
     channel_1 = channels_create(token2, "channel1", True)
 
-    admin_userpermission_change(token2, userID, permissions[2])
+    admin_userpermission_change(token, userID2, MEMBER)
     with pytest.raises(AccessError):
         channel_1 = channels_create(token2, "channel1", True)
 
