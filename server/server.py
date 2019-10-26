@@ -16,6 +16,18 @@ num_messages = 0
 user_count = 0
 num_channels = 0
 
+def add_channel(u_id, channel_id):
+    global channels
+    self._channels[channel_id] = channels[channel_id]
+
+def add_admin_channel(u_id,  channel_id):
+    global channels
+    self._admin_channels[channel_id] = channels[channel_id]
+
+def add_owner_channel(u_id,  channel_id):
+    global channels
+    self._owner_channels[channel_id] = channels[channel_id]
+
 def inc_users():
     global user_count
     user_count += 1
