@@ -68,8 +68,8 @@ def test_user_profile():
 
 def test_user_profile_setname():
     # Set up
-	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
-	userId2, token2 = auth_login("good1@email.com", "123456")
+	userId1, token1 = auth_register("good3@email.com", "123456", "jason", "xing")
+	userId2, token2 = auth_login("good3@email.com", "123456")
 	# Invalid first name
 	with pytest.raises(ValueError):
 		user_profile_setname(token1, "0"*51, "xing")
@@ -99,8 +99,8 @@ def test_user_profile_setemail():
 	
 def test_user_profile_sethandle():
     # Set up
-	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
-	userId2, token2 = auth_login("good1@email.com", "123456")
+	userId1, token1 = auth_register("good9@email.com", "123456", "jason", "xing")
+	
 	# Edge case
 	user_profile_sethandle(token1, "0"*20)
 	# Handle is too long

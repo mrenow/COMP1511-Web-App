@@ -92,9 +92,9 @@ def auth_login(email, password):
     global users
     #Check in users if email exists then try to match the pw
     for user in users.values():
-        if user.email() == email:
-            if user.password() == password:
-                token = maketok(user.u_id())
+        if user._email == email:
+            if user._password == password:
+                token = maketok(user._u_id)
                 return token
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")
