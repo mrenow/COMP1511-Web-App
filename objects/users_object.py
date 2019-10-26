@@ -1,10 +1,9 @@
-from server.server import channels, users, OWNER, ADMIN, MEMBER, user_count
+from server.server import channels, users, OWNER, ADMIN, MEMBER, user_count, inc_users
 
 
 class User:
 
     def __init__(self, name_first, name_last, email, password):
-        global user_count
         self._u_id = user_count
         self._password = password
         self._name_first = name_first
@@ -19,8 +18,7 @@ class User:
         self._channels = set()
         self._admin_channels = set()
         self._owner_channels = set()
-        users[self._u_id] = self
-        user_count += 1
+        inc_users()
 
 
     def get_id(self):

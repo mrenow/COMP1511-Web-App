@@ -18,8 +18,10 @@ class Message:
         self._message_id = num_messages
         self._is_pinned = False
         self._reacts = {} # Dictionary of react id: react object.
-        inc_messages()
+
         messages[self._u_id] = self 
+        inc_messages()
+        
 
     
     def get_time(self):
