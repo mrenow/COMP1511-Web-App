@@ -123,7 +123,7 @@ def auth_login(email, password):
         if user._email == email:
             if user._password == password:
                 token = maketok(user._u_id)
-                return token
+                return token, user._u_id
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")
 
