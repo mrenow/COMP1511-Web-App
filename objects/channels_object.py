@@ -9,9 +9,6 @@ get_channels
 
 class Channel:
     def __init__(self, name, owner, is_private):
-        global num_channels
-        global users
-        global channels
         self.name = name
         self.owners = set([owner])
         self.members = set()
@@ -19,8 +16,7 @@ class Channel:
         self.id = num_channels
         
         self.message_list = []
-        channels[self.id] = self
-        users[owner].get_channels().add(self.id)
+        
         inc_channels()
 
 

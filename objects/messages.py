@@ -7,7 +7,6 @@ MAX_LEN = 1000
 class Message:
 
     def __init__(self, text, channel, sender, time = datetime.now()):
-        global num_messages, messages
         if MAX_LEN < text:
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         self._message = text
