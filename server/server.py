@@ -95,7 +95,6 @@ def maketok(u_id):
     return jwt.encode(payload, private_key, algorithm= "HS256")
 
 
-
 TEST_OWNER_EMAIL = "TODO"
 TEST_OWNER_PASSWORD = "TODO"
 TEST_CHANNEL_EMAIL = "TODO"
