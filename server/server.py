@@ -29,6 +29,12 @@ def inc_messages():
     global num_messages
     num_messages += 1
 
+def add_message(mess):
+    messages[mess.get_id()] = mess
+
+def del_message(mess):
+    del messages[mess.get_id()]
+
 import re # used for checking email formating
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 
@@ -214,6 +220,7 @@ def channel_join(token, channel_id):
         raise ValueError((f"channel_invite: Channel does not exist."))
     channels[channel_id].join(requester)
     return {}
+
 def channel_addowner(token, channel_id, u_id):
     requester = tokcheck(token)
     if channel_id not in channels:
@@ -264,7 +271,7 @@ def channels_create(token, name, is_public):
     users[u_id].get_channels().add(obj.get_id())
     channels[obj.get_id()] = obj
     
-    return {obj.get_id()}
+    return {"channel_id": obj.get_id()}
 
 '''
 Added to the specification.
@@ -461,3 +468,5 @@ def admin_userpermission_change(token, u_id, permission_id):
         raise ValueError("Permission ID not valid")
     users[u_id].set_permission(permission_id)
     return {}
+
+
