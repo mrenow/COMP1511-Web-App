@@ -74,7 +74,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
     if user != None and user == u_id:
         auth = True
-    if channel != None and channel in users[user].get_channels():
+    if channel != None and channel in users[u_id].get_channels():
         auth = True
     if chowner != None and user in channels[chowner].get_owners():
         auth = True
@@ -292,6 +292,8 @@ def message_sendlater(token, channel_id, message, time_sent):
 Ezra: done
 '''
 def message_send(token, channel_id, message): 
+    if len(message) > 1000:
+        raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
     channels[channel_id].send_message(u_id, message)
@@ -713,7 +715,7 @@ class Channel:
     
     def join(self, u_id):
         self.members.add(u_id) 
-        users[u_id].get_channels.add(self.id) 
+        users[u_id].get_channels().add(self.id) 
 
     def details(self):
         owner_members = []
