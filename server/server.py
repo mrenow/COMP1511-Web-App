@@ -28,6 +28,7 @@ Only allow if is ( owner of channel or admin or particular user ) and in channel
 >>> authcheck(u_id, user = particular_u_id, chowner = channel_id,  admin = True)
 >>> authcheck(u_id, user = channel_id) 
 '''
+
 def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
     auth = False 
 
@@ -56,6 +57,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 def tokcheck(token):
     payload = jwt.decode(token.decode("utf_8"), private_key)
     return payload["u_id"]
+    
 def maketok(u_id):
     payload = {"u_id": u_id, "time" : str(datetime.now())}
     return jwt.encode(payload, private_key)
