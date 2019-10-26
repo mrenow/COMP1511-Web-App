@@ -11,7 +11,7 @@ class User:
         self._name_last = name_last
         self._email = email
         if user_count == 0:
-            self._permission_id = ADMIN
+            self._permission_id = OWNER
         else:
             self._permission_id = MEMBER
         self._handle_str = name_first + name_last
@@ -21,6 +21,7 @@ class User:
         self._owner_channels = set()
         users[self._u_id] = self
         user_count += 1
+        
 
     def get_id(self):
         return self._u_id
