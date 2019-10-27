@@ -76,6 +76,19 @@ def reset():
     
     print(users,channels, messages, num_messages, num_channels, user_count)
 
+def check_message_exists(message_id):
+    global messages
+    if message_id not in messages:
+        raise ValueError(f"Message {message} does not exist.")
+def check_channel_exists(channel_id):
+    global channels
+    if channel_id not in channels:
+        raise ValueError(f"Channel {channel_id} does not exist.")
+def check_user_exists(user_id):
+    global users
+    if user_id not in users:
+        raise ValueError(f"User {user_id} does not exist")
+
 '''
 Raises an Access error if all of the conditions specified are not met.
 Usage:
@@ -108,6 +121,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         raise AccessError(f"auth: User {u_id} is not admin")
 
 
+
 def tokcheck(token):
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
@@ -131,7 +145,6 @@ def killtok(token):
         valid_toks.remove(payload["tok_id"])
         return True
     return False
-
 
 
 TEST_OWNER_EMAIL = "TODO"
@@ -168,7 +181,6 @@ def auth_login(email, password):
     return {}
 def auth_logout(token):
     killtok(token)
-    return True
     return {}
 def auth_register(email, password, name_first, name_last):
     # Check if email is good
@@ -319,6 +331,9 @@ def channels_delete(token, channel_id):
     
     return {}
 
+
+
+
 def message_sendlater(token, channel_id, message, time_sent):
     
     return {}
@@ -327,7 +342,11 @@ def message_sendlater(token, channel_id, message, time_sent):
 '''
 Ezra: done
 '''
-def message_send(token, channel_id, message): 
+def message_send(token, channel_id, message):
+    global channels, messages
+    check_channel_exists(channel_id)
+    if channel_id not in channels:
+        raise
     if len(message) > 1000:
         raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
@@ -340,6 +359,7 @@ def message_send(token, channel_id, message):
 Ezra: done 
 '''
 def message_remove(token, message_id):
+    check_message_exists(message_id)
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_id())
@@ -352,6 +372,7 @@ def message_remove(token, message_id):
 Ezra: done 
 '''
 def message_edit(token, message_id, message):
+    check_message_exists(message_id)
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_id())
@@ -362,7 +383,8 @@ def message_edit(token, message_id, message):
 '''
 Ezra: done 
 '''
-def message_react(token, message_id, react_id): 
+def message_react(token, message_id, react_id):
+    check_message_exists(message_id) 
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_id())
@@ -377,6 +399,7 @@ def message_react(token, message_id, react_id):
 Ezra: done 
 '''
 def message_unreact(token, message_id, react_id):
+    check_message_exists(message_id)
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_id())
@@ -394,7 +417,9 @@ def message_unreact(token, message_id, react_id):
 '''
 Ezra: done 
 '''
-def message_pin(token, message_id):        
+def message_pin(token, message_id):
+
+    check_message_exists(message_id)
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, chowner = mess.get_channel(), admin = True)
@@ -408,7 +433,8 @@ def message_pin(token, message_id):
 '''
 Ezra: done 
 '''
-def message_unpin(token, message_id):   
+def message_unpin(token, message_id):
+    check_message_exists(message_id)
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, chowner = mess.get_channel(), admin = True)
@@ -419,6 +445,7 @@ def message_unpin(token, message_id):
     
     return {}
 def user_profile(token, u_id):
+    
     # Check for authorisation
     user_id = tokcheck(token)
     authcheck(user_id)
@@ -486,7 +513,6 @@ def user_profile_sethandle(token, handle_str):
             raise ValueError("Handle name already in use")
     get_users()[user_id].set_handle_str(handle_str)
     
-
     return {}
 
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
