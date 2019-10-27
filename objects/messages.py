@@ -45,7 +45,7 @@ class Message:
 
     def remove(self):
         get_channels()[self._channel_id].delete_message(self._message_id)
-        del get_messages[self._message_id]
+        del get_messages()[self._message_id]
 
     def set_pin(self, pin):
         self._is_pinned = pin

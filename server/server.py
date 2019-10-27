@@ -216,7 +216,7 @@ def channel_messages(token, channel_id, start):
         raise AccessError((f"auth: User is not a member of this channel"))
     
 
-    return dict(message  = channels[channel_id].channel_messages(start),
+    return dict(messages = channels[channel_id].channel_messages(start, requester),
             start = - start - 1,
             end = start -51)
 

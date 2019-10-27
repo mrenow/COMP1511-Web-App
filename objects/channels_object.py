@@ -28,9 +28,10 @@ class Channel:
     def get_name(self):
         return self.name
     
-    def get_owner(self):
+    def get_owners(self):
         return self.owners
-
+    def get_members(self):
+        return self.members
     def get_is_private(self):
         return self.is_private
 
@@ -42,8 +43,8 @@ class Channel:
         self.message_list.append(curr_message)
         return curr_message.get_id()
         
-    def channel_messages(self, num):
-        return self.message_list[::-1]
+    def channel_messages(self, start, user):
+        return [mess.to_json(user) for mess in self.message_list[-start-1:-start-51:-1]]
 
     def delete_message(self, message_id):
         # Raises value if messages_id is not in list.
@@ -51,7 +52,7 @@ class Channel:
     
     def join(self, u_id):
         self.members.add(u_id)
-        get_users()[u_id].get_channels.add(self.id) 
+        get_users()[u_id].get_channels().add(self.id) 
 
     def details(self):
         owner_members = []
@@ -82,7 +83,7 @@ class Channel:
 
     def add_owner(self, u_id):
         self.owners.add(u_id)          
-        get_users()[u_id].get_owners().add(self.id)
+        get_users()[u_id].get_channels().add(self.id)
 
     def remove_owner(self, u_id):
         self.owners.discard(u_id)
