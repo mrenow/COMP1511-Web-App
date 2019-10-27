@@ -111,12 +111,12 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 def tokcheck(token):
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
-    if payload["tok_id"] in valid_toks == True:
+    if payload["tok_id"] in valid_toks:
         return payload["u_id"]
     raise ValueError("Invalid Token")
 
 def maketok(u_id):
-    global tokcount
+    global tokcount 
     global valid_toks
     payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now())}
     valid_toks.add(tokcount)
