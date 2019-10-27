@@ -1,11 +1,11 @@
-#Assurance
+# Assurance
 
 Provide assurances that your backend implementation is fit for purpose. Consider both verification and validation when doing this. This will, at a minimum, require acceptance criteria for your user stories.
 
 
 Briefly describe the strategies you followed and tools you used to achieve this in assurance.md.
 
-##Quality Assurance
+## Quality Assurance
 
 Whilst developing the backend implementation for slackr, our team has included many strategies in which would provide assurance that our program is fit for its purpose. These include utilizing pylint, black box testing, code coverage and finally assurance tests based on user stories
 
@@ -17,7 +17,7 @@ All tests written in the Black box testing are then tested with code coverage to
 
 We have also checked each other’s works and ask other members for verification when someone’s code is interacting with another’s, while also looking for each other’s mistake before pushing.
 
-##Assurance Tests
+## Assurance Tests
 
 Written basic assurance tests to check off if a particular capability is implemented.
 
