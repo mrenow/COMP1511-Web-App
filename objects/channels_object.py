@@ -18,7 +18,6 @@ class Channel:
         get_channels()[self.id] = self
         get_users()[owner].get_channels().add(self.id)
         get_users()[owner].get_owner_channels().add(self.id)
-        print(owner, get_users()[owner].get_channels())
         inc_channels()
 
     def set_name(self, name):
