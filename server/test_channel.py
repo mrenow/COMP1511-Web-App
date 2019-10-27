@@ -138,8 +138,6 @@ def test_channel_leave(clear):
     boomer = False
     zoomer = False
     for x in channel1_details["members"]:
-        print("users is")
-        print(x["u_id"])
         if x["u_id"] == userID:
             boomer = True
     assert boomer == True
@@ -148,8 +146,6 @@ def test_channel_leave(clear):
         if x["u_id"] == userID2:
             zoomer = True
     assert zoomer == True
-    #assert channel1_details["members"][0]["u_id"] == userID
-    #assert channel1_details["members"][1]["u_id"] == userID2
 
     #checks if user successfully left
     channel_leave(token2, channel_1["channel_id"])
@@ -173,17 +169,26 @@ def test_channel_invite(clear):
     token3 = login3["token"]
 
     #checks if ValueError raised if non-member attempts to invite
-    with pytest.raises(ValueError):
-        channel_invite(token2, channel_1, userID3)
+    with pytest.raises(AccessError):
+        channel_invite(token2, channel_1["channel_id"], userID3)
     #checks if invite successful
-    channel_invite(token, channel_1, userID2)
-    channel1_details = channel_details(token, channel_1)
-    assert channel1_details["all_members"][0]["u_id"] == userID
-    assert channel1_details["all_members"][1]["u_id"] == userID2
+    channel_invite(token, channel_1["channel_id"], userID2)
+    channel1_details = channel_details(token, channel_1["channel_id"])
+    boomer = False
+    zoomer = False
+    for x in channel1_details["members"]:
+        if x["u_id"] == userID:
+            boomer = True
+    assert boomer == True
+
+    for x in channel1_details["members"]:
+        if x["u_id"] == userID2:
+            zoomer = True
+    assert zoomer == True
 
     #checks if user2, now a member can invite user3
-    channel_invite(token2, channel_1, userID3)
-    channel1_details = channel_details(token, channel_1)
+    channel_invite(token2, channel_1["channel_id"], userID3)
+    channel1_details = channel_details(token, channel_1["channel_id"])
     assert channel1_details["all_members"][0]["u_id"] == userID
     assert channel1_details["all_members"][1]["u_id"] == userID2
     assert channel1_details["all_members"][2]["u_id"] == userID3
