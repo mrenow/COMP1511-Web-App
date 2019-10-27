@@ -24,7 +24,6 @@ def test_auth_login(clear):
 	with pytest.raises(ValueError):
 		userId2, token2 = auth_login("good1@email.com", "654321X")
 
-	
 def test_auth_logout(clear):
 	# See user profile section
     pass
@@ -62,20 +61,28 @@ def test_auth_passwordreset_reset():
 
 def test_user_profile(clear):
 	# Set up
-	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
-	userId2, token2 = auth_login("good1@email.com", "123456")
+	login1 = auth_register("good1@email.com", "123456", "jason", "xing")
+	userId1 = login1["u_id"]
+	token1 = login1["token"]
+	login2 = auth_login("good1@email.com", "123456")
+	userId2 = login2["u_id"]
+	token2 = login2["token"]
 	# Not a valid user
 	with pytest.raises(ValueError):
 		user_profile(token1, userId2)
 	# Check token is invalid (login token)
 	auth_logout(token2)
-	with pytest.raises(AccessError):
+	with pytest.raises(ValueError):
 		user_profile(token2, userId2)
 
 def test_user_profile_setname(clear):
     # Set up
-	userId1, token1 = auth_register("good3@email.com", "123456", "jason", "xing")
-	userId2, token2 = auth_login("good3@email.com", "123456")
+	login1 = auth_register("good1@email.com", "123456", "jason", "xing")
+	userId1 = login1["u_id"]
+	token1 = login1["token"]
+	login2 = auth_register("good2@email.com", "123456", "jason", "xing")
+	userId2 = login2["u_id"]
+	token2 = login2["token"]
 	# Invalid first name
 	with pytest.raises(ValueError):
 		user_profile_setname(token1, "0"*51, "xing")
@@ -84,14 +91,20 @@ def test_user_profile_setname(clear):
 		user_profile_setname(token1, "jason", "0"*51)
 	# Check token is invalid (register token)
 	auth_logout(token1)
-	with pytest.raises(AccessError):
+	with pytest.raises(ValueError):
 		user_profile_setname(token1, "jason", "xing")
 	
 def test_user_profile_setemail(clear):
     # Set up
-	userId1, token1 = auth_register("good1@email.com", "123456", "jason", "xing")
-	userId2, token2 = auth_register("good2@email.com", "123456", "jason", "xing")
-	userId3, token3 = auth_register("good3@email.com", "123456", "jason", "xing")
+	login1 = auth_register("good1@email.com", "123456", "jason", "xing")
+	userId1 = login1["u_id"]
+	token1 = login1["token"]
+	login2 = auth_register("good2@email.com", "123456", "jason", "xing")
+	userId2 = login2["u_id"]
+	token2 = login2["token"]
+	login3 = auth_register("good3@email.com", "123456", "jason", "xing")
+	userId3 = login3["u_id"]
+	token3 = login3["token"]
 	# Email not valid
 	with pytest.raises(ValueError):
 		user_profile_setemail(token1, "bademail.com")
@@ -100,7 +113,7 @@ def test_user_profile_setemail(clear):
 		user_profile_setemail(token1, "good2@email.com")
 	# Check token is invalid (login token)
 	auth_logout(token3)
-	with pytest.raises(AccessError):
+	with pytest.raises(ValueError):
 		user_profile_setname(token3, "jasonxing@email.com", "Jyden")
 	
 def test_user_profile_sethandle(clear):
@@ -115,11 +128,10 @@ def test_user_profile_sethandle(clear):
 	with pytest.raises(ValueError):
 		user_profile_sethandle(token1, "0"*21)
 	# Check token is valid (register token)
-	'''
 	auth_logout(token1)
-	with pytest.raises(AccessError):
+	with pytest.raises(ValueError):
 		user_profile_sethandle(token1, "jason")
-	'''
+
 def test_user_profiles_uploadphoto(clear):
     # Set up
 	login = auth_register("good1@email.com", "123456", "jason", "xing")
