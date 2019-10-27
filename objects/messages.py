@@ -12,7 +12,7 @@ class Message:
         self._u_id = sender
         self._channel_id = channel
         self._time_created = time
-        self._is_sent = time <= datetime.now()
+        self._is_sent = False # Set to true by channel
         self._message_id = get_num_messages()
         self._is_pinned = False
         self._reacts = {} # Dictinum_messagesonary of react id: react object.
@@ -39,6 +39,9 @@ class Message:
     
     def is_sent(self):
         return self._is_sent
+
+    def send(self):
+        self._is_sent = True
 
     def is_pinned(self):
         return self._is_pinned

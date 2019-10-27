@@ -42,17 +42,20 @@ class Channel:
     def get_num_messages(self):
         return len(self.message_list)
     
-    def send_message(self, text, sender):
-        curr_message = Message(text, self.id, sender)
-        self.message_list.append(curr_message)
-        return curr_message.get_id()
-        
+    def send_message(self, message_obj):
+        self.message_list.append(message_obj)
+        return message_obj.get_id()
+    
+
     def channel_messages(self, start, user):
         return [mess.to_json(user) for mess in self.message_list[-start-1:-start-51:-1]]
 
     def delete_message(self, message_id):
-        # Raises value if messages_id is not in list.
-        self.message_list.remove(message_id)
+        for index, entry in enumerate(self.message_list):
+            if message_id == entry.get_id():
+                del self.message_list[index]
+                return
+        ValueError(f"delete_message: message {message_id} not found")
         
     def join(self, u_id):
         self.members.add(u_id)
