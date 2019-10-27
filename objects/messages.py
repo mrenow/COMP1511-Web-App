@@ -1,7 +1,6 @@
 from datetime import datetime
-from server.server import num_messages, inc_messages
+from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages
 
-# { react_id, u_ids, is_this_user_reacted } datetime
 
 MAX_LEN = 1000
 class Message:
@@ -14,11 +13,11 @@ class Message:
         self._channel_id = channel
         self._time_created = time
         self._is_sent = time <= datetime.now()
-        self._message_id = num_messages
+        self._message_id = get_num_messages()
         self._is_pinned = False
-        self._reacts = {} # Dictionary of react id: react object.
+        self._reacts = {} # Dictinum_messagesonary of react id: react object.
 
-        messages[self._u_id] = self 
+        get_messages()[self._u_id] = self 
         inc_messages()
         
 
@@ -45,8 +44,8 @@ class Message:
         return self._is_pinned
 
     def remove(self):
-        channels[self._channel_id].delete_message(self._message_id)
-        del messages[self._message_id]
+        get_channels()[self._channel_id].delete_message(self._message_id)
+        del get_messages()[self._message_id]
 
     def set_pin(self, pin):
         self._is_pinned = pin
@@ -95,4 +94,3 @@ if __name__ == "__main__":
     pass
 
 
-from server.server import messages, channels

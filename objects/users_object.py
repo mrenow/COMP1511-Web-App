@@ -1,15 +1,15 @@
-from server.server import channels, users, OWNER, ADMIN, MEMBER, user_count, inc_users
 
+from server.server import get_channels, get_users, get_num_users, inc_users, OWNER, ADMIN, MEMBER
 
 class User:
 
     def __init__(self, name_first, name_last, email, password):
-        self._u_id = user_count
+        self._u_id = get_num_users()
         self._password = password
         self._name_first = name_first
         self._name_last = name_last
         self._email = email
-        if user_count == 0:
+        if self._u_id == 0:
             self._permission_id = OWNER
         else:
             self._permission_id = MEMBER
@@ -18,6 +18,7 @@ class User:
         self._channels = set()
         self._admin_channels = set()
         self._owner_channels = set()
+        get_users()[self._u_id] = self
         inc_users()
 
 
@@ -91,5 +92,3 @@ class User:
         return dict(u_id = self._u_id, 
                     name_first = self._name_first, 
                     name_last = self._name_last)
-
-
