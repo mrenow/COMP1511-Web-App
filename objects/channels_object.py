@@ -59,13 +59,8 @@ class Channel:
         
     def join(self, u_id):
         self.members.add(u_id)
-<<<<<<< HEAD
         get_users()[u_id].get_channels().add(self.id) 
 
-=======
-        print(users)
-        users[u_id].get_channels.add(self.id) 
->>>>>>> master
 
     def details(self):
         owner_members = []
