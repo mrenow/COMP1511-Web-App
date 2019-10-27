@@ -44,23 +44,23 @@ def test_channels_create_and_list_all(clear):
     channel_1 = channels_create(token, "channel1", True)
     lst = channels_listall(token)
     assert lst["channels"][0]["name"] == "channel1"
-    assert lst["channels"][0]["id"] == channel_1
+    assert lst["channels"][0]["id"] == 0
 
     #check if channel name shown in channel details
-    channel1_details = channel_details(token, channel_1)
-    assert channel1_details["name"][0] == "channel1"
+    channel1_details = channel_details(token, channel_1["channel_id"])
+    assert channel1_details["name"] == "channel1"
     
     #check if channel is listed after creation
     channel_2 = channels_create(token, "channel2", True)
     lst = channels_listall(token)
     assert lst["channels"][0]["name"] == "channel1"
-    assert lst["channels"][0]["id"] == channel_1
+    assert lst["channels"][0]["id"] == 0
     assert lst["channels"][1]["name"] == "channel2"
-    assert lst["channels"][1]["id"] == channel_2
+    assert lst["channels"][1]["id"] == 1
 
     #check if channel name shown in channel details
-    channel2_details = channel_details(token, channel_2)
-    assert channel2_details["name"][1] == "channel2"
+    channel2_details = channel_details(token, channel_2["channel_id"])
+    assert channel2_details["name"] == "channel2"
 
     #check if ValueError raised if name is over 20 characters
     with pytest.raises(ValueError):
@@ -71,10 +71,10 @@ def test_channels_create_and_list_all(clear):
     token2 = login2["token"]
 
     #check whcih error is raised when two parameters are wrong
-    with pytest.raises(ValueError):
-        channel_3 = channels_create(token2, "channelfdahfldkajdfhlakdjfhalkdjfhlajdf", True)
     with pytest.raises(AccessError):
-        channel_3 = channels_create(token2, "channelf2", True)
+        channel_3 = channels_create(token2, "channelfdahfldkajdfhlakdjfhalkdjfhlajdf", True)
+    with pytest.raises(ValueError):
+        channel_3 = channels_create(token, "channelf2adlfkj;adlkfj;dlsakj;akdsf", True)
     
 #parts of channel_detail tested
 def test_channel_join(clear):

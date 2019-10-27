@@ -10,14 +10,15 @@ class Channel:
     def __init__(self, name, owner, is_private):
         self.name = name
         self.owners = set([owner])
-        self.members = set()
+        self.members = set([owner])
         self.is_private = is_private
         self.id = get_num_channels()
         
         self.message_list = []
         get_channels()[self.id] = self
         inc_channels()
-
+        get_users()[owner].get_channels().add(self.id)
+        get_users()[owner].get_owner_channels().add(self.id)
 
     def set_name(self, name):
         self.name = name
@@ -60,15 +61,14 @@ class Channel:
             d = dict(u_id = x,
             first_name = get_users()[x].get_name_first(),
             last_name = get_users()[x].get_name_last())
-            owner_members.append()
+            owner_members.append(d)
         
         members = []
         for x in self.members:
             d = dict(u_id = x,
             first_name = get_users()[x].get_name_first(),
             last_name = get_users()[x].get_name_last())   
-        members = []
-        members.append()
+        members.append(d)
         details = dict( name = self.name,
                         owner_members = owner_members,
                         members = members)
@@ -84,6 +84,7 @@ class Channel:
     def add_owner(self, u_id):
         self.owners.add(u_id)          
         get_users()[u_id].get_channels().add(self.id)
+        self.join(u_id)
 
     def remove_owner(self, u_id):
         self.owners.discard(u_id)
