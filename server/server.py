@@ -309,7 +309,7 @@ def channels_listall(token):
     
     return {"channels": channels_list}
 
-def channels_create(token, name, is_public):
+def channels_create(token, name, is_private):
     u_id = tokcheck(token)
     authcheck(u_id, admin = True)
     if len(name) > 20:
@@ -317,7 +317,7 @@ def channels_create(token, name, is_public):
     
 
     global channels
-    obj = Channel(name, u_id, is_public)
+    obj = Channel(name, u_id, is_private)
     users[u_id].get_channels().add(obj.get_id())
     channels[obj.get_id()] = obj
     
