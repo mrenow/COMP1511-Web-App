@@ -21,7 +21,6 @@ valid_toks = set()
 def inc_users():
     global user_count
     user_count += 1
-    print("user", user_count)
 
 def inc_channels():
     global num_channels
@@ -30,6 +29,7 @@ def inc_channels():
 def inc_messages():
     global num_messages
     num_messages += 1
+
 def get_num_messages():
     global num_messages
     return num_messages
@@ -74,7 +74,18 @@ def reset():
     num_channels = 0
     user_count = 0
     
-    print(users,channels, messages, num_messages, num_channels, user_count)
+def check_message_exists(message_id):
+    global messages
+    if message_id not in messages:
+        raise ValueError(f"Message {message_id} does not exist.")
+def check_channel_exists(channel_id):
+    global channels
+    if channel_id not in channels:
+        raise ValueError(f"Channel {channel_id} does not exist.")
+def check_user_exists(user_id):
+    global users
+    if user_id not in users:
+        raise ValueError(f"User {user_id} does not exist")
 
 '''
 Raises an Access error if all of the conditions specified are not met.
@@ -91,7 +102,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         auth = True
     if channel != None and channel in users[u_id].get_channels():
         auth = True
-    if chowner != None and user in channels[chowner].get_owners():
+    if chowner != None and u_id in channels[chowner].get_owners():
         auth = True
     if admin and users[u_id].get_permission() in (OWNER,ADMIN): 
         auth = True
@@ -229,15 +240,17 @@ def channel_details(token, channel_id):
 
 def channel_messages(token, channel_id, start):
     requester = tokcheck(token)
-    if channel_id not in channels:
-        raise ValueError((f"Channel does not exist."))
+    check_channel_exists(channel_id)
+    
     if requester not in channels[channel_id].get_members():
         raise AccessError((f"auth: User is not a member of this channel"))
     
+    if start > channels[channel_id].get_num_messages():
+        raise ValueError(f"channel_messages: Start index {start} out of bounds on request to channel {channel_id}")
 
     return dict(messages = channels[channel_id].channel_messages(start, requester),
-            start = - start - 1,
-            end = start -51)
+            start =  start,
+            end = start+50)
 
 def channel_leave(token, channel_id):
     requester = tokcheck(token)
@@ -328,12 +341,15 @@ def message_sendlater(token, channel_id, message, time_sent):
 '''
 Ezra: done
 '''
-def message_send(token, channel_id, message): 
+def message_send(token, channel_id, message):
+    global channels, messages
+    check_channel_exists(channel_id)
+
     if len(message) > 1000:
         raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
-    channels[channel_id].send_message(u_id, message)
+    channels[channel_id].send_message(message, u_id)
 
     return {}
 
@@ -341,6 +357,8 @@ def message_send(token, channel_id, message):
 Ezra: done 
 '''
 def message_remove(token, message_id):
+    check_message_exists(message_id)
+
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_id())
@@ -355,8 +373,10 @@ Ezra: done
 def message_edit(token, message_id, message):
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, channel = mess.get_channel())
+    print("owners:",channels[mess.get_channel()].get_owners())
     authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    
     mess.set_message(message)
     return {}
 
@@ -366,7 +386,7 @@ Ezra: done
 def message_react(token, message_id, react_id): 
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, channel = mess.get_channel())
     
     if react_id in mess.get_reacts() and u_id in mess._reacts.get(react_id).get_users():
         raise ValueError(f"message_react: User {u_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
@@ -380,7 +400,7 @@ Ezra: done
 def message_unreact(token, message_id, react_id):
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_id())
+    authcheck(u_id, channel = mess.get_channel())
 
     if react_id not in mess.get_reacts():
         raise ValueError(f"message_unreact: React_id {react_id} not on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
@@ -398,10 +418,11 @@ Ezra: done
 def message_pin(token, message_id):        
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, chowner = mess.get_channel(), admin = True)
-    
     if mess.is_pinned():
         raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
+  
+    authcheck(u_id, chowner = mess.get_channel(), admin = True)
+    
     mess.set_pin(True)
     
     return {}

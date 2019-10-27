@@ -17,7 +17,7 @@ class Message:
         self._is_pinned = False
         self._reacts = {} # Dictinum_messagesonary of react id: react object.
 
-        get_messages()[self._u_id] = self 
+        get_messages()[self._message_id] = self 
         inc_messages()
         
 
@@ -54,9 +54,12 @@ class Message:
         if react not in self._reacts:
             self._reacts = react(react, user)
         else:
-            self._reato_jsoncts.get(react)._u_ids.append(user)
+            self._reacts.get(react)._u_ids.append(user)
     
     def set_message(self, message):
+        if MAX_LEN < len(message):
+            raise ValueError(f"message.__init__: '{message[:10]}...' exceeds maximum allowable length.") 
+        
         self._message = message
 
     def remove_react(self, user, react):

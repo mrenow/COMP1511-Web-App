@@ -10,9 +10,10 @@ def clear():
 
 # for index < 50
 def get_message_id(token, channel, index):
+    print(channel_messages(token, channel, start = 0))
     return channel_messages(token, channel, start = 0)["messages"][index]["message_id"]
 
-# Creates an environment
+# Creates an environment of a admin (channel owner) and a user in one channel
 def message_env():
     global users, channels, messages
     auth_response = auth_register("admin@email.com", "adminpass", "first", "last")
@@ -22,7 +23,7 @@ def message_env():
     auth_response = auth_register("user@email.com", "userpass", "first", "last")
     usertok, user = auth_response["token"], auth_response["u_id"]
 
-    channel = channels_create(admintok, "channel1", True)["channel_id"]
+    channel = channels_create(admintok, "channel1", is_public = True)["channel_id"]
 
     channel_join(usertok, channel)
     channel_join(admintok, channel)
@@ -79,7 +80,7 @@ def test_channel_messages(clear):
     assert_message(admintok, channel, ["SPAM"]*50, [user]*50, start = 50)
     assert_message(admintok, channel, ["PROFANITY"]*25 + ["SPAM"]*25, [admin]*25 + [user]*25, start = 25)
 
-    private_channel = channels_create(admintok, "shhhh", is_public = False)
+    private_channel = channels_create(admintok, "shhhh", is_public = False)["channel_id"]
 
     # Cannot access private channel
     with pytest.raises(AccessError):
@@ -88,7 +89,7 @@ def test_channel_messages(clear):
     # Start out of bounds.
     with pytest.raises(ValueError):
         channel_messages(admintok, private_channel, start = 1)
-    with pytetest.raises(ValueError):
+    with pytest.raises(ValueError):
         channel_messages(admintok, channel, start = 101)
 
 def test_message_limit_test(clear):

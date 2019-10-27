@@ -16,9 +16,9 @@ class Channel:
         
         self.message_list = []
         get_channels()[self.id] = self
-        inc_channels()
         get_users()[owner].get_channels().add(self.id)
         get_users()[owner].get_owner_channels().add(self.id)
+        inc_channels()
 
     def set_name(self, name):
         self.name = name
@@ -38,6 +38,9 @@ class Channel:
 
     def get_id(self):
         return self.id
+
+    def get_num_messages(self):
+        return len(self.message_list)
     
     def send_message(self, text, sender):
         curr_message = Message(text, self.id, sender)
