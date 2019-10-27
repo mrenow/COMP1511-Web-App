@@ -263,7 +263,7 @@ def channel_join(token, channel_id):
     requester = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
-    if channels[channel_id].get_is_private() == True:
+    if channels[channel_id].get_is_public() == False:
         raise AccessError("channel is private")
     channels[channel_id].join(requester)
     return {}
