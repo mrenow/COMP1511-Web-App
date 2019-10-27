@@ -130,7 +130,7 @@ def killtok(token):
     if payload["tok_id"] in valid_toks:
         valid_toks.remove(payload["tok_id"])
         return True
-    raise ValueError("Token already invalidated")
+    return False
 
 
 
@@ -168,6 +168,7 @@ def auth_login(email, password):
     return {}
 def auth_logout(token):
     killtok(token)
+    return True
     return {}
 def auth_register(email, password, name_first, name_last):
     # Check if email is good
