@@ -46,7 +46,11 @@ def extra_member_env(id):
 
 def ms_offset(milliseconds):
     return datetime.now() + timedelta(milliseconds = milliseconds)
-    
+def extract_messages(message_list):
+    return [mess['message'] for mess in message_list]
+def extract_users(message_list):
+    return [mess['u_id'] for mess in message_list]
+
 def assert_message(token, channel, messages, users, start = 0):
     message_response = channel_messages(token, channel, start = start)
     message_list, list_start, list_end = message_response["messages"], message_response["start"], message_response["end"] 
@@ -58,14 +62,14 @@ def assert_message(token, channel, messages, users, start = 0):
         assert list_end == start + 50
 
     assert len(message_list) <= 50, "Channel messages returned too many entries"
-    assert len(message_list) == len(messages) == len(users), f"Length mismatch:\n exp {(messages, users)}\n got {message_list}"
+    assert len(message_list) == len(messages) == len(users), f"Length mismatch:\n exp {(messages, users)}\n got {message_list}\n{message_list}"
     # Check content
     for got, message_exp, user_exp in zip(message_list, messages, users):
-        assert got["message"] == message_exp, f"Message mismatch: exp {message_exp} got {got['message']}"
-        assert got["u_id"] == user_exp, f"User mismatch: exp {user_exp} got {got['u_id']}"
+        assert got["message"] == message_exp, f"Message mismatch: exp {messages} got {extract_messages(message_list)}\n{message_list}"
+        assert got["u_id"] == user_exp, f"User mismatch: exp {users} got {extract_users(message_list)}"
     # Check times
     for curr, nxt in zip(message_list[:-1], message_list[1:]):
-        assert curr["time_created"] <= nxt["time_created"]
+        assert curr["time_created"] >= nxt["time_created"]
 
 # Tests that the correct number of messages is displayed
 def test_channel_messages(clear):
@@ -140,6 +144,7 @@ def test_send_later_test(clear):
     user1tok, user1 = extra_member_env(1)
 
     message_send(usertok, channel, "1")
+    print("beep")
     message_sendlater(admintok, channel, "2", ms_offset(1600))
     message_sendlater(usertok, channel, "3", ms_offset(800))
     message_send(admintok, channel, "4")
@@ -186,14 +191,14 @@ def test_edit_message_test(clear):
     
     # valid edits on admin
     message_edit(ownertok, initial_messages[3]["message_id"], "d")
-    assert_message(admintok, channel, ["b", "3", "2", "d"], [user1, owner, user, admin])
+    assert_message(admintok, channel, ["c", "3", "2", "d"], [user1, owner, user, admin])
     message_edit(admintok, initial_messages[3]["message_id"], "e")
     assert_message(admintok, channel, ["c", "3", "2", "e"], [user1, owner, user, admin])
 
     # Invalid because of user mismatch
-    with pytest.raises(ValueError):
+    with pytest.raises(AccessError):
         message_edit(usertok, initial_messages[1]["message_id"], "Stop!")
-    with pytest.raises(ValueError):
+    with pytest.raises(AccessError):
         message_edit(usertok, initial_messages[3]["message_id"], "You violated the law.") 
     
     # Invalid because message does not exist
@@ -214,10 +219,10 @@ def test_edit_message_test(clear):
     # Not in channel
     channel_leave(admintok, channel)
     with pytest.raises(AccessError):
-        message_edit(admintok, initial_messages[3], "I wuz here")
+        message_edit(admintok, initial_messages[3]["message_id"], "I wuz here")
 
     # Assert that edits did not go through
-    assert_message(admintok, channel, ["c", "3", "2", "e"], [user, owner, user, admin])
+    assert_message(usertok, channel, ["c", "3", "2", "e"], [user1, owner, user, admin])
     
     
 #assert_message(admintok, channel, ["0","1","2","3","4","5","6","7","8"],  [owner]*3 + [user]*3 + [admin]*3)
@@ -225,6 +230,7 @@ def test_edit_message_test(clear):
 def test_remove_message_test(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
+    print("TEST_CHANNEL",channel)
     user1tok, user1 = extra_member_env(1)
     channel_join(user1tok, channel)
 
@@ -243,7 +249,7 @@ def test_remove_message_test(clear):
     # Nonsense id
     with pytest.raises(ValueError):
         message_remove(ownertok, -1)
-
+    
     # Removing an already removed message
     message_remove(ownertok, message_ids[6])
     with pytest.raises(ValueError):
@@ -251,6 +257,7 @@ def test_remove_message_test(clear):
     assert_message(admintok, channel, ["0","1","2","3","4","5","7","8"], [owner]*3 + [user]*3 + [admin]*2)
     
     message_remove(admintok, message_ids[1])
+    print("message_id", message_ids[1])
     with pytest.raises(ValueError):
         message_remove(admintok, message_ids[1])   
     assert_message(admintok, channel, ["0","2","3","4","5","7","8"], [owner]*2 + [user]*3 + [admin]*2)
@@ -269,7 +276,7 @@ def test_remove_message_test(clear):
         message_remove(admintok, message_ids[4])
         
     # Assert removes did not go through
-    assert_message(admintok, channel, ["0","2","3","4","5","7","8"], [owner]*2 + [user]*3 + [admin]*2)
+    assert_message(usertok, channel, ["0","2","3","4","5","7","8"], [owner]*2 + [user]*3 + [admin]*2)
 
 def test_pin_test(clear):
     admintok, admin, usertok, user, channel = message_env()

@@ -12,6 +12,9 @@ users = {} # u_id: user obj
 channels = {} # chann
 messages = {} # message_id: message obj
 
+messages_to_send = [] 
+
+
 num_messages = 0
 user_count = 0
 num_channels = 0
@@ -73,6 +76,19 @@ def reset():
     num_messages = 0
     num_channels = 0
     user_count = 0
+
+# Contains all checks to be done regularly
+def update():
+    global messages_to_send
+    print("to send", messages_to_send)
+    for index,m in enumerate(messages_to_send):
+        print(m.get_time(), datetime.now())
+        if m.get_time() < datetime.now():
+            channels[m.get_channel()].send_message(m)
+            del messages_to_send[index]
+
+    
+
     
 def check_message_exists(message_id):
     global messages
@@ -96,6 +112,7 @@ Only allow if is ( owner of channel or admin or particular user ) and in channel
 '''
 
 def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
+
     auth = False 
 
     if user != None and user == u_id:
@@ -108,7 +125,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         auth = True
     if auth:
         return
-
+    print("channels", users[u_id].get_channels())
     if user != None:
         raise AccessError(f"auth: User {u_id} is not user {user}.")
     if channel != None:
@@ -119,10 +136,13 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         raise AccessError(f"auth: User {u_id} is not admin")
 
 
-def tokcheck(token):
+def tokcheck(token):   
+    
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
     if payload["tok_id"] in valid_toks:
+        # Update state for user and return
+        update()
         return payload["u_id"]
     raise ValueError("Invalid Token")
 
@@ -242,9 +262,7 @@ def channel_messages(token, channel_id, start):
     requester = tokcheck(token)
     check_channel_exists(channel_id)
     
-    if requester not in channels[channel_id].get_members():
-        raise AccessError((f"auth: User is not a member of this channel"))
-    
+    authcheck(requester, channel = channel_id)
     if start > channels[channel_id].get_num_messages():
         raise ValueError(f"channel_messages: Start index {start} out of bounds on request to channel {channel_id}")
 
@@ -318,6 +336,7 @@ def channels_create(token, name, is_public):
 
     global channels
     obj = Channel(name, u_id, is_public)
+    print("CHANNEL_ID", obj.get_id())
     users[u_id].get_channels().add(obj.get_id())
     channels[obj.get_id()] = obj
     
@@ -334,8 +353,20 @@ def channels_delete(token, channel_id):
     return {}
 
 def message_sendlater(token, channel_id, message, time_sent):
+    global channels, messages, messages_to_send
+    check_channel_exists(channel_id)
+
+    if len(message) > 1000:
+        raise ValueError(f"message_sendlater: Message {message[:10]} exceeded max length")
+    if time_sent < datetime.now():
+        raise ValueError(f"message_sendlater: time is {datetime.now() - time_sent} in the past")
+    u_id = tokcheck(token)
+    authcheck(u_id, channel = channel_id)
     
-    return {}
+    message_obj = Message(message, channel_id, u_id, time_sent)
+    messages_to_send.append(message_obj)
+    print(messages_to_send)
+
 
 
 '''
@@ -349,7 +380,9 @@ def message_send(token, channel_id, message):
         raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
-    channels[channel_id].send_message(message, u_id)
+    
+    message_obj = Message(message, channel_id, u_id)
+    channels[channel_id].send_message(message_obj)
 
     return {}
 
@@ -361,7 +394,8 @@ def message_remove(token, message_id):
 
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_id())
+    print("    ",messages[message_id].get_message())
+    authcheck(u_id, channel = mess.get_channel())
     authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
     mess.remove()
     return {}
@@ -372,6 +406,7 @@ Ezra: done
 '''
 def message_edit(token, message_id, message):
     u_id = tokcheck(token)
+    check_message_exists(message_id)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_channel())
     print("owners:",channels[mess.get_channel()].get_owners())
@@ -433,10 +468,10 @@ Ezra: done
 def message_unpin(token, message_id):   
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, chowner = mess.get_channel(), admin = True)
     
-    if mess.is_pinned():
+    if not mess.is_pinned():
         raise ValueError(f"message_unpin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is not pinned.")
+    authcheck(u_id, chowner = mess.get_channel(), admin = True)
     mess.set_pin(False)
     
     return {}
