@@ -281,8 +281,8 @@ def channels_list(token):
     channels_list = []
     for x in users[u_id].get_channels():
         #channels_list.append(channels[x].details())
-        d = dict(id = x.get_id(),
-                 name = x.get_name())
+        d = dict(id = channels[x].get_id(),
+                 name = channels[x].get_name())
         channels_list.append(d)
     return {"channels": channels_list}
 
