@@ -90,17 +90,33 @@ def test_channel_join(clear):
     token2 = login2["token"]
 
     #check if second user listed in channel member after channel_join
-    channel_join(token2, channel_1)
-    channel1_details = channel_details(token2, channel_1)
-    assert channel1_details["all_members"][0]["u_id"] == userID
-    assert channel1_details["all_members"][1]["u_id"] == userID2
+    with pytest.raises(AccessError):
+        channel_join(token2, channel_1["channel_id"])
+    channel1_details = channel_details(token, channel_1["channel_id"])
+
+    yeet = False
+    zoomer = False
+    for x in channel1_details["members"]:
+        print(x["u_id"])
+        if x["u_id"] == userID:
+            yeet = True
+
+    for x in channel1_details["members"]:
+        if x["u_id"] == userID2:
+            zoomer = True
+
+
+    assert yeet == True
+    assert zoomer == False
 
     #check if AccessError raised when attempting to join private channel
-    with pytest.raises(AccessError):
-        channel_join(token2, channel_2)
-    channel2_details = channel_details(token, channel_2)
-    assert len(channel2_details["allmembers"]) == 1
-
+    channel_join(token2, channel_2["channel_id"])
+    channel2_details = channel_details(token, channel_2["channel_id"])
+    boomer = False
+    for x in channel2_details["members"]:
+        if x["u_id"] == userID2:
+            boomer = True
+    assert boomer == True
     #check if ValueError raised when given unknown channel ID
     with pytest.raises(ValueError):
         channel_join(token2, 123456)
@@ -110,23 +126,36 @@ def test_channel_leave(clear):
     userID = login["u_id"]
     token = login["token"]
 
-    channel_1 = channels_create(token, "channel1", True)
+    channel_1 = channels_create(token, "channel1", False)
 
     login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
     userID2 = login2["u_id"]
     token2 = login2["token"]
 
     #checks if user 2 successfully joins
-    channel_join(token2, channel_1)
-    channel1_details = channel_details(token, channel_1)
-    assert channel1_details["all_members"][0]["u_id"] == userID
-    assert channel1_details["all_members"][1]["u_id"] == userID2
+    channel_join(token2, channel_1["channel_id"])
+    channel1_details = channel_details(token, channel_1["channel_id"])
+    boomer = False
+    zoomer = False
+    for x in channel1_details["members"]:
+        print("users is")
+        print(x["u_id"])
+        if x["u_id"] == userID:
+            boomer = True
+    assert boomer == True
+
+    for x in channel1_details["members"]:
+        if x["u_id"] == userID2:
+            zoomer = True
+    assert zoomer == True
+    #assert channel1_details["members"][0]["u_id"] == userID
+    #assert channel1_details["members"][1]["u_id"] == userID2
 
     #checks if user successfully left
-    channel_leave(token2, channel_1)
-    channel1_details = channel_details(token, channel_1)
-    assert len(channel1_details["allmembers"]) == 1
-    assert channel1_details["all_members"][0]["u_id"] == userID
+    channel_leave(token2, channel_1["channel_id"])
+    channel1_details = channel_details(token, channel_1["channel_id"])
+    assert len(channel1_details["members"]) == 1
+    assert channel1_details["members"][0]["u_id"] == userID
 
 def test_channel_invite(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
