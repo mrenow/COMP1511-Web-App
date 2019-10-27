@@ -129,8 +129,8 @@ def killtok(token):
     tokid = payload["tok_id"]
     if payload["tok_id"] in valid_toks:
         valid_toks.remove(payload["tok_id"])
-        return True
-    return False
+        return dict(is_success = True)
+    return dict(is_success = False)
 
 
 
@@ -159,17 +159,16 @@ def auth_login(email, password):
     #Check in users if email exists then try to match the pw
     for user in users.values():
         if user._email == email:
-            if user._password == password:
-                token = maketok(user._u_id)
-                return token, user._u_id
+            if user._password == password:        
+                return dict(token = maketok(user._u_id), u_id = user._u_id)
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")
 
     return {}
+
 def auth_logout(token):
-    killtok(token)
-    return True
-    return {}
+    return killtok(token)
+
 def auth_register(email, password, name_first, name_last):
     # Check if email is good
     global regex
@@ -459,8 +458,8 @@ def user_profile_setemail(token, email):
     if(re.search(regex,email)):  
         global users
         # Check for email address duplicates
-        for user in users:
-            if user.get_email == email:
+        for user in users.values():
+            if user._email == email:
                 raise ValueError("Email already in use")
 
         user_id.set_email(email)
