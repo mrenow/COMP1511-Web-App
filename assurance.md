@@ -21,6 +21,7 @@ We have also checked each other’s works and ask other members for verification
 
 Written basic assurance tests to check off if a particular capability is implemented.
 
+Channels
 * Be able to see a list of channels
     list of channels should display by default
     channel names are displayed on the list
