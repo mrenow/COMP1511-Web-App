@@ -33,4 +33,3 @@ A a moderator, I would like the ability to pin particular messages so that impor
 
 Standups:
 
-As a project manager, I would like my team to perform standups so I can efficiently be brought up to date on what the team is up to
