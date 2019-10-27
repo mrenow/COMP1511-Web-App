@@ -105,7 +105,9 @@ def test_user_profile_setemail(clear):
 	
 def test_user_profile_sethandle(clear):
     # Set up
-	userId1, token1 = auth_register("good9@email.com", "123456", "jason", "xing")
+	login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
+	userId1 = login["u_id"]
+	token1 = login["token"]
 	
 	# Edge case
 	user_profile_sethandle(token1, "0"*20)

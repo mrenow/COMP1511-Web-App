@@ -442,12 +442,12 @@ def user_profile_sethandle(token, handle_str):
         raise ValueError("Handle name is too short")
     # Check if handle str is already in use by another user
     global users
-    for user in users:
-        if user.get_handle_str == handle_str:
+    for user in users.values():
+        if user._handle_str == handle_str:
 
             raise ValueError("Handle name already in use")
+    get_users()[user_id].set_handle_str(handle_str)
     
-    user_id.set_handle_str(handle_str)
 
     return {}
 
