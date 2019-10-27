@@ -211,7 +211,7 @@ def channel_details(token, channel_id):
 def channel_messages(token, channel_id, start):
     requester = tokcheck(token)
     if channel_id not in channels:
-        raise ValueError((f"channel_invite: Channel does not exist."))
+        raise ValueError((f"Channel does not exist."))
     if requester not in channels[channel_id].get_members():
         raise AccessError((f"auth: User is not a member of this channel"))
     
