@@ -190,11 +190,30 @@ def test_channel_invite(clear):
     channel_invite(token2, channel_1["channel_id"], userID3)
     channel1_details = channel_details(token, channel_1["channel_id"])
     
+    boomer = False
+    zoomer = False
+    genz = False
+    for x in channel1_details["members"]:
+        if x["u_id"] == userID:
+            boomer = True
+    assert boomer == True
+
+    for x in channel1_details["members"]:
+        if x["u_id"] == userID2:
+            zoomer = True
+    assert zoomer == True
+
+    for x in channel1_details["members"]:
+        if x["u_id"] == userID3:
+            genz = True
+    assert genz == True
+
 
     #checks if ValueError if channel_id unknown
     with pytest.raises(ValueError):
-        channel_join(token2, channel_1)
-
+        channel_invite(token2, channel_1["channel_id"], 5465)
+    with pytest.raises(ValueError):
+        channel_invite(token2, 4665465, userID3)
 
 
 def test_channels_list(clear):
@@ -208,24 +227,24 @@ def test_channels_list(clear):
 
     channel_1 = channels_create(token, "channel1", True)
     lst = channels_list(token)
-    assert lst["channels"][0]["id"] == channel_1
+    assert lst["channels"][0]["id"] == channel_1["channel_id"]
 
     #check if creator of channel_1 and channel_2 is part of two channels
     channel_2 = channels_create(token, "channel2", True)
     lst = channels_list(token)
-    assert lst["channels"][0]["id"] == channel_1
-    assert lst["channels"][1]["id"] == channel_2
+    assert lst["channels"][0]["id"] == channel_1["channel_id"]
+    assert lst["channels"][1]["id"] == channel_2["channel_id"]
 
     #check if channel_1 is listed for user2 after join
-    channel_join(token2, channel_1)
+    channel_join(token2, channel_1["channel_id"])
     lst = channels_list(token2)
-    assert lst["channels"][0]["id"] == channel_1
+    assert lst["channels"][0]["id"] == channel_1["channel_id"]
 
     #check if channel_2 is listed fo ruser2 after invite
-    channel_invite(token, channel_2, userID2)
+    channel_invite(token, channel_2["channel_id"], userID2)
     lst = channels_list(token2)
-    assert lst["channels"][0]["id"] == channel_1
-    assert lst["channels"][1]["id"] == channel_2
+    assert lst["channels"][0]["id"] == channel_1["channel_id"]
+    assert lst["channels"][1]["id"] == channel_2["channel_id"]
 
 
 
@@ -242,12 +261,12 @@ def test_channel_addowner(clear):
 
     #check if server owner/channel creator is listed as channel owner
     channel_1 = channels_create (token, "channel1", True)
-    channel1_details = channel_details(token, channel_1)
+    channel1_details = channel_details(token, channel_1["channel_id"])
     assert channel1_details["owner_members"][0]["u_id"] == userID
 
     #check if adding channel owner as channel owner raises ValueError
     with pytest.raises(ValueError):
-        channel_addowner(token,channel_1, userID) 
+        channel_addowner(token,channel_1["channel_id"], userID) 
 
 
     login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
@@ -256,19 +275,19 @@ def test_channel_addowner(clear):
 
     #checks if unauthorized members can add owners
     with pytest.raises(AccessError):
-        channel_addowner(token2,channel_1, userID2)
+        channel_addowner(token2,channel_1["channel_id"], userID2)
     with pytest.raises(AccessError):
-        channel_addowner(token2,channel_1, userID)
+        channel_addowner(token2,channel_1["channel_id"], userID)
 
     #checks if second channel owner successfully adds by checking channel owner list
-    channel_addowner(token,channel_1, userID2)
-    channel1_details = channel_details(token, channel_1)
+    channel_addowner(token,channel_1["channel_id"], userID2)
+    channel1_details = channel_details(token, channel_1["channel_id"])
     assert channel1_details["owner_members"][1]["u_id"] == userID2
     
 
     #check if second channel owner successfully adds by adding again and see if ValueError is raised
     with pytest.raises(ValueError):
-        channel_addowner(token,channel_1, userID2)
+        channel_addowner(token,channel_1["channel_id"], userID2)
     
 
     login3 = auth_register("jason@gmail.com", "dafadkh;lktlk444", "Jason", "Xing")
@@ -278,23 +297,17 @@ def test_channel_addowner(clear):
     #check if ValueError is raised when channel id is unknown
     with pytest.raises(ValueError):
          channel_addowner(token,-1, userID3)
-    channel1_details = channel_details(token, channel_1)
+    channel1_details = channel_details(token, channel_1["channel_id"])
     assert channel1_details["owner_members"][1]["u_id"] == userID2
     
 
     #check if second channel owner successfully adds by adding again and see if ValueError is raised
     with pytest.raises(ValueError):
-        channel_addowner(token,channel_1, userID2)
+        channel_addowner(token,channel_1["channel_id"], userID2)
     
-
-    login3 = auth_register("jason@gmail.com", "dafadkh;lktlk444", "Jason", "Xing")
-    userID3 = login3["u_id"]
-    token3 = login3["token"]
-
     #check if ValueError is raised when channel id is unknown
-    channels_delete(token, channel_1)
     with pytest.raises(ValueError):
-         channel_addowner(token,channel_1, userID3)   
+         channel_addowner(token,555, userID3)   
 
 def test_channel_removeowner(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
@@ -303,7 +316,7 @@ def test_channel_removeowner(clear):
 
     #check if server owner/channel creator is listed as channel owner
     channel_1 = channels_create (token, "channel1", True)
-    channel1_details = channel_details(token, channel_1)
+    channel1_details = channel_details(token, channel_1["channel_id"])
     assert channel1_details["owner_members"][0]["u_id"] == userID
     login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
     userID2 = login2["u_id"]
@@ -311,21 +324,21 @@ def test_channel_removeowner(clear):
 
     #checks if ValueError is raised when non-owner is removed
     with pytest.raises(ValueError):
-        channel_removeowner(token, channel_1, userID2)
+        channel_removeowner(token, channel_1["channel_id"], userID2)
     
     #checks if AccessError is raised when non-owner tries to remove
     with pytest.raises(AccessError):
-        channel_removeowner(token2, channel_1, userID)
+        channel_removeowner(token2, channel_1["channel_id"], userID)
 
     #checks if second channel owner successfully adds by checking channel owner list
-    channel_addowner(token,channel_1, userID2)
-    channel1_details = channel_details(token, channel_1)
+    channel_addowner(token,channel_1["channel_id"], userID2)
+    channel1_details = channel_details(token, channel_1["channel_id"])
     assert channel1_details["owner_members"][1]["u_id"] == userID2
     assert len(channel1_details["owner_members"]) == 2
 
     #checks if remove owner works now
-    channel_removeowner(token2, channel_1, userID)
-    channel1_details = channel_details(token2, channel_1)
+    channel_removeowner(token2, channel_1["channel_id"], userID)
+    channel1_details = channel_details(token2, channel_1["channel_id"])
     assert len(channel1_details["owner_members"]) == 1
 
     #check if ValueError is raised when channel id is unknown
