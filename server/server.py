@@ -102,7 +102,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         auth = True
     if channel != None and channel in users[u_id].get_channels():
         auth = True
-    if chowner != None and user in channels[chowner].get_owners():
+    if chowner != None and u_id in channels[chowner].get_owners():
         auth = True
     if admin and users[u_id].get_permission() in (OWNER,ADMIN): 
         auth = True
@@ -249,8 +249,8 @@ def channel_messages(token, channel_id, start):
         raise ValueError(f"channel_messages: Start index {start} out of bounds on request to channel {channel_id}")
 
     return dict(messages = channels[channel_id].channel_messages(start, requester),
-            start = - start - 1,
-            end = start -51)
+            start =  start,
+            end = start+50)
 
 def channel_leave(token, channel_id):
     requester = tokcheck(token)
@@ -349,7 +349,7 @@ def message_send(token, channel_id, message):
         raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
-    channels[channel_id].send_message(u_id, message)
+    channels[channel_id].send_message(message, u_id)
 
     return {}
 
@@ -374,7 +374,9 @@ def message_edit(token, message_id, message):
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_channel())
+    print("owners:",channels[mess.get_channel()].get_owners())
     authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    
     mess.set_message(message)
     return {}
 
@@ -416,10 +418,11 @@ Ezra: done
 def message_pin(token, message_id):        
     u_id = tokcheck(token)
     mess = messages[message_id]
-    authcheck(u_id, chowner = mess.get_channel(), admin = True)
-    
     if mess.is_pinned():
         raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
+  
+    authcheck(u_id, chowner = mess.get_channel(), admin = True)
+    
     mess.set_pin(True)
     
     return {}

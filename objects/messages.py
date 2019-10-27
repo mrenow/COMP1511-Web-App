@@ -57,6 +57,9 @@ class Message:
             self._reacts.get(react)._u_ids.append(user)
     
     def set_message(self, message):
+        if MAX_LEN < len(message):
+            raise ValueError(f"message.__init__: '{message[:10]}...' exceeds maximum allowable length.") 
+        
         self._message = message
 
     def remove_react(self, user, react):
