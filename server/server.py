@@ -193,7 +193,7 @@ def channel_details(token, channel_id):
     if requester not in channels[channel_id].get_members():
         raise AccessError((f"auth: User is not a member of this channel"))
     
-    return channels[channel_id].get_details()
+    return channels[channel_id].details()
 
 def channel_messages(token, channel_id, start):
     requester = tokcheck(token)
@@ -254,8 +254,10 @@ def channels_list(token):
 def channels_listall(token):
     u_id = tokcheck(token)
     channels_list = []
-    for x in channels:
-        channels_list.append(channels[x].details())
+    for x in channels.values():
+        d = dict(id = x.get_id(),
+                 name = x.get_name())
+        channels_list.append(d)
     
     return {"channels": channels_list}
 
@@ -715,7 +717,7 @@ class Channel:
         self.message_list.remove(message_id)
 
     def channel_messages(self, index):
-    return self.message_list[-index-1:-index-51:-1]
+        return self.message_list[-index-1:-index-51:-1]
     
     def join(self, u_id):
         self.members.add(u_id) 
