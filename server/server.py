@@ -111,7 +111,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 def tokcheck(token):
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
-    if payload["tok_id"] in valid_toks == True:
+    if payload["tok_id"] in valid_toks:
         return payload["u_id"]
     raise ValueError("Invalid Token")
 
@@ -127,11 +127,10 @@ def killtok(token):
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
     tokid = payload["tok_id"]
-    if payload["tok_id"] in valid_toks == False:
-        raise ValueError("Token already invalidated")
-    if payload["tok_id"] in valid_toks == True:
+    if payload["tok_id"] in valid_toks:
         valid_toks.remove(payload["tok_id"])
-
+        return True
+    raise ValueError("Token already invalidated")
 
 
 
@@ -168,7 +167,7 @@ def auth_login(email, password):
 
     return {}
 def auth_logout(token):
-    
+    killtok(token)
     return {}
 def auth_register(email, password, name_first, name_last):
     # Check if email is good
