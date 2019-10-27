@@ -7,11 +7,11 @@ get_channels
 
 
 class Channel:
-    def __init__(self, name, owner, is_private):
+    def __init__(self, name, owner, is_public):
         self.name = name
         self.owners = set([owner])
         self.members = set([owner])
-        self.is_private = is_private
+        self.is_public = is_public
         self.id = get_num_channels()
         
         self.message_list = []
@@ -33,8 +33,8 @@ class Channel:
         return self.owners
     def get_members(self):
         return self.members
-    def get_is_private(self):
-        return self.is_private
+    def get_is_public(self):
+        return self.is_public
 
     def get_id(self):
         return self.id
@@ -55,6 +55,7 @@ class Channel:
         self.members.add(u_id)
         get_users()[u_id].get_channels().add(self.id) 
 
+
     def details(self):
         owner_members = []
         for x in self.owners:
@@ -68,7 +69,7 @@ class Channel:
             d = dict(u_id = get_users()[x].get_id(),
             first_name = get_users()[x].get_name_first(),
             last_name = get_users()[x].get_name_last())   
-        members.append(d)
+            members.append(d)
         details = dict( name = self.name,
                         owner_members = owner_members,
                         members = members)
