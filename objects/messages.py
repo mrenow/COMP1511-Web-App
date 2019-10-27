@@ -1,12 +1,21 @@
 from datetime import datetime
+<<<<<<< HEAD
 from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages
+=======
+from server.server import num_messages, inc_messages, add_message, del_message
+>>>>>>> master
 
 
 MAX_LEN = 1000
 class Message:
 
     def __init__(self, text, channel, sender, time = datetime.now()):
+<<<<<<< HEAD
         if MAX_LEN < len(text):
+=======
+        
+        if MAX_LEN < text:
+>>>>>>> master
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         self._message = text
         self._u_id = sender
@@ -15,9 +24,14 @@ class Message:
         self._is_sent = False # Set to true by channel
         self._message_id = get_num_messages()
         self._is_pinned = False
+<<<<<<< HEAD
         self._reacts = {} # Dictinum_messagesonary of react id: react object.
 
         get_messages()[self._message_id] = self 
+=======
+        self._reacts = {} # Dictionary of react id: react object.
+        add_message(self)
+>>>>>>> master
         inc_messages()
         
 
@@ -47,8 +61,13 @@ class Message:
         return self._is_pinned
 
     def remove(self):
+<<<<<<< HEAD
         get_channels()[self._channel_id].delete_message(self._message_id)
         del get_messages()[self._message_id]
+=======
+        channels[self._channel_id].delete_message(self._message_id)
+        del_message(self)
+>>>>>>> master
 
     def set_pin(self, pin):
         self._is_pinned = pin
