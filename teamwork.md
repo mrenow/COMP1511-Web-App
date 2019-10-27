@@ -1,9 +1,9 @@
 # Reflection on teamwork
 
 
-Reflect on your use of agile practices and how you worked as a team.
+**Reflect on your use of agile practices and how you worked as a team.**
 
-Your reflection should, at a minimum, include:
+**Your reflection should, at a minimum, include:**
 
 ### How often you met, and why you met that often
 
