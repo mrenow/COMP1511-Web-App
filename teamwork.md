@@ -19,9 +19,8 @@ When things did not go to plan, or when we were running behind on schedule we ta
 
 In the planning focused meetings, our team discussed over assignment specifications and conveyed our thoughts in how we would implement and structure our server to meet those specs. We would then split up the tasks for the near future, and pin them onto the to do list in the tasks boards so we would have an easier time managing the workload and keep track of what needs to be completed. This helps us progress in our project, so we could move on to the next stage of development in our plan for iteration 2. 
 
-In our pair programming meetings, which were much more prevalent in the later weeks of this iteration,  as a team we fixed up many of our harder problems that we encountered individually.
+In our pair programming meetings, which were much more prevalent in the later weeks of this iteration,  as a team we fixed up many of our harder problems that we encountered individually.Many of these pair programming sessions occurred over discord, where we would voice call and screen share in order to pair program and help each other out. This meant that we were progressing through our functions at a much better rate since we were getting immediate help from other members when any of us encountered a problem. 
 
-Many of these pair programming sessions occurred over discord, where we would voice call and screen share in order to pair program and help each other out. This meant that we were progressing through our functions at a much better rate since we were getting immediate help from other members when any of us encountered a problem. 
 Overall, good communication and teamwork through having meetings and voice call frequently, helped us overcome unseen problems when things did not go to plan, and sped up our work efficiencies when we were running behind on schedule.
 
 ### Details on how you had multiple people working on the same code 
