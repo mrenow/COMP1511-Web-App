@@ -250,7 +250,7 @@ def channel_join(token, channel_id):
     requester = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
-    if channels[channel_id].get_is_private() == True:
+    if channels[channel_id].get_is_public() == False:
         raise AccessError("channel is private")
     channels[channel_id].join(requester)
     return {}
@@ -296,7 +296,7 @@ def channels_listall(token):
     
     return {"channels": channels_list}
 
-def channels_create(token, name, is_private):
+def channels_create(token, name, is_public):
     u_id = tokcheck(token)
     authcheck(u_id, admin = True)
     if len(name) > 20:
@@ -304,7 +304,7 @@ def channels_create(token, name, is_private):
     
 
     global channels
-    obj = Channel(name, u_id, is_private)
+    obj = Channel(name, u_id, is_public)
     users[u_id].get_channels().add(obj.get_id())
     channels[obj.get_id()] = obj
     
