@@ -8,10 +8,6 @@ import server.server as s
 APP = Flask(__name__)
 CORS(APP)
 
-@APP.route('/auth/register', methods=['POST'])
-def echo4():
-    pass
-
 @APP.route('/echo/get', methods=['GET'])
 def echo1():
     """ Description of function """
