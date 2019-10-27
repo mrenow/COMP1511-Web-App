@@ -60,7 +60,7 @@ def assert_message(token, channel, messages, users, start = 0):
     assert len(message_list) == len(messages) == len(users), f"Length mismatch:\n exp {(messages, users)}\n got {message_list}"
     # Check content
     for got, message_exp, user_exp in zip(message_list, messages, users):
-        assert got["messages"] == message_exp, f"Message mismatch: exp {message_exp} got {got['message']}"
+        assert got["message"] == message_exp, f"Message mismatch: exp {message_exp} got {got['message']}"
         assert got["u_id"] == user_exp, f"User mismatch: exp {user_exp} got {got['u_id']}"
     # Check times
     for curr, nxt in zip(message_list[:-1], message_list[1:]):
@@ -88,7 +88,7 @@ def test_channel_messages(clear):
     # Start out of bounds.
     with pytest.raises(ValueError):
         channel_messages(admintok, private_channel, start = 1)
-    with pytetest_st.raises(ValueError):
+    with pytetest.raises(ValueError):
         channel_messages(admintok, channel, start = 101)
 
 def test_message_limit_test(clear):
