@@ -15,6 +15,8 @@ messages = {} # message_id: message obj
 num_messages = 0
 user_count = 0
 num_channels = 0
+tokcount = 0
+valid_toks = set()
 
 def inc_users():
     global user_count
@@ -107,12 +109,30 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
 
 def tokcheck(token):
+    global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
-    return payload["u_id"]
+    if payload["tok_id"] in valid_toks == True:
+        return payload["u_id"]
+    raise ValueError("Invalid Token")
 
 def maketok(u_id):
-    payload = {"u_id": u_id, "time" : str(datetime.now())}
+    global tokcount
+    global valid_toks
+    payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now())}
+    valid_toks.add(tokcount)
+    tokcount += 1
     return jwt.encode(payload, private_key, algorithm= "HS256")
+
+def killtok(token):
+    global valid_toks
+    payload = jwt.decode(token, private_key, algorithms= ["HS256"])
+    tokid = payload["tok_id"]
+    if payload["tok_id"] in valid_toks == False:
+        raise ValueError("Token already invalidated")
+    if payload["tok_id"] in valid_toks == True:
+        valid_toks.remove(payload["tok_id"])
+
+
 
 
 TEST_OWNER_EMAIL = "TODO"
