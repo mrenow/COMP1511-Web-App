@@ -23,7 +23,7 @@ def message_env():
     auth_response = auth_register("user@email.com", "userpass", "first", "last")
     usertok, user = auth_response["token"], auth_response["u_id"]
 
-    channel = channels_create(admintok, "channel1", True)["channel_id"]
+    channel = channels_create(admintok, "channel1", is_public = True)["channel_id"]
 
     channel_join(usertok, channel)
     channel_join(admintok, channel)
