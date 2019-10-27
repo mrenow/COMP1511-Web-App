@@ -28,12 +28,26 @@ def inc_channels():
 def inc_messages():
     global num_messages
     num_messages += 1
+def get_num_messages():
+    global num_messages
+    return num_messages
+def get_num_users():
+    global user_count
+    return user_count
+def get_num_channels():
+    global num_channels
+    return num_channels
 
-def add_message(mess):
-    messages[mess.get_id()] = mess
+def get_channels():
+    global channels
+    return channels
+def get_users():
+    global users
+    return users
+def get_messages():
+    global messages
+    return messages
 
-def del_message(mess):
-    del messages[mess.get_id()]
 
 import re # used for checking email formating
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
@@ -60,7 +74,6 @@ def reset():
     
     print(users,channels, messages, num_messages, num_channels, user_count)
 
-
 '''
 Raises an Access error if all of the conditions specified are not met.
 Usage:
@@ -74,7 +87,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
 
     if user != None and user == u_id:
         auth = True
-    if channel != None and channel in users[user].get_channels():
+    if channel != None and channel in users[u_id].get_channels():
         auth = True
     if chowner != None and user in channels[chowner].get_owners():
         auth = True
@@ -242,13 +255,14 @@ def channel_removeowner(token, channel_id, u_id):
     channels[channel_id].remove_owner(u_id)
 
     return {}
-
 def channels_list(token):
     u_id = tokcheck(token)
     channels_list = []
     for x in users[u_id].get_channels():
-        channels_list.append(channels[x].details())
-    
+        #channels_list.append(channels[x].details())
+        d = dict(id = x.get_id(),
+                 name = x.get_name())
+        channels_list.append(d)
     return {"channels": channels_list}
 
 def channels_listall(token):
@@ -294,6 +308,8 @@ def message_sendlater(token, channel_id, message, time_sent):
 Ezra: done
 '''
 def message_send(token, channel_id, message): 
+    if len(message) > 1000:
+        raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
     channels[channel_id].send_message(u_id, message)
@@ -475,14 +491,9 @@ def admin_userpermission_change(token, u_id, permission_id):
 
 
 
-
-
-
-
-
-
 # { react_id, u_ids, is_this_user_reacted } datetime
 
+<<<<<<< HEAD
 MAX_LEN = 1000
 class Message:
 
@@ -758,6 +769,8 @@ class Channel:
 
    
 
+=======
+>>>>>>> 8a09a243f8b1004013bc1e8d48e04e8a65990489
 
 
 
