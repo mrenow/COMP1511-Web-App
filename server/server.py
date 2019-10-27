@@ -119,7 +119,6 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         raise AccessError(f"auth: User {u_id} is not admin")
 
 
-
 def tokcheck(token):
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
@@ -141,8 +140,9 @@ def killtok(token):
     tokid = payload["tok_id"]
     if payload["tok_id"] in valid_toks:
         valid_toks.remove(payload["tok_id"])
-        return True
-    return False
+        return dict(is_success = True)
+    return dict(is_success = False)
+
 
 
 TEST_OWNER_EMAIL = "TODO"
@@ -170,16 +170,16 @@ def auth_login(email, password):
     #Check in users if email exists then try to match the pw
     for user in users.values():
         if user._email == email:
-            if user._password == password:
-                token = maketok(user._u_id)
-                return token, user._u_id
+            if user._password == password:        
+                return dict(token = maketok(user._u_id), u_id = user._u_id)
             raise ValueError("Wrong Password for Given Email Address")
     raise ValueError("Incorrect Email Login")
 
     return {}
+
 def auth_logout(token):
-    killtok(token)
-    return {}
+    return killtok(token)
+
 def auth_register(email, password, name_first, name_last):
     # Check if email is good
     global regex
@@ -249,8 +249,8 @@ def channel_messages(token, channel_id, start):
         raise ValueError(f"channel_messages: Start index {start} out of bounds on request to channel {channel_id}")
 
     return dict(messages = channels[channel_id].channel_messages(start, requester),
-            start = start,
-            end = start + 50)
+            start = - start - 1,
+            end = start -51)
 
 def channel_leave(token, channel_id):
     requester = tokcheck(token)
@@ -263,6 +263,8 @@ def channel_join(token, channel_id):
     requester = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
+    if channels[channel_id].get_is_private() == True:
+        raise AccessError("channel is private")
     channels[channel_id].join(requester)
     return {}
 
@@ -331,9 +333,6 @@ def channels_delete(token, channel_id):
     
     return {}
 
-
-
-
 def message_sendlater(token, channel_id, message, time_sent):
     
     return {}
@@ -350,7 +349,7 @@ def message_send(token, channel_id, message):
         raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
-    channels[channel_id].send_message(message, u_id)
+    channels[channel_id].send_message(u_id, message)
 
     return {}
 
@@ -372,7 +371,6 @@ def message_remove(token, message_id):
 Ezra: done 
 '''
 def message_edit(token, message_id, message):
-    check_message_exists(message_id)
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_channel())
@@ -383,8 +381,7 @@ def message_edit(token, message_id, message):
 '''
 Ezra: done 
 '''
-def message_react(token, message_id, react_id):
-    check_message_exists(message_id) 
+def message_react(token, message_id, react_id): 
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_channel())
@@ -399,7 +396,6 @@ def message_react(token, message_id, react_id):
 Ezra: done 
 '''
 def message_unreact(token, message_id, react_id):
-    check_message_exists(message_id)
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_channel())
@@ -417,9 +413,7 @@ def message_unreact(token, message_id, react_id):
 '''
 Ezra: done 
 '''
-def message_pin(token, message_id):
-
-    check_message_exists(message_id)
+def message_pin(token, message_id):        
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, chowner = mess.get_channel(), admin = True)
@@ -433,8 +427,7 @@ def message_pin(token, message_id):
 '''
 Ezra: done 
 '''
-def message_unpin(token, message_id):
-    check_message_exists(message_id)
+def message_unpin(token, message_id):   
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, chowner = mess.get_channel(), admin = True)
@@ -445,7 +438,6 @@ def message_unpin(token, message_id):
     
     return {}
 def user_profile(token, u_id):
-    
     # Check for authorisation
     user_id = tokcheck(token)
     authcheck(user_id)
@@ -486,8 +478,8 @@ def user_profile_setemail(token, email):
     if(re.search(regex,email)):  
         global users
         # Check for email address duplicates
-        for user in users:
-            if user.get_email == email:
+        for user in users.values():
+            if user._email == email:
                 raise ValueError("Email already in use")
 
         user_id.set_email(email)
@@ -513,6 +505,7 @@ def user_profile_sethandle(token, handle_str):
             raise ValueError("Handle name already in use")
     get_users()[user_id].set_handle_str(handle_str)
     
+
     return {}
 
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
