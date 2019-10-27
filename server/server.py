@@ -217,8 +217,8 @@ def channel_messages(token, channel_id, start):
     
 
     return dict(messages = channels[channel_id].channel_messages(start, requester),
-            start = - start - 1,
-            end = start -51)
+            start = start,
+            end = start + 50)
 
 def channel_leave(token, channel_id):
     requester = tokcheck(token)
@@ -312,7 +312,7 @@ def message_send(token, channel_id, message):
         raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
-    channels[channel_id].send_message(u_id, message)
+    channels[channel_id].send_message(message, u_id)
 
     return {}
 

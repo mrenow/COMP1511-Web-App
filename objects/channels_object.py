@@ -49,11 +49,7 @@ class Channel:
     def delete_message(self, message_id):
         # Raises value if messages_id is not in list.
         self.message_list.remove(message_id)
-
-    def channel_messages(self, index):
-        return self.message_list[index-1:index-51:-1]
-
-    
+        
     def join(self, u_id):
         self.members.add(u_id)
         get_users()[u_id].get_channels().add(self.id) 

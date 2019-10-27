@@ -6,7 +6,7 @@ MAX_LEN = 1000
 class Message:
 
     def __init__(self, text, channel, sender, time = datetime.now()):
-        if MAX_LEN < text:
+        if MAX_LEN < len(text):
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         self._message = text
         self._u_id = sender
@@ -54,7 +54,7 @@ class Message:
         if react not in self._reacts:
             self._reacts = react(react, user)
         else:
-            self._reacts.get(react)._u_ids.append(user)
+            self._reato_jsoncts.get(react)._u_ids.append(user)
     
     def set_message(self, message):
         self._message = message
@@ -67,6 +67,7 @@ class Message:
     # Returns the reacts list as in specification
     def get_reacts(self, user): 
         return [react.to_json(user) for react in self._reacts.values()]
+
 
     def to_json(self, user):
         return dict(message_id = self._message_id,
