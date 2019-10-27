@@ -58,14 +58,14 @@ class Channel:
     def details(self):
         owner_members = []
         for x in self.owners:
-            d = dict(u_id = x,
+            d = dict(u_id = get_users()[x].get_id(),
             first_name = get_users()[x].get_name_first(),
             last_name = get_users()[x].get_name_last())
             owner_members.append(d)
         
         members = []
         for x in self.members:
-            d = dict(u_id = x,
+            d = dict(u_id = get_users()[x].get_id(),
             first_name = get_users()[x].get_name_first(),
             last_name = get_users()[x].get_name_last())   
         members.append(d)
