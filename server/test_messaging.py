@@ -349,28 +349,81 @@ def test_standup_test(clear):
     with pytest.raises(ValueError):
         standup_start(admintok, -1)
 
+# Checking that id = 1 only for iter 2
+def assert_react(token, channel, index, users):
+    reacts = channel_messages(token, channel, start = 0)["messages"][index]["reacts"]
+    if len(reacts) == 0: return
+    assert len(reacts) == 1
+    assert reacts[0]["react_id"] == 1
+    assert sorted(reacts[0]["u_ids"]) == sorted(users)
 
+def error_react(reacted, unreacted, mess_id):
+    for user in reacted:
+        with pytest.raises(ValueError):
+            message_react(user, mess_id, 1)
+    for user in unreacted:
+        with pytest.raises(ValueError):
+            message_unreact(user, mess_id, 1)
 
-# Not enough specification to test react:
-#   - Where does the react ID come from?
-#   - Do different users have different react IDs for the same react?
-#   - Is there more than one react? (Hayden's video says there only likes are being used)
-#   - Can multiple users react the same message? Should there be some way to count reacts?
-''' TODO:
-def react_message_test():
+            
+
+def test_react_message(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
+    user1tok, user1 = extra_member_env(1)
 
     message_send(admintok, channel, "1")
     message_send(usertok, channel, "2")
     message_send(ownertok, channel, "3")
     message_send(usertok, channel, "4")
 
-    message_react(usertok, channel, )
-'''
+    message_ids = [get_message_id(admintok, channel, i) for i in range(4)]
 
-# Not enough specifications to test search:
-#   - What counts as "matching the query"?
+    # Bad react id
+    for i in range(10):
+        if i == 1: continue
+        with pytest.raises(ValueError):
+            message_react(admintok, message_ids[3], i)
 
+    # Adding reacts
+    
+    message_react(admintok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [admin])
+    error_react([admintok], [usertok, ownertok], message_ids[3])
+
+    message_react(usertok, message_ids[3], 1)
+    assert_react(usertok, channel, 3, [admin, user])
+    error_react([admintok, usertok], [ ownertok], message_ids[3])
+
+
+    message_react(ownertok, message_ids[3], 1)
+    assert_react(ownertok, channel, 3, [admin, user, owner])
+    error_react([admintok, usertok, ownertok], [], message_ids[3])
+
+    # removing reacts
+    message_unreact(usertok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [admin, owner])
+    error_react([admintok,  ownertok], [usertok], message_ids[3])
+    
+    message_unreact(admintok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [owner])
+    error_react([ownertok], [ admintok, usertok], message_ids[3])
+    
+    message_unreact(ownertok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [])
+    error_react( [], [admintok, usertok, ownertok], message_ids[3])
+
+    message_react(usertok, message_ids[1], 1)
+    assert_react(admintok, channel, 1 , [user])
     
 
+    # User not in channel
+    with pytest.raises(AccessError):
+        message_react(user1tok, message_ids[2], 1)
+    
+    channel_leave(usertok, channel)
+    with pytest.raises(AccessError):
+        message_unreact(usertok, message_ids[1],1)
+
+
+    

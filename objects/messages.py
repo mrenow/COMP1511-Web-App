@@ -15,7 +15,7 @@ class Message:
         self._is_sent = False # Set to true by channel
         self._message_id = get_num_messages()
         self._is_pinned = False
-        self._reacts = {} # Dictinum_messagesonary of react id: react object.
+        self._reacts = {} # Dictionary of react id: react object.
 
         get_messages()[self._message_id] = self 
         inc_messages()
@@ -55,9 +55,9 @@ class Message:
 
     def add_react(self, user, react):
         if react not in self._reacts:
-            self._reacts = react(react, user)
+            self._reacts[react] = React(react, user)
         else:
-            self._reacts.get(react)._u_ids.append(user)
+            self._reacts.get(react)._u_ids.add(user)
     
     def set_message(self, message):
         if MAX_LEN < len(message):
@@ -73,8 +73,13 @@ class Message:
     # Returns the reacts list as in specification
     def get_reacts(self, user): 
         return [react.to_json(user) for react in self._reacts.values()]
+    
+    def get_react(self, react_id):
+        return self._reacts[react_id]
 
-
+    def has_react(self, react_id):
+        return react_id in self._reacts
+        
     def to_json(self, user):
         return dict(message_id = self._message_id,
                     u_id = self._u_id,
@@ -82,7 +87,7 @@ class Message:
                     time_created  = self._time_created,
                     reacts = self.get_reacts(user),
                     is_pinned = self._is_pinned)
-class react:
+class React:
     def __init__(self, id, user):
         self._u_ids = set([user])
         self._react_id = id

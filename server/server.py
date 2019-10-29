@@ -422,8 +422,12 @@ def message_react(token, message_id, react_id):
     u_id = tokcheck(token)
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_channel())
-    
-    if react_id in mess.get_reacts() and u_id in mess._reacts.get(react_id).get_users():
+    ### Iteration 2 only 
+    if react_id != 1:
+        raise ValueError(f"message_react: React id {react_id} is not valid on message {mess.get_id}: '{mess.get_message()[:10]}...'")
+    ###
+
+    if mess.has_react(react_id) and u_id in mess.get_react(react_id).get_users():
         raise ValueError(f"message_react: User {u_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
     mess.add_react(u_id, react_id)
     
@@ -437,10 +441,10 @@ def message_unreact(token, message_id, react_id):
     mess = messages[message_id]
     authcheck(u_id, channel = mess.get_channel())
 
-    if react_id not in mess.get_reacts():
+    if not mess.has_react(react_id):
         raise ValueError(f"message_unreact: React_id {react_id} not on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
        
-    if u_id not in mess._reacts.get(react_id).get_users():
+    if u_id not in mess.get_react(react_id).get_users():
         raise ValueError(f"message_unreact: User {u_id} does not have react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
     
     mess.remove_react(u_id, react_id)
@@ -463,7 +467,12 @@ def message_pin(token, message_id):
     return {}
 
 '''
-Ezra: done 
+Unpins message.
+Value Error:
+
+Access Error:
+
+returns
 '''
 def message_unpin(token, message_id):   
     u_id = tokcheck(token)
@@ -548,12 +557,18 @@ def user_profile_sethandle(token, handle_str):
 
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     return {}
+
 def standup_start(token, channel_id):
+
     return {}
+
 def standup_send(token, channel_id, message):
+
     return {}
+
 def search(token, query_str):
     return {}
+    
 def admin_userpermission_change(token, u_id, permission_id):
     user_id = tokcheck(token)
     authcheck(user_id, admin = True)
