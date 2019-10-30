@@ -9,11 +9,6 @@ import server.server as s
 APP = Flask(__name__)
 CORS(APP)
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> fc44c6b6092a9901762cdc432c9b479c725a527c
 @APP.route('/echo/get', methods=['GET'])
 def echo1():
     """ Description of function """
