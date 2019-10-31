@@ -261,14 +261,29 @@ def channel_details(token, channel_id):
 def channel_messages(token, channel_id, start):
     requester = tokcheck(token)
     check_channel_exists(channel_id)
-    
+
     authcheck(requester, channel = channel_id)
     if start > channels[channel_id].get_num_messages():
         raise ValueError(f"channel_messages: Start index {start} out of bounds on request to channel {channel_id}")
+    ''' id_list = channels[channel_id].channel_messages(start, requester)
+    message_list = []
+    for x in id_list:
+        d = dict(message_id = messages[x].get_id(),
+                    u_id = messages[x].get_user(),
+                    message = messages[x].get_message(),
+                    time_created = messages[x].get_time(),
+                    reacts = messages[x].get_reacts(),
+                    is_pinned = messages[x].is_pinned()
+        )
+        message_list.append(d)
 
+    '''
+    end = start + 50
+    if -start-1 < -len(channels[channel_id].message_list()) or -start-51 < -len(channels[channel_id].message_list()):
+        end = -1
     return dict(messages = channels[channel_id].channel_messages(start, requester),
             start =  start,
-            end = start+50)
+            end = end)
 
 def channel_leave(token, channel_id):
     requester = tokcheck(token)
@@ -382,7 +397,7 @@ def message_send(token, channel_id, message):
     authcheck(u_id, channel = channel_id)
     
     message_obj = Message(message, channel_id, u_id)
-    channels[channel_id].send_message(message_obj)
+    channels[channel_id].send_message(message_obj.get_id())
 
     return {}
 
