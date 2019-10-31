@@ -56,9 +56,9 @@ def assert_message(token, channel, messages, users, start = 0):
     message_list, list_start, list_end = message_response["messages"], message_response["start"], message_response["end"] 
     # Check lengths
     assert start == list_start
-    if list_end == -1:
-        assert len(message_list) < 50
-    else:
+    
+    assert (list_end == -1) == (len(message_list) < 50)
+    if list_end != -1:
         assert list_end == start + 50
 
     assert len(message_list) <= 50, "Channel messages returned too many entries"
