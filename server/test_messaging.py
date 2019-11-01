@@ -57,7 +57,14 @@ def assert_message(token, channel, messages, users, start = 0):
     # Check lengths
     assert start == list_start
     
-    assert (list_end == -1) == (len(message_list) < 50)
+    if (len(message_list) == 50):
+        next_response = channel_messages(token, channel, start = start+1)
+        if (len(next_response["messages"]) < 50):
+            assert list_end == -1, f"Current response has 50 messages and takes the last message from the channel. message_list: {len(message_list)}, next : {len(next_response['messages'])}"
+        else:
+            assert list_end != -1
+    else:
+        assert list_end == -1
     if list_end != -1:
         assert list_end == start + 50
 

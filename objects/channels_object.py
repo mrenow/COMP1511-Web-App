@@ -39,6 +39,9 @@ class Channel:
     def get_id(self):
         return self.id
 
+    def get_message_list(self):
+        return self.message_list
+
     def get_num_messages(self):
         return len(self.message_list)
     
