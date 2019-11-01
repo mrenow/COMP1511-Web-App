@@ -13,7 +13,7 @@ class Channel:
         self.members = set([owner])
         self.is_public = is_public
         self.id = get_num_channels()
-        
+        #message list contains message_id
         self.message_list = []
         get_channels()[self.id] = self
         get_users()[owner].get_channels().add(self.id)
@@ -39,20 +39,23 @@ class Channel:
     def get_id(self):
         return self.id
 
+    def get_message_list(self):
+        return self.message_list
+
     def get_num_messages(self):
         return len(self.message_list)
     
-    def send_message(self, message_obj):
-        self.message_list.append(message_obj)
-        return message_obj.get_id()
+    def send_message(self, message_id):
+        self.message_list.append(message_id)
+        return message_id
     
 
-    def channel_messages(self, start, user):
-        return [mess.to_json(user) for mess in self.message_list[-start-1:-start-51:-1]]
+    def channel_messages(self, start, user):    
+        return [get_messages()[mess].to_json(user) for mess in self.message_list[-start-1:-start-51:-1]]
 
     def delete_message(self, message_id):
         for index, entry in enumerate(self.message_list):
-            if message_id == entry.get_id():
+            if message_id == entry:
                 del self.message_list[index]
                 return
         ValueError(f"delete_message: message {message_id} not found")
