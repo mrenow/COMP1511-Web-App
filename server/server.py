@@ -93,15 +93,15 @@ def update():
 def check_message_exists(message_id):
     global messages
     if message_id not in messages:
-        raise ValueError(f"Message {message_id} does not exist.")
+        raise ValueError(f"Message {message_id} does not exist. messages: {messages}")
 def check_channel_exists(channel_id):
     global channels
     if channel_id not in channels:
-        raise ValueError(f"Channel {channel_id} does not exist.")
+        raise ValueError(f"Channel {channel_id} does not exist. channels: {channels}")
 def check_user_exists(user_id):
     global users
     if user_id not in users:
-        raise ValueError(f"User {user_id} does not exist")
+        raise ValueError(f"User {user_id} does not exist. users: {users}")
 
 '''
 Raises an Access error if all of the conditions specified are not met.
@@ -125,7 +125,7 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         auth = True
     if auth:
         return
-    print("channels", users[u_id].get_channels())
+
     if user != None:
         raise AccessError(f"auth: User {u_id} is not user {user}.")
     if channel != None:
@@ -312,7 +312,7 @@ def channels_list(token):
     channels_list = []
     for x in users[u_id].get_channels():
         #channels_list.append(channels[x].details())
-        d = dict(id = channels[x].get_id(),
+        d = dict(channel_id = channels[x].get_id(),
                  name = channels[x].get_name())
         channels_list.append(d)
     return {"channels": channels_list}
@@ -321,20 +321,20 @@ def channels_listall(token):
     u_id = tokcheck(token)
     channels_list = []
     for x in channels.values():
-        d = dict(id = x.get_id(),
+        d = dict(channel_id = x.get_id(),
                  name = x.get_name())
         channels_list.append(d)
     
     return {"channels": channels_list}
 
 def channels_create(token, name, is_public):
+    global channels
     u_id = tokcheck(token)
     authcheck(u_id, admin = True)
+    
     if len(name) > 20:
         raise ValueError("Name cannot be over 20 characters")
     
-
-    global channels
     obj = Channel(name, u_id, is_public)
     print("CHANNEL_ID", obj.get_id())
     users[u_id].get_channels().add(obj.get_id())
@@ -366,7 +366,7 @@ def message_sendlater(token, channel_id, message, time_sent):
     message_obj = Message(message, channel_id, u_id, time_sent)
     messages_to_send.append(message_obj)
     print(messages_to_send)
-
+    return {}
 
 
 '''
@@ -490,14 +490,16 @@ def user_profile(token, u_id):
     authcheck(user_id)
     # Check for valid user
     global users
-    for user in users:
-        if u_id == users:
-            # Need to do this part with dumps 
-            return user.get_email(), user.get_name_first(), user.get_name_last(), user.get_handle_str()
-            
-    raise ValueError("Invalid User id or User does not exist")    
-    return {}
+    if u_id not in users: 
+        raise ValueError("Invalid User id or User does not exist")    
+    user = users[u_id]
+    return dict(
+        email = user.get_email(),
+        name_first = user.get_name_first(),
+        name_last = user.get_name_last(),
+        handle_str = user.get_handle_str())
 
+  
 def user_profile_setname(token, name_first, name_last):
     # Check for authorisation
     user_id = tokcheck(token)
@@ -512,8 +514,8 @@ def user_profile_setname(token, name_first, name_last):
     if len(name_last) < 1: 
         raise ValueError("Last name provided is too short")
     
-    user_id.set_name_first(name_first)
-    user_id.set_name_last(name_last)
+    users[user_id].set_name_first(name_first)
+    users[user_id].set_name_last(name_last)
 
     return {}
 def user_profile_setemail(token, email):
@@ -526,10 +528,11 @@ def user_profile_setemail(token, email):
         global users
         # Check for email address duplicates
         for user in users.values():
-            if user._email == email:
+            # Do not raise error if user does not change field
+            if user.get_id() != user_id and user._email == email:
                 raise ValueError("Email already in use")
 
-        user_id.set_email(email)
+        users[user_id].set_email(email)
     
     else:  
         raise ValueError("Invalid Email Address")
@@ -547,10 +550,11 @@ def user_profile_sethandle(token, handle_str):
     # Check if handle str is already in use by another user
     global users
     for user in users.values():
-        if user._handle_str == handle_str:
+        # Do not raise error if user keeps their own name unchanged
+        if user.get_id() != user_id and user._handle_str == handle_str:
 
             raise ValueError("Handle name already in use")
-    get_users()[user_id].set_handle_str(handle_str)
+    users[user_id].set_handle_str(handle_str)
     
 
     return {}

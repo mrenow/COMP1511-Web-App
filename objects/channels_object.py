@@ -63,23 +63,9 @@ class Channel:
 
 
     def details(self):
-        owner_members = []
-        for x in self.owners:
-            d = dict(u_id = get_users()[x].get_id(),
-            first_name = get_users()[x].get_name_first(),
-            last_name = get_users()[x].get_name_last())
-            owner_members.append(d)
-        
-        members = []
-        for x in self.members:
-            d = dict(u_id = get_users()[x].get_id(),
-            first_name = get_users()[x].get_name_first(),
-            last_name = get_users()[x].get_name_last())   
-            members.append(d)
-        details = dict( name = self.name,
-                        owner_members = owner_members,
-                        members = members)
-        return details
+        return  dict( name = self.name,
+                        owner_members = [get_users()[u_id].to_json() for u_id in self.owners],
+                        all_members = [get_users()[u_id].to_json() for u_id in self.members])
 
     def leave(self, u_id):
         self.members.discard(u_id)

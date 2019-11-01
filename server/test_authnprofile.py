@@ -69,11 +69,12 @@ def test_user_profile(clear):
 	token2 = login2["token"]
 	# Not a valid user
 	with pytest.raises(ValueError):
-		user_profile(token1, userId2)
+		user_profile(token1, -1)
 	# Check token is invalid (login token)
 	auth_logout(token2)
 	with pytest.raises(ValueError):
 		user_profile(token2, userId2)
+	user_profile(token1, userId1)
 
 def test_user_profile_setname(clear):
     # Set up
