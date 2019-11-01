@@ -84,7 +84,7 @@ class Message:
         return dict(message_id = self._message_id,
                     u_id = self._u_id,
                     message = self._message,
-                    time_created  = self._time_created,
+                    time_created  = (self._time_created - datetime(1970,1,1)).total_seconds(),
                     reacts = self.get_reacts(user),
                     is_pinned = self._is_pinned)
 class React:

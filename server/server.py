@@ -1,17 +1,19 @@
 import sys
 from json import dumps
 from flask import Flask, request
-from datetime import datetime
-
+from datetime import datetime, timedelta
+from multiprocessing import Lock
 ADMIN = 2
 MEMBER = 3
 OWNER = 1
+
 
 
 users = {} # u_id: user obj
 channels = {} # chann
 messages = {} # message_id: message obj
 
+messages_to_send_lock = Lock()
 messages_to_send = [] 
 
 
@@ -79,13 +81,17 @@ def reset():
 
 # Contains all checks to be done regularly
 def update():
-    global messages_to_send
+    global messages_to_send, messages_to_send_lock
     print("to send", messages_to_send)
-    for index,m in enumerate(messages_to_send):
-        print(m.get_time(), datetime.now())
-        if m.get_time() < datetime.now():
-            channels[m.get_channel()].send_message(m)
-            del messages_to_send[index]
+    messages_to_send_lock.acquire()
+    try:
+        for index,m in enumerate(messages_to_send):
+            print(m.get_time(), datetime.now())
+            if m.get_time() < datetime.now():
+                channels[m.get_channel()].send_message(m)
+                del messages_to_send[index]
+    finally:
+        messages_to_send_lock.release()
 
     
 
@@ -352,8 +358,13 @@ def channels_delete(token, channel_id):
     
     return {}
 
-def message_sendlater(token, channel_id, message, time_sent):
+def message_sendlater(token, channel_id, message, time_sent_millis):
     global channels, messages, messages_to_send
+    print("Time: ", time_sent_millis  )
+    time_sent = datetime.utcfromtimestamp(time_sent_millis/1000) + timedelta(hours=11)
+    print("Time: ", time_sent)
+
+
     check_channel_exists(channel_id)
 
     if len(message) > 1000:

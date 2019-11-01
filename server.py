@@ -142,7 +142,7 @@ def channels_delete():
 @APP.route("/message/sendlater", methods = ["POST"])
 def message_sendlater():
 	show_request(request)
-	response = s.message_sendlater(request.values["token"], int(request.values["channel_id"]), request.values["message"], request.values["time_sent"])
+	response = s.message_sendlater(request.values["token"], int(request.values["channel_id"]), request.values["message"], int(request.values["time_sent"]))
 	show_response(response)
 	return response
 
