@@ -421,6 +421,10 @@ def message_remove(token, message_id):
 Ezra: done 
 '''
 def message_edit(token, message_id, message):
+    message = message.strip()
+    if not message:
+        message_remove(token, message_id)
+        return {}
     u_id = tokcheck(token)
     check_message_exists(message_id)
     mess = messages[message_id]

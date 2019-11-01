@@ -202,6 +202,10 @@ def test_edit_message_test(clear):
     message_edit(admintok, initial_messages[3]["message_id"], "e")
     assert_message(admintok, channel, ["c", "3", "2", "e"], [user1, owner, user, admin])
 
+    # Empty edit deletes message
+    message_edit(ownertok, initial_messages[2]["message_id"], "")
+    assert_message(admintok, channel,  ["c", "3",  "e"], [user1, owner, admin])
+
     # Invalid because of user mismatch
     with pytest.raises(AccessError):
         message_edit(usertok, initial_messages[1]["message_id"], "Stop!")
@@ -229,7 +233,7 @@ def test_edit_message_test(clear):
         message_edit(admintok, initial_messages[3]["message_id"], "I wuz here")
 
     # Assert that edits did not go through
-    assert_message(usertok, channel, ["c", "3", "2", "e"], [user1, owner, user, admin])
+    assert_message(usertok, channel, ["c", "3", "e"], [user1, owner, admin])
     
     
 #assert_message(admintok, channel, ["0","1","2","3","4","5","6","7","8"],  [owner]*3 + [user]*3 + [admin]*3)
