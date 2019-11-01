@@ -83,11 +83,16 @@ def reset():
 def update():
     global messages_to_send, messages_to_send_lock
     print("to send", messages_to_send)
-    for index,m in enumerate(messages_to_send):
-        print(m.get_time(), datetime.now())
-        if m.get_time() < datetime.now():
-            channels[m.get_channel()].send_message(m.get_id())
-            del messages_to_send[index]
+    messages_to_send_lock.acquire()
+    try:
+        for index,m in enumerate(messages_to_send):
+            print(m.get_time(), datetime.now())
+            if m.get_time() < datetime.now():
+                channels[m.get_channel()].send_message(m.get_id())
+                del messages_to_send[index]
+    # Always release lock please thankyou
+    finally:
+        messages_to_send_lock.release()
 
     
 
@@ -263,23 +268,11 @@ def channel_details(token, channel_id):
 def channel_messages(token, channel_id, start):
     requester = tokcheck(token)
     check_channel_exists(channel_id)
-
+    
     authcheck(requester, channel = channel_id)
     if start > channels[channel_id].get_num_messages():
         raise ValueError(f"channel_messages: Start index {start} out of bounds on request to channel {channel_id}")
-    ''' id_list = channels[channel_id].channel_messages(start, requester)
-    message_list = []
-    for x in id_list:
-        d = dict(message_id = messages[x].get_id(),
-                    u_id = messages[x].get_user(),
-                    message = messages[x].get_message(),
-                    time_created = messages[x].get_time(),
-                    reacts = messages[x].get_reacts(),
-                    is_pinned = messages[x].is_pinned()
-        )
-        message_list.append(d)
 
-    '''
     end = start + 50
     message_list = channels[channel_id].get_message_list()
     if -start-1 < -len(message_list) or -start-51 < -len(message_list):
@@ -594,7 +587,6 @@ def standup_send(token, channel_id, message):
     return {}
 
 def search(token, query_str):
-    
     return {}
     
 def admin_userpermission_change(token, u_id, permission_id):
@@ -613,6 +605,7 @@ def relevance_score(string):
 def sort_message(msg_list):
     msg_list.sort(key = relevance_score)
     return msg_list
+
 
 
 # { react_id, u_ids, is_this_user_reacted } datetime
