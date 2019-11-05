@@ -1,29 +1,45 @@
-from datetime import datetime
-from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages
+from datetime import datetime, timedelta
+from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages, get_messages_to_send
 
 
 MAX_LEN = 1000
 class Message:
 
-    def __init__(self, text, channel, sender, time = datetime.now()):
+    def __init__(self, text, channel, sender, time = None):
         if MAX_LEN < len(text):
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
+        
+        send_immediate = (time == None) 
+        
+        if send_immediate:
+            self._channel_id = channel
+            self._time_sent = datetime.now()
+        else:
+            if time < datetime.now() - timedelta(minutes = 1):
+                raise ValueError(f"Message: Time {time} is in the past.")
+
         self._message = text
         self._u_id = sender
-        self._channel_id = channel
-        self._time_created = time
+            
         self._is_sent = False # Set to true by channel
-        self._message_id = get_num_messages()
         self._is_pinned = False
         self._reacts = {} # Dictionary of react id: react object.
 
+        self._message_id = get_num_messages()
+
         get_messages()[self._message_id] = self 
         inc_messages()
+
+        # Automatically send or send later.
+        if send_immediate:
+            get_channels()[channel].send_message(self._message_id)
+        else:
+            get_messages_to_send().append(self)
         
 
     
     def get_time(self):
-        return self._time_created
+        return self._time_sent
     
     def get_id(self):
         return self._message_id
@@ -84,7 +100,7 @@ class Message:
         return dict(message_id = self._message_id,
                     u_id = self._u_id,
                     message = self._message,
-                    time_created  = (self._time_created - datetime(1970,1,1)).total_seconds(),
+                    time_created  = (self._time_sent - datetime(1970,1,1)).total_seconds(),
                     reacts = self.get_reacts(user),
                     is_pinned = self._is_pinned)
 class React:

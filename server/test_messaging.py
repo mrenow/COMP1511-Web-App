@@ -204,7 +204,7 @@ def test_edit_message_test(clear):
 
     # Empty edit deletes message
     message_edit(ownertok, initial_messages[2]["message_id"], "")
-    assert_message(admintok, channel,  ["c", "3",  "e"], [user1, owner, admin])
+    assert_message(admintok, channel,  ["c", "3", "e"], [user1, owner, admin])
 
     # Invalid because of user mismatch
     with pytest.raises(AccessError):

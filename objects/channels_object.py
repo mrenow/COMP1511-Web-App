@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from .messages import Message
 from server.server import get_num_channels, inc_channels, get_users, get_channels, get_messages
 '''
@@ -13,7 +13,9 @@ class Channel:
         self.members = set([owner])
         self.is_public = is_public
         self.id = get_num_channels()
-        #message list contains message_id
+        # Functions as the entire standup
+        self._standup_message = None
+        # Message list contains message_id
         self.message_list = []
         get_channels()[self.id] = self
         get_users()[owner].get_channels().add(self.id)
@@ -47,8 +49,43 @@ class Channel:
     
     def send_message(self, message_id):
         self.message_list.append(message_id)
+        get_messages()[message_id].send()
         return message_id
     
+    def standup_start(self, user, duration):
+        if self.standup_active():
+            raise ValueError(f"standup_start: Standup already active in channel {self.id}")
+
+        # Overwrite old standup message with new unsent message.
+        self._standup_message = Message("Standup results: \n", self.id, user, datetime.now() + timedelta(seconds = duration)).get_id()
+
+    
+    def standup_send(self, user, text):
+        if not self.standup_active():
+            raise ValueError(f"standup_send: No standup active in channel {self.id}")
+        
+        full_text = f"{get_users()[user].get_name_first()}: {text}\n"
+        message = get_messages()[self._standup_message]
+
+        # Append full_text to standup message.
+        message.set_message(message.get_message() + full_text)
+
+    '''
+    Defines when a standup has ended. This is different to checking whether the sendtime is earlier than now
+    as a 
+    '''
+    def standup_active(self):
+        return self._standup_message != None and not get_messages()[self._standup_message].is_sent()
+
+    '''
+    Returns the completion datetime of the last standup initiated on the channel.
+    Returns earliest possible time if no standup has been initiated.
+    '''
+    def standup_time(self):
+        if self._standup_message == None:
+            return datetime.min
+        else:
+            return get_messages()[self._standup_message].get_time()
 
     def channel_messages(self, start, user):    
         return [get_messages()[mess].to_json(user) for mess in self.message_list[-start-1:-start-51:-1]]
@@ -66,9 +103,9 @@ class Channel:
 
 
     def details(self):
-        return  dict( name = self.name,
-                        owner_members = [get_users()[u_id].to_json() for u_id in self.owners],
-                        all_members = [get_users()[u_id].to_json() for u_id in self.members])
+        return dict(name = self.name,
+                    owner_members = [get_users()[u_id].to_json() for u_id in self.owners],
+                    all_members = [get_users()[u_id].to_json() for u_id in self.members])
 
     def leave(self, u_id):
         self.members.discard(u_id)

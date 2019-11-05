@@ -3,11 +3,20 @@ from json import dumps
 from flask import Flask, request
 from datetime import datetime, timedelta
 from multiprocessing import Lock
+from typing import List, Dict
+
+import re # used for checking email formating
+
+
+private_key = "secure password"
+
+
+regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
+
+
 ADMIN = 2
 MEMBER = 3
 OWNER = 1
-
-
 
 users = {} # u_id: user obj
 channels = {} # chann
@@ -16,12 +25,14 @@ messages = {} # message_id: message obj
 messages_to_send_lock = Lock()
 messages_to_send = [] 
 
+active_standup = False
 
 num_messages = 0
 user_count = 0
 num_channels = 0
 tokcount = 0
 valid_toks = set()
+
 
 def inc_users():
     global user_count
@@ -54,20 +65,17 @@ def get_users():
 def get_messages():
     global messages
     return messages
+def get_messages_to_send():
+    global messages_to_send
+    return messages_to_send
 
 
-import re # used for checking email formating
-regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 
 from objects.messages import Message
 from objects.channels_object import Channel
 from objects.users_object import User
 import jwt
 from server.AccessError import AccessError
-
-
-private_key = "secure password"
-
 
 
 def reset():
@@ -85,7 +93,7 @@ def update():
     print("to send", messages_to_send)
     messages_to_send_lock.acquire()
     try:
-        for index,m in enumerate(messages_to_send):
+        for index, m in enumerate(messages_to_send):
             print(m.get_time(), datetime.now())
             if m.get_time() < datetime.now():
                 channels[m.get_channel()].send_message(m.get_id())
@@ -143,17 +151,15 @@ def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
         raise AccessError(f"auth: User {u_id} is not admin")
 
 
-def tokcheck(token):   
+def tokcheck(token) -> int:   
     
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
     if payload["tok_id"] in valid_toks:
-        # Update state for user and return
-        update()
         return payload["u_id"]
     raise ValueError("Invalid Token")
 
-def maketok(u_id):
+def maketok(u_id) -> str:
     global tokcount 
     global valid_toks
     payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now())}
@@ -161,7 +167,7 @@ def maketok(u_id):
     tokcount += 1
     return jwt.encode(payload, private_key, algorithm= "HS256")
 
-def killtok(token):
+def killtok(token) -> Dict["is_success", bool]:
     global valid_toks
     payload = jwt.decode(token, private_key, algorithms= ["HS256"])
     tokid = payload["tok_id"]
@@ -256,6 +262,12 @@ def channel_invite(token, channel_id, u_id):
 
     return {}
 
+
+'''
+Raises a value error when channel id does not exist
+
+'''
+
 def channel_details(token, channel_id):
     requester = tokcheck(token)
     if channel_id not in channels:
@@ -266,7 +278,8 @@ def channel_details(token, channel_id):
     return channels[channel_id].details()
 
 def channel_messages(token, channel_id, start):
-    requester = tokcheck(token)
+    requester = tokcheck(token)    
+    update()
     check_channel_exists(channel_id)
     
     authcheck(requester, channel = channel_id)
@@ -363,6 +376,10 @@ def channels_delete(token, channel_id):
     
     return {}
 
+
+'''
+if message > 1000 chars val error
+'''
 def message_sendlater(token, channel_id, message, time_sent_millis):
     global channels, messages, messages_to_send
     print("Time: ", time_sent_millis  )
@@ -372,15 +389,12 @@ def message_sendlater(token, channel_id, message, time_sent_millis):
 
     check_channel_exists(channel_id)
 
-    if len(message) > 1000:
-        raise ValueError(f"message_sendlater: Message {message[:10]} exceeded max length")
     if time_sent < datetime.now():
         raise ValueError(f"message_sendlater: time is {datetime.now() - time_sent} in the past")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
     
     message_obj = Message(message, channel_id, u_id, time_sent)
-    messages_to_send.append(message_obj)
     print(messages_to_send)
     return {}
 
@@ -392,13 +406,10 @@ def message_send(token, channel_id, message):
     global channels, messages
     check_channel_exists(channel_id)
 
-    if len(message) > 1000:
-        raise ValueError(f"message_send: Message {message[:10]} exceeded max length")
     u_id = tokcheck(token)
     authcheck(u_id, channel = channel_id)
     
     message_obj = Message(message, channel_id, u_id)
-    channels[channel_id].send_message(message_obj.get_id())
 
     return {}
 
@@ -427,7 +438,7 @@ def message_edit(token, message_id, message):
         return {}
     u_id = tokcheck(token)
     check_message_exists(message_id)
-    mess = messages[message_id]
+    mess = get_messages()[message_id] 
     authcheck(u_id, channel = mess.get_channel())
     print("owners:",channels[mess.get_channel()].get_owners())
     authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
@@ -582,13 +593,36 @@ def user_profile_sethandle(token, handle_str):
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     return {}
 
-def standup_start(token, channel_id):
+def standup_start(token, channel_id, length):
+    global channels
+    u_id = tokcheck(token)
+    check_channel_exists(channel_id)
+    authcheck(u_id, channel = channel_id)
+
+    # Raises an error if standup already active
+    channels[channel_id].standup_start(u_id, length)
 
     return {}
 
 def standup_send(token, channel_id, message):
+    global channels
+    u_id = tokcheck(token)
+    check_channel_exists(channel_id)
+    authcheck(u_id, channel = channel_id)
+    channels[channel_id].standup_send(u_id, message)
 
     return {}
+
+def standup_active(token, channel_id):
+    global channels
+    u_id = tokcheck(token)
+    check_channel_exists(channel_id)
+    
+    is_active = channels[channel_id].standup_active()
+    time_finish = channels[channel_id].standup_time() if is_active else None
+    
+    return dict(is_active = is_active,
+                time_finish = time_finish)
 
 def search(token, query_str):
     return {}
