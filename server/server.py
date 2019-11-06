@@ -19,6 +19,7 @@ OWNER = 1
 
 MAX_STANDUP_LEN = 60*15
 MAX_MESSAGE_LEN = 1000
+STANDUP_START_STR = "Standup results."
 
 private_key = "secure password"
 
