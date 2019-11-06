@@ -1,12 +1,10 @@
 from datetime import datetime, timedelta
-from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages, get_messages_to_send
+from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages, get_messages_to_send, MAX_MESSAGE_LEN
 
-
-MAX_LEN = 1000
 class Message:
 
-    def __init__(self, text, channel, sender, time = None):
-        if MAX_LEN < len(text):
+    def __init__(self, text, channel, sender, time = datetime.now()):
+        if MAX_MESSAGE_LEN < len(text):
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         
         send_immediate = (time == None) 
@@ -76,7 +74,7 @@ class Message:
             self._reacts.get(react)._u_ids.add(user)
     
     def set_message(self, message):
-        if MAX_LEN < len(message):
+        if MAX_MESSAGE_LEN < len(message):
             raise ValueError(f"message.__init__: '{message[:10]}...' exceeds maximum allowable length.") 
         
         self._message = message
