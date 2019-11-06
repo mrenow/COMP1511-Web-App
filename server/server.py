@@ -34,6 +34,10 @@ tokcount = 0
 valid_toks = set()
 
 
+TEST_INVALID_MESSAGE = "0"*1001
+TEST_VALID_MESSAGE = "0"*1000
+
+
 def inc_users():
     global user_count
     user_count += 1
@@ -176,26 +180,6 @@ def killtok(token) -> Dict["is_success", bool]:
         return dict(is_success = True)
     return dict(is_success = False)
 
-
-
-TEST_OWNER_EMAIL = "TODO"
-TEST_OWNER_PASSWORD = "TODO"
-TEST_CHANNEL_EMAIL = "TODO"
-TEST_CHANNEL_PASSWORD = "TODO"
-TEST_EMAIL = "TODO"
-TEST_PASSWORD = "TODO"
-TEST_CHANNEL_OWNER_UID = "TODO"
-TEST_NORMAL_UID = "TODO"
-TEST_INVALID_UID = "TODO"
-TEST_INVALID_PASSWORD = TEST_PASSWORD + " "
-TEST_INVALID_EMAIL = "TODO"
-TEST_INVALID_MESSAGE = "0"*1001
-TEST_VALID_MESSAGE = "0"*1000
-TEST_VALID_CHANNEL_ID = "TODO"  
-TEST_INVALID_CHANNEL_ID = "TODO"
-TEST_VALID_CHANNEL_OWNER = "TODO"
-
-TEST_VALID_REACT = 0
 
 
 def auth_login(email, password):
