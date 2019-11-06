@@ -16,11 +16,11 @@ def get_message_id(token, channel, index):
 # Creates an environment of a admin (channel owner) and a user in one channel
 def message_env():
     global users, channels, messages
-    auth_response = auth_register("admin@email.com", "adminpass", "first", "last")
+    auth_response = auth_register("admin@email.com", "adminpass", "afirst", "alast")
     print(users, channels, messages)
     admintok, admin = auth_response["token"], auth_response["u_id"]
     
-    auth_response = auth_register("user@email.com", "userpass", "first", "last")
+    auth_response = auth_register("user@email.com", "userpass", "ufirst", "ulast")
     usertok, user = auth_response["token"], auth_response["u_id"]
 
     channel = channels_create(admintok, "channel1", is_public = True)["channel_id"]
@@ -32,7 +32,7 @@ def message_env():
 
 # Adds an owner to the specified channel
 def channel_owner_env(admintok, channel):
-    auth_response = auth_register("owner@email.com", "ownerpass", "first", "last")
+    auth_response = auth_register("owner@email.com", "ownerpass", "ofirst", "olast")
     ownertok, owner = auth_response["token"], auth_response["u_id"]
 
     channel_addowner(admintok, channel, owner)
@@ -40,7 +40,7 @@ def channel_owner_env(admintok, channel):
 
 # Adds a regular member with no permissions
 def extra_member_env(id):
-    auth_response = auth_register(f"user{id}@email.com", f"user{id}pass", "first", "last")
+    auth_response = auth_register(f"user{id}@email.com", f"user{id}pass", f"u{id}first", f"u{id}last")
     return auth_response["token"], auth_response["u_id"]
 
 
@@ -321,26 +321,36 @@ def test_standup_test(clear):
     
     # Not in channel
     with pytest.raises(AccessError):
-        standup_start(admintok, channel)
+        standup_start(admintok, channel, 10)
 
     # Invalid because no standup in session
     with pytest.raises(AccessError):
         standup_send(admintok, channel, "standup")
 
+    # Start standup
     channel_join(admintok, channel)
+    finish = standup_start(admintok, channel, 3)["time_finish"]
 
-    finish = standup_start(admintok, channel)["time_finish"]
     # Cannot start two standups
     with pytest.raises(ValueError):
-        standup_start(admintok, channel)["time_finish"]
+        standup_start(admintok, channel, 10)["time_finish"]
     
-    # Finish time to be in 15 minutes +- 5 seconds
-    assert timedelta(seconds = -5) < finish - (datetime.now() + timedelta(minutes=15)) < timedelta(seconds = 5)
+    # Finish time to be in 15 minutes +- 1 second
+    assert timedelta(seconds = -1) < finish - (datetime.now() + timedelta(seconds = 3)) < timedelta(seconds = 1)
     
     standup_send(usertok, channel, "I walked my dog")
     standup_send(admintok, channel, "I stayed up till 4 am redefining specifications")
-    assert_message(admintok, channel, ["I stayed up till 4 am redefining specifications", "I walked my dog"], [user, admin])
-    
+    # Check no messages have been sent
+    assert_message(admintok, channel, [], [])
+    time.sleep(3)
+    assert_message(admintok, channel, [f"{STANDUP_INTRO}\nufirst: I walked my dog\nafirst: I stayed up till 4 am redefining specifications"])
+
+
+    message_send(usertok, channel, "I am a mongoose")
+    assert_message(admintok, channel, ["I am a mongoose"], [user])
+
+    sleep(100)
+
     with pytest.raises(ValueError):
         standup_send(admintok, channel, TEST_INVALID_MESSAGE)
     standup_send(admintok, channel, TEST_VALID_MESSAGE)
@@ -358,7 +368,7 @@ def test_standup_test(clear):
     with pytest.raises(ValueError):
         standup_send(admintok, -1, TEST_INVALID_MESSAGE)
     with pytest.raises(ValueError):
-        standup_start(admintok, -1)
+        standup_start(admintok, -1, 10)
 
 # Checking that id = 1 only for iter 2
 def assert_react(token, channel, index, users):

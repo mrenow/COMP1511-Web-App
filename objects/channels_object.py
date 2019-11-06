@@ -61,14 +61,14 @@ class Channel:
             raise ValueError(f"Standup duration ({seconds}s) exceeds maximum ({MAX_STANDUP_LEN}s).")
 
         # Overwrite old standup message with new unsent message.
-        self._standup_message_id = Message("Standup results: \n", self.id, user, datetime.now() + timedelta(seconds = seconds)).get_id()
+        self._standup_message_id = Message("Standup results:", self.id, user, datetime.now() + timedelta(seconds = seconds)).get_id()
 
     
     def standup_send(self, user, text):
         if not self.standup_active():
             raise ValueError(f"No standup active in channel {self.name}")
         
-        full_text = f"{get_users()[user].get_name_first()}: {text}\n"
+        full_text = f"\n{get_users()[user].get_name_first()}: {text}"
         message = get_messages()[self._standup_message_id]
 
         # Append full_text to standup message.
