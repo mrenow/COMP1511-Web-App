@@ -1,12 +1,10 @@
 from datetime import datetime, timedelta
 from .messages import Message
-from server.server import get_num_channels, inc_channels, get_users, get_channels, get_messages
+from server.server import get_num_channels, inc_channels, get_users, get_channels, get_messages, MAX_MESSAGE_LEN, STANDUP_START_STR, MAX_STANDUP_SECONDS 
 '''
 get_channels
 '''
 
-
-MAX_STANDUP_LEN = 60*15
 
 class Channel:
     def __init__(self, name, owner, is_public):
@@ -57,16 +55,21 @@ class Channel:
     def standup_start(self, user, seconds):
         if self.standup_active():
             raise ValueError(f"Standup already active in channel {self.name}.")
-        if seconds > MAX_STANDUP_LEN:
-            raise ValueError(f"Standup duration ({seconds}s) exceeds maximum ({MAX_STANDUP_LEN}s).")
+        if seconds > MAX_STANDUP_SECONDS:
+            raise ValueError(f"Standup duration ({seconds}s) exceeds maximum ({MAX_STANDUP_SECONDS}s).")
 
         # Overwrite old standup message with new unsent message.
-        self._standup_message_id = Message("Standup results:", self.id, user, datetime.now() + timedelta(seconds = seconds)).get_id()
-
+        time_finish = datetime.now() + timedelta(seconds = seconds)
+        self._standup_message_id = Message(STANDUP_START_STR, self.id, user, time = time_finish, is_standup = True).get_id()
+        
+        return time_finish
+    
     
     def standup_send(self, user, text):
         if not self.standup_active():
             raise ValueError(f"No standup active in channel {self.name}")
+        if MAX_MESSAGE_LEN < len(text):
+            raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.")
         
         full_text = f"\n{get_users()[user].get_name_first()}: {text}"
         message = get_messages()[self._standup_message_id]

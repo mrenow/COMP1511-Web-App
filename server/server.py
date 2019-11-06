@@ -17,7 +17,7 @@ ADMIN = 2
 MEMBER = 3
 OWNER = 1
 
-MAX_STANDUP_LEN = 60*15
+MAX_STANDUP_SECONDS = 60*15
 MAX_MESSAGE_LEN = 1000
 STANDUP_START_STR = "Standup results."
 
@@ -586,9 +586,10 @@ def standup_start(token, channel_id, length):
     authcheck(u_id, channel = channel_id)
 
     # Raises an error if standup already active
-    channels[channel_id].standup_start(u_id, length)
+    time_finish = channels[channel_id].standup_start(u_id, length)
 
-    return {}
+
+    return dict(time_finish = time_finish)
 
 def standup_send(token, channel_id, message):
     global channels

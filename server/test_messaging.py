@@ -10,7 +10,6 @@ def clear():
 
 # for index < 50
 def get_message_id(token, channel, index):
-    print(channel_messages(token, channel, start = 0))
     return channel_messages(token, channel, start = 0)["messages"][index]["message_id"]
 
 # Creates an environment of a admin (channel owner) and a user in one channel
@@ -340,30 +339,25 @@ def test_standup_test(clear):
     
     standup_send(usertok, channel, "I walked my dog")
     standup_send(admintok, channel, "I stayed up till 4 am redefining specifications")
-    # Check no messages have been sent
-    assert_message(admintok, channel, [], [])
-    time.sleep(3)
-    assert_message(admintok, channel, [f"{STANDUP_INTRO}\nufirst: I walked my dog\nafirst: I stayed up till 4 am redefining specifications"])
 
-
-    message_send(usertok, channel, "I am a mongoose")
-    assert_message(admintok, channel, ["I am a mongoose"], [user])
-
-    sleep(100)
-
+    # Bad message
     with pytest.raises(ValueError):
         standup_send(admintok, channel, TEST_INVALID_MESSAGE)
-    standup_send(admintok, channel, TEST_VALID_MESSAGE)
-
-    channel_leave(admintok, channel)
-        
+    standup_send(usertok, channel, TEST_VALID_MESSAGE)
+    
     # Not in channel
+    channel_leave(admintok, channel)
     with pytest.raises(AccessError):
         standup_send(admintok, channel, "not part of yo club anymo")
-
-    # Check that messages unchanged
-    assert_message(admintok, channel, ["I stayed up till 4 am redefining specifications", "I walked my dog"], [user, admin])
     
+    # Check no messages have been sent
+    assert_message(usertok, channel, [], [])
+    message_send(usertok, channel, "I am a mongoose")
+    assert_message(usertok, channel, ["I am a mongoose"], [user])
+    
+    time.sleep(3)
+    assert_message(usertok, channel, [f"{STANDUP_START_STR}\nufirst: I walked my dog\nafirst: I stayed up till 4 am redefining specifications\nufirst: {TEST_VALID_MESSAGE}", "I am a mongoose"], [admin, user])
+
     # Bad channel_id
     with pytest.raises(ValueError):
         standup_send(admintok, -1, TEST_INVALID_MESSAGE)

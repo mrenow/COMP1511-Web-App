@@ -3,23 +3,26 @@ from server.server import get_num_messages, inc_messages, get_users, get_channel
 
 class Message:
 
-    def __init__(self, text, channel, sender, time = datetime.now()):
+    def __init__(self, text, channel, sender, time = None, is_standup = False):
         if MAX_MESSAGE_LEN < len(text):
-            raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
+            raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.") 
         
         send_immediate = (time == None) 
         
         if send_immediate:
-            self._channel_id = channel
             self._time_sent = datetime.now()
         else:
+            self._time_sent = time
             if time < datetime.now() - timedelta(minutes = 1):
-                raise ValueError(f"Message: Time {time} is in the past.")
+                raise ValueError(f"Time {time} is in the past.")
 
+
+        self._channel_id = channel
         self._message = text
         self._u_id = sender
             
         self._is_sent = False # Set to true by channel
+        self._is_standup = is_standup
         self._is_pinned = False
         self._reacts = {} # Dictionary of react id: react object.
 
@@ -73,11 +76,11 @@ class Message:
         else:
             self._reacts.get(react)._u_ids.add(user)
     
-    def set_message(self, message):
-        if MAX_MESSAGE_LEN < len(message):
-            raise ValueError(f"message.__init__: '{message[:10]}...' exceeds maximum allowable length.") 
+    def set_message(self, text):
+        if not self._is_standup and MAX_MESSAGE_LEN < len(text):
+            raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.") 
         
-        self._message = message
+        self._message = text
 
     def remove_react(self, user, react):
         self._reacts.get(react)._u_ids.remove(user)
