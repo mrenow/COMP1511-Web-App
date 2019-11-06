@@ -65,15 +65,52 @@ def get_num_channels():
     global num_channels
     return num_channels
 
-def get_channels():
-    global channels
-    return channels
-def get_users():
-    global users
-    return users
-def get_messages():
-    global messages
-    return messages
+def get_channel(channel_id):
+    try:
+        return channels[channel_id]
+    except(KeyError):
+        raise ValueError(f"Channel {channel_id} does not exist. channels: {channels}")
+    
+def get_user(u_id):
+    try:
+        return users[u_id]
+    except(KeyError):
+        raise ValueError(f"User {u_id} does not exist. users: {users}")
+
+def get_message(message_id):
+    try:
+        return messages[message_id]
+    except(KeyError):
+        raise ValueError(f"Message {message_id} does not exist. messages: {messages}")
+
+def set_user(u_id, user_obj):
+    users[u_id] = user_obj
+
+def set_channel(channel_id, channel_obj):
+    channels[channel_id] = channel_obj
+
+def set_message(message_id, message_obj):
+    messages[message_id] = message_obj
+
+def remove_channel(channel_id):
+    try:
+        del channels[channel_id]
+    except(KeyError):
+        raise ValueError(f"Channel {channel_id} does not exist. channels: {channels}")
+    
+def remove_user(u_id):
+    try:
+        del users[u_id]
+    except(KeyError):
+        raise ValueError(f"User {u_id} does not exist. users: {users}")
+
+def remove_message(message_id):
+    try:
+        del messages[message_id]
+    except(KeyError):
+        raise ValueError(f"Message {message_id} does not exist. messages: {messages}")
+    
+
 def get_messages_to_send():
     global messages_to_send
     return messages_to_send
@@ -102,7 +139,7 @@ def update():
         for index, m in enumerate(messages_to_send):
             print(m.get_time(), datetime.now())
             if m.get_time() < datetime.now():
-                channels[m.get_channel()].send_message(m.get_id())
+                get_channel(m.get_channel()).send_message(m.get_id())
                 del messages_to_send[index]
     # Always release lock please thankyou
     finally:
@@ -132,29 +169,29 @@ Only allow if is ( owner of channel or admin or particular user ) and in channel
 >>> authcheck(u_id, user = channel_id) 
 '''
 
-def authcheck(u_id, user = None, channel = None, chowner = None, admin = False):
+def authcheck(client_id, user = None, channel = None, chowner = None, admin = False):
 
     auth = False 
 
-    if user != None and user == u_id:
+    if user != None and user == client_id:
         auth = True
-    if channel != None and channel in users[u_id].get_channels():
+    if channel != None and channel in get_user(client_id).get_channels():
         auth = True
-    if chowner != None and u_id in channels[chowner].get_owners():
+    if chowner != None and client_id in get_channel(chowner).get_owners():
         auth = True
-    if admin and users[u_id].get_permission() in (OWNER,ADMIN): 
+    if admin and get_user(client_id).get_permission() in (OWNER,ADMIN): 
         auth = True
     if auth:
         return
 
     if user != None:
-        raise AccessError(f"auth: User {u_id} is not user {user}.")
+        raise AccessError(f"auth: User {client_id} is not user {user}.")
     if channel != None:
-        raise AccessError(f"auth: User {u_id} is not in channel {channel}")
+        raise AccessError(f"auth: User {client_id} is not in channel {channel}")
     if chowner != None:
-        raise AccessError(f"auth: User {u_id} is not an owner of {channel}.")  
+        raise AccessError(f"auth: User {client_id} is not an owner of {channel}.")  
     if admin:
-        raise AccessError(f"auth: User {u_id} is not admin")
+        raise AccessError(f"auth: User {client_id} is not admin")
 
 
 def tokcheck(token) -> int:   
@@ -228,7 +265,7 @@ def auth_register(email, password, name_first, name_last):
         
         obj = User(name_first, name_last, email, password)
         u_id = obj.get_id()
-        users[u_id] = obj
+        set_user(u_id,obj)
         return dict(token = maketok(u_id), u_id = u_id)
 
 def auth_passwordreset_request(email):
@@ -236,15 +273,15 @@ def auth_passwordreset_request(email):
 def auth_passwordreset_reset(reset_code, new_password):
     return {}
 def channel_invite(token, channel_id, u_id):
-    requester = tokcheck(token) 
+    client_id = tokcheck(token) 
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
     if u_id not in users:
         raise ValueError((f"channel_invite: User does not exist."))
-    if requester not in channels[channel_id].get_members():
+    if client_id not in get_channel(channel_id).get_members():
         raise AccessError((f"auth: User is not a member of this channel"))
     
-    channels[channel_id].join(u_id)
+    get_channel(channel_id).join(u_id)
 
     return {}
 
@@ -255,80 +292,80 @@ Raises a value error when channel id does not exist
 '''
 
 def channel_details(token, channel_id):
-    requester = tokcheck(token)
+    client_id = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
-    if requester not in channels[channel_id].get_members():
+    if client_id not in get_channel(channel_id).get_members():
         raise AccessError((f"auth: User is not a member of this channel"))
     
-    return channels[channel_id].details()
+    return get_channel(channel_id).details()
 
 def channel_messages(token, channel_id, start):
-    requester = tokcheck(token)    
+    client_id = tokcheck(token)    
     update()
     check_channel_exists(channel_id)
     
-    authcheck(requester, channel = channel_id)
-    if start > channels[channel_id].get_num_messages():
+    authcheck(client_id, channel = channel_id)
+    if start > get_channel(channel_id).get_num_messages():
         raise ValueError(f"channel_messages: Start index {start} out of bounds on request to channel {channel_id}")
 
     end = start + 50
-    message_list = channels[channel_id].get_message_list()
+    message_list = get_channel(channel_id).get_message_list()
     if -start-1 < -len(message_list) or -start-51 < -len(message_list):
         end = -1
-    return dict(messages = channels[channel_id].channel_messages(start, requester),
+    return dict(messages = get_channel(channel_id).channel_messages(start, client_id),
             start =  start,
             end = end)
 
 def channel_leave(token, channel_id):
-    requester = tokcheck(token)
+    client_id = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
-    channels[channel_id].leave(requester)
+    get_channel(channel_id).leave(client_id)
     return {}
 
 def channel_join(token, channel_id):
-    requester = tokcheck(token)
+    client_id = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
-    if channels[channel_id].get_is_public() == False:
+    if get_channel(channel_id).get_is_public() == False:
         raise AccessError("channel is private")
-    channels[channel_id].join(requester)
+    get_channel(channel_id).join(client_id)
     return {}
 
 def channel_addowner(token, channel_id, u_id):
-    requester = tokcheck(token)
+    client_id = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
-    authcheck (requester, chowner = channel_id, admin = True)
-    if u_id in channels[channel_id].get_owners():
+    authcheck (client_id, chowner = channel_id, admin = True)
+    if u_id in get_channel(channel_id).get_owners():
         raise ValueError("User already an owner")
-    channels[channel_id].add_owner(u_id)
+    get_channel(channel_id).add_owner(u_id)
 
     return {}
 
 def channel_removeowner(token, channel_id, u_id):
-    requester = tokcheck(token)
+    client_id = tokcheck(token)
     if channel_id not in channels:
         raise ValueError((f"channel_invite: Channel does not exist."))
-    authcheck (requester, chowner = channel_id, admin = True)
-    if u_id not in channels[channel_id].get_owners():
+    authcheck (client_id, chowner = channel_id, admin = True)
+    if u_id not in get_channel(channel_id).get_owners():
         raise ValueError("User is not an owner")
-    channels[channel_id].remove_owner(u_id)
+    get_channel(channel_id).remove_owner(u_id)
 
     return {}
 def channels_list(token):
-    u_id = tokcheck(token)
+    client_id = tokcheck(token)
     channels_list = []
-    for x in users[u_id].get_channels():
-        #channels_list.append(channels[x].details())
-        d = dict(channel_id = channels[x].get_id(),
-                 name = channels[x].get_name())
+    for x in get_user(client_id).get_channels():
+        #channels_list.append(get_channel(x).details())
+        d = dict(channel_id = get_channel(x).get_id(),
+                 name = get_channel(x).get_name())
         channels_list.append(d)
     return {"channels": channels_list}
 
 def channels_listall(token):
-    u_id = tokcheck(token)
+    client_id = tokcheck(token)
     channels_list = []
     for x in channels.values():
         d = dict(channel_id = x.get_id(),
@@ -339,16 +376,16 @@ def channels_listall(token):
 
 def channels_create(token, name, is_public):
     global channels
-    u_id = tokcheck(token)
-    authcheck(u_id, admin = True)
+    client_id = tokcheck(token)
+    authcheck(client_id, admin = True)
     
     if len(name) > 20:
         raise ValueError("Name cannot be over 20 characters")
     
-    obj = Channel(name, u_id, is_public)
+    obj = Channel(name, client_id, is_public)
     print("CHANNEL_ID", obj.get_id())
-    users[u_id].get_channels().add(obj.get_id())
-    channels[obj.get_id()] = obj
+    get_user(client_id).get_channels().add(obj.get_id())
+    set_channel(obj.get_id(),obj)
     
     return {"channel_id": obj.get_id()}
 
@@ -357,8 +394,8 @@ Added to the specification.
 '''
 
 def channels_delete(token, channel_id):
-    u_id = tokcheck(token)
-    authcheck(u_id, channel = channel_id)
+    client_id = tokcheck(token)
+    authcheck(client_id, channel = channel_id)
     
     return {}
 
@@ -377,10 +414,10 @@ def message_sendlater(token, channel_id, message, time_sent_millis):
 
     if time_sent < datetime.now():
         raise ValueError(f"message_sendlater: time is {datetime.now() - time_sent} in the past")
-    u_id = tokcheck(token)
-    authcheck(u_id, channel = channel_id)
+    client_id = tokcheck(token)
+    authcheck(client_id, channel = channel_id)
     
-    message_obj = Message(message, channel_id, u_id, time_sent)
+    message_obj = Message(message, channel_id, client_id, time_sent)
     print(messages_to_send)
     return {}
 
@@ -392,10 +429,10 @@ def message_send(token, channel_id, message):
     global channels, messages
     check_channel_exists(channel_id)
 
-    u_id = tokcheck(token)
-    authcheck(u_id, channel = channel_id)
+    client_id = tokcheck(token)
+    authcheck(client_id, channel = channel_id)
     
-    message_obj = Message(message, channel_id, u_id)
+    message_obj = Message(message, channel_id, client_id)
 
     return {}
 
@@ -405,14 +442,13 @@ Ezra: done
 def message_remove(token, message_id):
     check_message_exists(message_id)
 
-    u_id = tokcheck(token)
-    mess = messages[message_id]
-    print("    ",messages[message_id].get_message())
-    authcheck(u_id, channel = mess.get_channel())
-    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    client_id = tokcheck(token)
+    mess = get_message(message_id)
+    print("    ",get_message(message_id).get_message())
+    authcheck(client_id, channel = mess.get_channel())
+    authcheck(client_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
     mess.remove()
     return {}
-
 
 '''
 Ezra: done 
@@ -422,12 +458,12 @@ def message_edit(token, message_id, message):
     if not message:
         message_remove(token, message_id)
         return {}
-    u_id = tokcheck(token)
+    client_id = tokcheck(token)
     check_message_exists(message_id)
-    mess = get_messages()[message_id] 
-    authcheck(u_id, channel = mess.get_channel())
-    print("owners:",channels[mess.get_channel()].get_owners())
-    authcheck(u_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
+    mess = get_message(message_id) 
+    authcheck(client_id, channel = mess.get_channel())
+    print("owners:",get_channel(mess.get_channel()).get_owners())
+    authcheck(client_id, user = mess.get_user(), chowner = mess.get_channel(), admin = True)
     
     mess.set_message(message)
     return {}
@@ -436,17 +472,17 @@ def message_edit(token, message_id, message):
 Ezra: done 
 '''
 def message_react(token, message_id, react_id): 
-    u_id = tokcheck(token)
-    mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_channel())
+    client_id = tokcheck(token)
+    mess = get_message(message_id)
+    authcheck(client_id, channel = mess.get_channel())
     ### Iteration 2 only 
     if react_id != 1:
         raise ValueError(f"message_react: React id {react_id} is not valid on message {mess.get_id}: '{mess.get_message()[:10]}...'")
     ###
 
-    if mess.has_react(react_id) and u_id in mess.get_react(react_id).get_users():
-        raise ValueError(f"message_react: User {u_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
-    mess.add_react(u_id, react_id)
+    if mess.has_react(react_id) and client_id in mess.get_react(react_id).get_users():
+        raise ValueError(f"message_react: User {client_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+    mess.add_react(client_id, react_id)
     
     return {}
 
@@ -454,17 +490,17 @@ def message_react(token, message_id, react_id):
 Ezra: done 
 '''
 def message_unreact(token, message_id, react_id):
-    u_id = tokcheck(token)
-    mess = messages[message_id]
-    authcheck(u_id, channel = mess.get_channel())
+    client_id = tokcheck(token)
+    mess = get_message(message_id)
+    authcheck(client_id, channel = mess.get_channel())
 
     if not mess.has_react(react_id):
         raise ValueError(f"message_unreact: React_id {react_id} not on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
        
-    if u_id not in mess.get_react(react_id).get_users():
-        raise ValueError(f"message_unreact: User {u_id} does not have react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+    if client_id not in mess.get_react(react_id).get_users():
+        raise ValueError(f"message_unreact: User {client_id} does not have react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
     
-    mess.remove_react(u_id, react_id)
+    mess.remove_react(client_id, react_id)
     
     return {}
 
@@ -472,12 +508,12 @@ def message_unreact(token, message_id, react_id):
 Ezra: done 
 '''
 def message_pin(token, message_id):        
-    u_id = tokcheck(token)
-    mess = messages[message_id]
+    client_id = tokcheck(token)
+    mess = get_message(message_id)
     if mess.is_pinned():
         raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
   
-    authcheck(u_id, chowner = mess.get_channel(), admin = True)
+    authcheck(client_id, chowner = mess.get_channel(), admin = True)
     
     mess.set_pin(True)
     
@@ -492,12 +528,12 @@ Access Error:
 returns
 '''
 def message_unpin(token, message_id):   
-    u_id = tokcheck(token)
-    mess = messages[message_id]
+    client_id = tokcheck(token)
+    mess = get_message(message_id)
     
     if not mess.is_pinned():
         raise ValueError(f"message_unpin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is not pinned.")
-    authcheck(u_id, chowner = mess.get_channel(), admin = True)
+    authcheck(client_id, chowner = mess.get_channel(), admin = True)
     mess.set_pin(False)
     
     return {}
@@ -509,7 +545,7 @@ def user_profile(token, u_id):
     global users
     if u_id not in users: 
         raise ValueError("Invalid User id or User does not exist")    
-    user = users[u_id]
+    user = get_user(u_id)
     return dict(
         email = user.get_email(),
         name_first = user.get_name_first(),
@@ -519,8 +555,8 @@ def user_profile(token, u_id):
   
 def user_profile_setname(token, name_first, name_last):
     # Check for authorisation
-    user_id = tokcheck(token)
-    authcheck(user_id)
+    client_id = tokcheck(token)
+    authcheck(client_id)
     # Check if first and last names are within length restrictions otherwise return a ValueError
     if len(name_first) > 50: 
         raise ValueError("First name provided is too long")
@@ -531,14 +567,14 @@ def user_profile_setname(token, name_first, name_last):
     if len(name_last) < 1: 
         raise ValueError("Last name provided is too short")
     
-    users[user_id].set_name_first(name_first)
-    users[user_id].set_name_last(name_last)
+    get_user(client_id).set_name_first(name_first)
+    get_user(client_id).set_name_last(name_last)
     
     return {}
 def user_profile_setemail(token, email):
     # Check for authorisation
-    user_id = tokcheck(token)
-    authcheck(user_id)
+    client_id = tokcheck(token)
+    authcheck(client_id)
     # Check if email is in correct format
     global regex
     if(re.search(regex,email)):  
@@ -546,10 +582,10 @@ def user_profile_setemail(token, email):
         # Check for email address duplicates
         for user in users.values():
             # Do not raise error if user does not change field
-            if user.get_id() != user_id and user._email == email:
+            if user.get_id() != client_id and user._email == email:
                 raise ValueError("Email already in use")
 
-        users[user_id].set_email(email)
+        get_user(client_id).set_email(email)
     
     else:  
         raise ValueError("Invalid Email Address")
@@ -557,8 +593,8 @@ def user_profile_setemail(token, email):
     return {}
 def user_profile_sethandle(token, handle_str):
     # Check for authorisation
-    user_id = tokcheck(token)
-    authcheck(user_id)
+    client_id = tokcheck(token)
+    authcheck(client_id)
     # Check if handle str is the right len
     if len(handle_str) > 20:
         raise ValueError("Handle name is too long")  
@@ -568,10 +604,10 @@ def user_profile_sethandle(token, handle_str):
     global users
     for user in users.values():
         # Do not raise error if user keeps their own name unchanged
-        if user.get_id() != user_id and user._handle_str == handle_str:
+        if user.get_id() != client_id and user._handle_str == handle_str:
 
             raise ValueError("Handle name already in use")
-    users[user_id].set_handle_str(handle_str)
+    get_user(client_id).set_handle_str(handle_str)
     
 
     return {}
@@ -581,32 +617,32 @@ def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
 
 def standup_start(token, channel_id, length):
     global channels
-    u_id = tokcheck(token)
+    client_id = tokcheck(token)
     check_channel_exists(channel_id)
-    authcheck(u_id, channel = channel_id)
+    authcheck(client_id, channel = channel_id)
 
     # Raises an error if standup already active
-    time_finish = channels[channel_id].standup_start(u_id, length)
+    time_finish = get_channel(channel_id).standup_start(client_id, length)
 
 
     return dict(time_finish = time_finish)
 
 def standup_send(token, channel_id, message):
     global channels
-    u_id = tokcheck(token)
+    client_id = tokcheck(token)
     check_channel_exists(channel_id)
-    authcheck(u_id, channel = channel_id)
-    channels[channel_id].standup_send(u_id, message)
+    authcheck(client_id, channel = channel_id)
+    get_channel(channel_id).standup_send(client_id, message)
 
     return {}
 
 def standup_active(token, channel_id):
     global channels
-    u_id = tokcheck(token)
+    client_id = tokcheck(token)
     check_channel_exists(channel_id)
     
-    is_active = channels[channel_id].standup_active()
-    time_finish = channels[channel_id].standup_time() if is_active else None
+    is_active = get_channel(channel_id).standup_active()
+    time_finish = get_channel(channel_id).standup_time() if is_active else None
     
     return dict(is_active = is_active,
                 time_finish = time_finish.timestamp() if time_finish else time_finish)
@@ -622,7 +658,7 @@ def admin_userpermission_change(token, u_id, permission_id):
         raise ValueError((f"channel_invite: User does not exist."))
     if permission_id not in (OWNER, ADMIN, MEMBER):
         raise ValueError("Permission ID not valid")
-    users[u_id].set_permission(permission_id)
+    get_user(u_id).set_permission(permission_id)
     return {}
 
 def relevance_score(string):

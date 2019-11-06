@@ -333,7 +333,7 @@ def test_standup(clear):
     finish = standup_start(admintok, channel, 3)["time_finish"]
 
 
-    assert standup_active(usertok, channel) == dict(is_active = True, time_finish = finish)
+    assert standup_active(usertok, channel) == dict(is_active = True, time_finish = finish.timestamp())
 
     # Cannot start two standups
     with pytest.raises(ValueError):

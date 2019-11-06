@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages, get_messages_to_send, MAX_MESSAGE_LEN
+from server.server import get_num_messages, inc_messages, get_user, get_channel, get_message, set_message, remove_message, get_messages_to_send, MAX_MESSAGE_LEN
 
 class Message:
 
@@ -28,12 +28,12 @@ class Message:
 
         self._message_id = get_num_messages()
 
-        get_messages()[self._message_id] = self 
+        set_message(self._message_id, self)
         inc_messages()
 
         # Automatically send or send later.
         if send_immediate:
-            get_channels()[channel].send_message(self._message_id)
+            get_channel(channel).send_message(self._message_id)
         else:
             get_messages_to_send().append(self)
         
@@ -64,8 +64,8 @@ class Message:
         return self._is_pinned
 
     def remove(self):
-        get_channels()[self._channel_id].delete_message(self._message_id)
-        del get_messages()[self._message_id]
+        get_channel(self._channel_id).delete_message(self._message_id)
+        remove_message(self._message_id)
 
     def set_pin(self, pin):
         self._is_pinned = pin
