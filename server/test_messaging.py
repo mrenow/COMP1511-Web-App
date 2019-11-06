@@ -102,7 +102,7 @@ def test_channel_messages(clear):
     with pytest.raises(ValueError):
         channel_messages(admintok, channel, start = 101)
 
-def test_message_limit_test(clear):
+def test_message_limit(clear):
     admintok, admin, usertok, user, channel = message_env()
 
     # Send is valid
@@ -120,7 +120,7 @@ def test_message_limit_test(clear):
     
 
 # Tests message order, user id on message
-def test_send_test(clear):
+def test_send(clear):
     admintok, admin, usertok, user, channel = message_env()
 
     message_send(usertok, channel, "testing")
@@ -145,7 +145,7 @@ def test_send_test(clear):
     
 
 # Tests message order on send later
-def test_send_later_test(clear):
+def test_send_later(clear):
     admintok, admin, usertok, user, channel = message_env()
     user1tok, user1 = extra_member_env(1)
 
@@ -174,7 +174,7 @@ def test_send_later_test(clear):
     with pytest.raises(AccessError):
         message_sendlater(user1tok, channel, "can i have mod", ms_offset(100))
 
-def test_edit_message_test(clear):
+def test_edit_message(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
     user1tok, user1 = extra_member_env(1)
@@ -237,7 +237,7 @@ def test_edit_message_test(clear):
     
 #assert_message(admintok, channel, ["0","1","2","3","4","5","6","7","8"],  [owner]*3 + [user]*3 + [admin]*3)
     
-def test_remove_message_test(clear):
+def test_remove_message(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
     print("TEST_CHANNEL",channel)
@@ -288,7 +288,7 @@ def test_remove_message_test(clear):
     # Assert removes did not go through
     assert_message(usertok, channel, ["0","2","3","4","5","7","8"], [owner]*2 + [user]*3 + [admin]*2)
 
-def test_pin_test(clear):
+def test_pin(clear):
     admintok, admin, usertok, user, channel = message_env()
     message_send(usertok, channel, "ello")
 
@@ -314,10 +314,12 @@ def test_pin_test(clear):
         message_pin(admintok, get_message_id(admintok, channel, 0))
 
 # To consider: how should remove, edit, etc function within a standup
-def test_standup_test(clear):
+def test_standup(clear):
     admintok, admin, usertok, user, channel = message_env()
     channel_leave(admintok, channel)
     
+    assert standup_active(usertok, channel) == dict(is_active = False, time_finish = None)
+
     # Not in channel
     with pytest.raises(AccessError):
         standup_start(admintok, channel, 10)
@@ -330,9 +332,13 @@ def test_standup_test(clear):
     channel_join(admintok, channel)
     finish = standup_start(admintok, channel, 3)["time_finish"]
 
+
+    assert standup_active(usertok, channel) == dict(is_active = True, time_finish = finish)
+
     # Cannot start two standups
     with pytest.raises(ValueError):
         standup_start(admintok, channel, 10)["time_finish"]
+    
     
     # Finish time to be in 15 minutes +- 1 second
     assert timedelta(seconds = -1) < finish - (datetime.now() + timedelta(seconds = 3)) < timedelta(seconds = 1)

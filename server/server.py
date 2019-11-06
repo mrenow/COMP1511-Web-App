@@ -533,7 +533,7 @@ def user_profile_setname(token, name_first, name_last):
     
     users[user_id].set_name_first(name_first)
     users[user_id].set_name_last(name_last)
-
+    
     return {}
 def user_profile_setemail(token, email):
     # Check for authorisation
@@ -609,7 +609,8 @@ def standup_active(token, channel_id):
     time_finish = channels[channel_id].standup_time() if is_active else None
     
     return dict(is_active = is_active,
-                time_finish = time_finish)
+                time_finish = time_finish.timestamp() if time_finish else time_finish)
+
 
 def search(token, query_str):
     return {}

@@ -233,7 +233,15 @@ def user_profiles_uploadphoto():
 @APP.route("/standup/start", methods = ["POST"])
 def standup_start():
 	show_request(request)
-	response =  s.standup_start(request.values["token"], int(request.values["channel_id"]))
+	response = s.standup_start(request.values["token"], int(request.values["channel_id"]), int(request.values["length"]))
+	show_response(response)
+	return response
+
+@APP.route("/standup/active", methods = ["GET"])
+
+def standup_active():
+	show_request(request)
+	response = s.standup_active(request.values["token"], int(request.values["channel_id"]))
 	show_response(response)
 	return response
 
