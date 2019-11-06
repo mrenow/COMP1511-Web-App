@@ -3,11 +3,23 @@ from json import dumps
 from flask import Flask, request
 from datetime import datetime, timedelta
 from multiprocessing import Lock
+from server.AccessError import AccessError
+import re # used for checking email formating
+regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
+import jwt
+
+# 
+# CONSTANTS 
+#
+
 ADMIN = 2
 MEMBER = 3
 OWNER = 1
 
+MAX_STANDUP_LEN = 60*15
+MAX_MESSAGE_LEN = 1000
 
+private_key = "secure password"
 
 users = {} # u_id: user obj
 channels = {} # chann
@@ -55,18 +67,9 @@ def get_messages():
     global messages
     return messages
 
-
-import re # used for checking email formating
-regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
-
 from objects.messages import Message
 from objects.channels_object import Channel
 from objects.users_object import User
-import jwt
-from server.AccessError import AccessError
-
-
-private_key = "secure password"
 
 
 

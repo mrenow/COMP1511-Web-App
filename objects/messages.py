@@ -1,12 +1,10 @@
 from datetime import datetime
-from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages
+from server.server import get_num_messages, inc_messages, get_users, get_channels, get_messages, MAX_MESSAGE_LEN
 
-
-MAX_LEN = 1000
 class Message:
 
     def __init__(self, text, channel, sender, time = datetime.now()):
-        if MAX_LEN < len(text):
+        if MAX_MESSAGE_LEN < len(text):
             raise ValueError(f"message.__init__: '{text[:10]}...' exceeds maximum allowable length.") 
         self._message = text
         self._u_id = sender
