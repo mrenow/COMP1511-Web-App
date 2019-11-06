@@ -539,8 +539,8 @@ def message_unpin(token, message_id):
     return {}
 def user_profile(token, u_id):
     # Check for authorisation
-    user_id = tokcheck(token)
-    authcheck(user_id)
+    client_id = tokcheck(token)
+    authcheck(client_id)
     # Check for valid user
     global users
     if u_id not in users: 
