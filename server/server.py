@@ -569,8 +569,20 @@ def standup_start(token, channel_id):
 def standup_send(token, channel_id, message):
     return {}
 def search(token, query_str):
-    
-    return {}
+    user_id = tokcheck(token)
+    message_list = []
+    for x in messages.values():
+        if query_str in x.get_message:
+            d = dict(message_id = messages[x].get_id(),
+                    u_id = messages[x].get_user(),
+                    message = messages[x].get_message(),
+                    time_created = messages[x].get_time(),
+                    reacts = messages[x].get_reacts(),
+                    is_pinned = messages[x].is_pinned()
+            )
+            message_list.append(d)
+     
+    return {"message" : message_list}
 def admin_userpermission_change(token, u_id, permission_id):
     user_id = tokcheck(token)
     authcheck(user_id, admin = True)

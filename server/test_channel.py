@@ -345,6 +345,18 @@ def test_channel_removeowner(clear):
     with pytest.raises(ValueError):
          channel_removeowner(token, -1, userID)
 
+def test_search(clear):
+    login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
+    userID = login["u_id"]
+    token = login["token"]
+
+
+    channel_1 = channels_create(token, "channel1", True)
+    channel_2 = channels_create(token, "channel2", True)
+
+    login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
+    userID2 = login2["u_id"]
+    token2 = login2["token"]
 
 
 
