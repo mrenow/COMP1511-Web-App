@@ -112,7 +112,7 @@ class Channel:
 
 
     def details(self):
-        return dict(name_str = self._name_str,
+        return dict(name = self._name_str,
                     owner_members = [get_user(u_id).to_json() for u_id in self._owners_set],
                     all_members = [get_user(u_id).to_json() for u_id in self._members_set])
 
