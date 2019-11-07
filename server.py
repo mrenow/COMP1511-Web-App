@@ -4,16 +4,13 @@ from flask_cors import CORS
 from flask_mail import Mail
 from json import dumps
 from flask import Flask, request
+from server.AccessError import AccessError
 
 APP = Flask(__name__)
 CORS(APP)
 
-
 int_prefixes = ["time_","start", "end", "length"]
 int_suffixes = ["_id"]
-
-
-
 
 def correct_type(pair):
 	key, value = pair
@@ -30,11 +27,22 @@ def export(route, methods):
 	def decorator(function):
 		@APP.route(route, methods = methods, endpoint = function.__name__)
 		def wrapper():
-			show_request(request)
-			request_type_corrected = dict(map(correct_type, request.values.items()))
-			response = function(**request_type_corrected)
-			show_response(response)
-			return response
+			try:
+				show_request(request)
+				request_type_corrected = dict(map(correct_type, request.values.items()))
+				response = function(**request_type_corrected)
+				show_response(response)
+				return response
+			except ValueError as err:
+				return dict(code = 400,
+							name = "ValueError",
+							message = str(err)
+				),400
+			except AccessError as err:
+				return dict(code = 400,
+							name = "AccessError",
+							message = str(err)
+				),400
 		return wrapper
 	return decorator
 
@@ -56,13 +64,11 @@ def echo1():
 	show_response(response)
 	return response
 
-import server.server
-
-
-
-
 if __name__ == '__main__':
-    #APP.run(port=(sys.argv[1] if len(sys.argv) > 1 else 5000))
+	# Generate all routes
+	import server.server
+    
+	#APP.run(port=(sys.argv[1] if len(sys.argv) > 1 else 5000))
 	APP.run(port = 5001, debug = True)
 
 
