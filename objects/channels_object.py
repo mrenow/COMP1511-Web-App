@@ -7,71 +7,73 @@ get_channels
 
 
 class Channel:
-    def __init__(self, name, owner, is_public):
-        self.name = name
-        self.owners = set([owner])
-        self.members = set([owner])
-        self.is_public = is_public
-        self.id = get_num_channels()
+    def __init__(self, name_str, owner_id, is_public):
+        self._name_str = name_str
+        self._owners_set = set([owner_id])
+        self._members_set = set([owner_id])
+        self._is_public = is_public
+        self._id = get_num_channels()
+
         # Functions as the entire standup
         self._standup_message_id = None
         # Message list contains message_id
-        self.message_list = []
-        set_channel(self.id,self)
-        get_user(owner).get_channels().add(self.id)
-        get_user(owner).get_owner_channels().add(self.id)
+        
+        self._message_list = []
+        set_channel(self._id,self)
+        get_user(owner_id).get_channels().add(self._id)
+        get_user(owner_id).get_owner_channels().add(self._id)
         inc_channels()
 
-    def set_name(self, name):
-        self.name = name
+    def set_name(self, name_str):
+        self._name_str = name_str
     
-    def set_is_private(self, is_private):
-        self.is_private = is_private
+    def set_is_public(self, is_public):
+        self._is_public = is_public
     
     def get_name(self):
-        return self.name
+        return self._name_str
     
     def get_owners(self):
-        return self.owners
+        return self._owners_set
     def get_members(self):
-        return self.members
+        return self._members_set
     def get_is_public(self):
-        return self.is_public
+        return self._is_public
 
     def get_id(self):
-        return self.id
+        return self._id
 
     def get_message_list(self):
-        return self.message_list
+        return self._message_list
 
     def get_num_messages(self):
-        return len(self.message_list)
+        return len(self._message_list)
     
     def send_message(self, message_id):
-        self.message_list.append(message_id)
+        self._message_list.append(message_id)
         get_message(message_id).send()
         return message_id
     
-    def standup_start(self, user, seconds):
+    def standup_start(self, u_id, seconds):
         if self.standup_active():
-            raise ValueError(f"Standup already active in channel {self.name}.")
+            raise ValueError(f"Standup already active in channel {self._name_str}.")
         if seconds > MAX_STANDUP_SECONDS:
             raise ValueError(f"Standup duration ({seconds}s) exceeds maximum ({MAX_STANDUP_SECONDS}s).")
 
         # Overwrite old standup message with new unsent message.
         time_finish = datetime.now() + timedelta(seconds = seconds)
-        self._standup_message_id = Message(STANDUP_START_STR, self.id, user, time = time_finish, is_standup = True).get_id()
+        self._standup_message_id = Message(STANDUP_START_STR, self._id, u_id, time = time_finish, is_standup = True).get_id()
         
         return time_finish
     
     
-    def standup_send(self, user, text):
+    def standup_send(self, u_id, text):
         if not self.standup_active():
-            raise ValueError(f"No standup active in channel {self.name}")
+            raise ValueError(f"No standup active in channel {self._name_str}")
         if MAX_MESSAGE_LEN < len(text):
             raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.")
         
-        full_text = f"\n{get_user(user).get_name_first()}: {text}"
+        full_text = f"\n{get_user(u_id).get_name_first()}: {text}"
         message = get_message(self._standup_message_id)
 
         # Append full_text to standup message.
@@ -94,48 +96,48 @@ class Channel:
         else:
             return get_message(self._standup_message_id).get_time()
 
-    def channel_messages(self, start, user):    
-        return [get_message(mess).to_json(user) for mess in self.message_list[-start-1:-start-51:-1]]
+    def channel_messages(self, start, u_id):    
+        return [get_message(mess).to_json(u_id) for mess in self._message_list[-start-1:-start-51:-1]]
 
     def delete_message(self, message_id):
-        for index, entry in enumerate(self.message_list):
+        for index, entry in enumerate(self._message_list):
             if message_id == entry:
-                del self.message_list[index]
+                del self._message_list[index]
                 return
         ValueError(f"delete_message: message {message_id} not found")
         
     def join(self, u_id):
-        self.members.add(u_id)
-        get_user(u_id).get_channels().add(self.id) 
+        self._members_set.add(u_id)
+        get_user(u_id).get_channels().add(self._id) 
 
 
     def details(self):
-        return dict(name = self.name,
-                    owner_members = [get_user(u_id).to_json() for u_id in self.owners],
-                    all_members = [get_user(u_id).to_json() for u_id in self.members])
+        return dict(name_str = self._name_str,
+                    owner_members = [get_user(u_id).to_json() for u_id in self._owners_set],
+                    all_members = [get_user(u_id).to_json() for u_id in self._members_set])
 
     def leave(self, u_id):
-        self.members.discard(u_id)
-        if u_id in self.owners:
-            self.owners.discard(u_id)
-        get_user(u_id).get_channels().discard(self.id)
+        self._members_set.discard(u_id)
+        if u_id in self._owners_set:
+            self._owners_set.discard(u_id)
+        get_user(u_id).get_channels().discard(self._id)
 
 
     def add_owner(self, u_id):
-        self.owners.add(u_id)          
-        get_user(u_id).get_channels().add(self.id)
+        self._owners_set.add(u_id)          
+        get_user(u_id).get_channels().add(self._id)
         self.join(u_id)
 
     def remove_owner(self, u_id):
-        self.owners.discard(u_id)
+        self._owners_set.discard(u_id)
 
    
 
         
 '''
-owner = dict(u_id = owners,
+owner_id = dict(u_id = owners,
         first_name = get_user(owners).get_name_first,
-        last_name = get_user(owners).get_name_last)owner = dict(u_id = owners,
+        last_name = get_user(owners).get_name_last)owner_id = dict(u_id = owners,
         first_name = get_user(owners).get_name_first,
         last_name = get_user(owners).get_name_last)
 '''

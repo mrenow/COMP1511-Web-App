@@ -4,10 +4,35 @@ from flask_cors import CORS
 from flask_mail import Mail
 from json import dumps
 from flask import Flask, request
-import server.server as s
 
 APP = Flask(__name__)
 CORS(APP)
+
+
+int_prefixes = ["_id", "start", "end", "length"]
+int_suffixes = ["time_"]
+
+
+
+
+def correct_type(key, value):
+	for prefix in int_prefixes:
+		if key.startswith(prefix):
+			return (key, int(value))
+	for suffix in int_suffixes:
+		if key.endswith(suffix): 
+			return (key, int(value))
+	return (key, value)
+	
+def export(function, route, methods):
+	@APP.route(route, methods = methods)
+	def wrapper():
+		show_request(request)
+		request_type_corrected = dict(map(correct_type, request.values.keys(), request.values.values()))
+		response = function(**request_type_corrected)
+		show_response(response)
+		return response
+
 
 def show_request(request:Flask.request_class):
 	print(
@@ -34,12 +59,6 @@ def auth_login():
 	show_response(response)
 	return response
 
-@APP.route("/auth/logout", methods = ["POST"])
-def auth_logout():
-	show_request(request)
-	response =  s.auth_logout(request.values["token"])
-	show_response(response)
-	return response
 
 @APP.route("/auth/register", methods = ["POST"])
 def auth_register():
@@ -238,7 +257,6 @@ def standup_start():
 	return response
 
 @APP.route("/standup/active", methods = ["GET"])
-
 def standup_active():
 	show_request(request)
 	response = s.standup_active(request.values["token"], int(request.values["channel_id"]))
@@ -251,6 +269,7 @@ def standup_send():
 	response =  s.standup_send(request.values["token"], int(request.values["channel_id"]), request.values["message"])
 	show_response(response)
 	return response
+
 
 @APP.route("/search", methods = ["GET"])
 def search():
@@ -265,6 +284,9 @@ def admin_userpermission_change():
 	response =  s.admin_userpermission_change(request.values["token"], int(request.values["u_id"]), request.values["permission_id"])
 	show_response(response)
 	return response
+
+
+
 
 
 if __name__ == '__main__':
