@@ -1,0 +1,33 @@
+def auth_login(email, password):
+def auth_logout(token):
+def auth_register(email, password, name_first, name_last):
+def auth_passwordreset_request(email):
+def auth_passwordreset_reset(reset_code, new_password):
+def channel_invite(token, channel_id, u_id):
+def channel_details(token, channel_id):
+def channel_messages(token, channel_id, start):
+def channel_leave(token, channel_id):
+def channel_join(token, channel_id):
+def channel_addowner(token, channel_id, u_id):
+def channel_removeowner(token, channel_id, u_id):
+def channels_list(token):
+def channels_listall(token):
+def channels_create(token, name, is_public):
+def channels_delete(token, channel_id):
+def message_sendlater(token, channel_id, message, time_sent):
+def message_send(token, channel_id, message): 
+def message_remove(token, message_id):
+def message_edit(token, message_id, message):
+def message_react(token, message_id, react_id): 
+def message_unreact(token, message_id, react_id):
+def message_pin(token, message_id):        
+def message_unpin(token, message_id):   
+def user_profile(token, u_id):
+def user_profile_setname(token, name_first, name_last):
+def user_profile_setemail(token, email):
+def user_profile_sethandle(token, handle_str):
+def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
+def standup_start(token, channel_id):
+def standup_send(token, channel_id, message):
+def search(token, query_str):
+def admin_userpermission_change(token, u_id, permission_id):

@@ -10,17 +10,16 @@ def clear():
 
 # for index < 50
 def get_message_id(token, channel, index):
-    print(channel_messages(token, channel, start = 0))
     return channel_messages(token, channel, start = 0)["messages"][index]["message_id"]
 
 # Creates an environment of a admin (channel owner) and a user in one channel
 def message_env():
     global users, channels, messages
-    auth_response = auth_register("admin@email.com", "adminpass", "first", "last")
+    auth_response = auth_register("admin@email.com", "adminpass", "afirst", "alast")
     print(users, channels, messages)
     admintok, admin = auth_response["token"], auth_response["u_id"]
     
-    auth_response = auth_register("user@email.com", "userpass", "first", "last")
+    auth_response = auth_register("user@email.com", "userpass", "ufirst", "ulast")
     usertok, user = auth_response["token"], auth_response["u_id"]
 
     channel = channels_create(admintok, "channel1", is_public = True)["channel_id"]
@@ -32,7 +31,7 @@ def message_env():
 
 # Adds an owner to the specified channel
 def channel_owner_env(admintok, channel):
-    auth_response = auth_register("owner@email.com", "ownerpass", "first", "last")
+    auth_response = auth_register("owner@email.com", "ownerpass", "ofirst", "olast")
     ownertok, owner = auth_response["token"], auth_response["u_id"]
 
     channel_addowner(admintok, channel, owner)
@@ -40,7 +39,7 @@ def channel_owner_env(admintok, channel):
 
 # Adds a regular member with no permissions
 def extra_member_env(id):
-    auth_response = auth_register(f"user{id}@email.com", f"user{id}pass", "first", "last")
+    auth_response = auth_register(f"user{id}@email.com", f"user{id}pass", f"u{id}first", f"u{id}last")
     return auth_response["token"], auth_response["u_id"]
 
 
@@ -103,7 +102,7 @@ def test_channel_messages(clear):
     with pytest.raises(ValueError):
         channel_messages(admintok, channel, start = 101)
 
-def test_message_limit_test(clear):
+def test_message_limit(clear):
     admintok, admin, usertok, user, channel = message_env()
 
     # Send is valid
@@ -121,7 +120,7 @@ def test_message_limit_test(clear):
     
 
 # Tests message order, user id on message
-def test_send_test(clear):
+def test_send(clear):
     admintok, admin, usertok, user, channel = message_env()
 
     message_send(usertok, channel, "testing")
@@ -146,7 +145,7 @@ def test_send_test(clear):
     
 
 # Tests message order on send later
-def test_send_later_test(clear):
+def test_send_later(clear):
     admintok, admin, usertok, user, channel = message_env()
     user1tok, user1 = extra_member_env(1)
 
@@ -175,7 +174,7 @@ def test_send_later_test(clear):
     with pytest.raises(AccessError):
         message_sendlater(user1tok, channel, "can i have mod", ms_offset(100))
 
-def test_edit_message_test(clear):
+def test_edit_message(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
     user1tok, user1 = extra_member_env(1)
@@ -201,6 +200,10 @@ def test_edit_message_test(clear):
     assert_message(admintok, channel, ["c", "3", "2", "d"], [user1, owner, user, admin])
     message_edit(admintok, initial_messages[3]["message_id"], "e")
     assert_message(admintok, channel, ["c", "3", "2", "e"], [user1, owner, user, admin])
+
+    # Empty edit deletes message
+    message_edit(ownertok, initial_messages[2]["message_id"], "")
+    assert_message(admintok, channel,  ["c", "3", "e"], [user1, owner, admin])
 
     # Invalid because of user mismatch
     with pytest.raises(AccessError):
@@ -229,12 +232,12 @@ def test_edit_message_test(clear):
         message_edit(admintok, initial_messages[3]["message_id"], "I wuz here")
 
     # Assert that edits did not go through
-    assert_message(usertok, channel, ["c", "3", "2", "e"], [user1, owner, user, admin])
+    assert_message(usertok, channel, ["c", "3", "e"], [user1, owner, admin])
     
     
 #assert_message(admintok, channel, ["0","1","2","3","4","5","6","7","8"],  [owner]*3 + [user]*3 + [admin]*3)
     
-def test_remove_message_test(clear):
+def test_remove_message(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
     print("TEST_CHANNEL",channel)
@@ -285,7 +288,7 @@ def test_remove_message_test(clear):
     # Assert removes did not go through
     assert_message(usertok, channel, ["0","2","3","4","5","7","8"], [owner]*2 + [user]*3 + [admin]*2)
 
-def test_pin_test(clear):
+def test_pin(clear):
     admintok, admin, usertok, user, channel = message_env()
     message_send(usertok, channel, "ello")
 
@@ -311,73 +314,137 @@ def test_pin_test(clear):
         message_pin(admintok, get_message_id(admintok, channel, 0))
 
 # To consider: how should remove, edit, etc function within a standup
-def test_standup_test(clear):
+def test_standup(clear):
     admintok, admin, usertok, user, channel = message_env()
     channel_leave(admintok, channel)
     
+    assert standup_active(usertok, channel) == dict(is_active = False, time_finish = None)
+
     # Not in channel
     with pytest.raises(AccessError):
-        standup_start(admintok, channel)
+        standup_start(admintok, channel, 10)
 
     # Invalid because no standup in session
     with pytest.raises(AccessError):
         standup_send(admintok, channel, "standup")
 
+    # Start standup
     channel_join(admintok, channel)
+    finish = standup_start(admintok, channel, 3)["time_finish"]
 
-    finish = standup_start(admintok, channel)["time_finish"]
+
+    assert standup_active(usertok, channel) == dict(is_active = True, time_finish = finish.timestamp())
+
     # Cannot start two standups
     with pytest.raises(ValueError):
-        standup_start(admintok, channel)["time_finish"]
+        standup_start(admintok, channel, 10)["time_finish"]
     
-    # Finish time to be in 15 minutes +- 5 seconds
-    assert timedelta(seconds = -5) < finish - (datetime.now() + timedelta(minutes=15)) < timedelta(seconds = 5)
+    
+    # Finish time to be in 15 minutes +- 1 second
+    assert timedelta(seconds = -1) < finish - (datetime.now() + timedelta(seconds = 3)) < timedelta(seconds = 1)
     
     standup_send(usertok, channel, "I walked my dog")
     standup_send(admintok, channel, "I stayed up till 4 am redefining specifications")
-    assert_message(admintok, channel, ["I stayed up till 4 am redefining specifications", "I walked my dog"], [user, admin])
-    
+
+    # Bad message
     with pytest.raises(ValueError):
         standup_send(admintok, channel, TEST_INVALID_MESSAGE)
-    standup_send(admintok, channel, TEST_VALID_MESSAGE)
-
-    channel_leave(admintok, channel)
-        
+    standup_send(usertok, channel, TEST_VALID_MESSAGE)
+    
     # Not in channel
+    channel_leave(admintok, channel)
     with pytest.raises(AccessError):
         standup_send(admintok, channel, "not part of yo club anymo")
-
-    # Check that messages unchanged
-    assert_message(admintok, channel, ["I stayed up till 4 am redefining specifications", "I walked my dog"], [user, admin])
     
+    # Check no messages have been sent
+    assert_message(usertok, channel, [], [])
+    message_send(usertok, channel, "I am a mongoose")
+    assert_message(usertok, channel, ["I am a mongoose"], [user])
+    
+    time.sleep(3)
+    assert_message(usertok, channel, [f"{STANDUP_START_STR}\nufirst: I walked my dog\nafirst: I stayed up till 4 am redefining specifications\nufirst: {TEST_VALID_MESSAGE}", "I am a mongoose"], [admin, user])
+
     # Bad channel_id
     with pytest.raises(ValueError):
         standup_send(admintok, -1, TEST_INVALID_MESSAGE)
     with pytest.raises(ValueError):
-        standup_start(admintok, -1)
+        standup_start(admintok, -1, 10)
 
+# Checking that id = 1 only for iter 2
+def assert_react(token, channel, index, users):
+    reacts = channel_messages(token, channel, start = 0)["messages"][index]["reacts"]
+    if len(reacts) == 0: return
+    assert len(reacts) == 1
+    assert reacts[0]["react_id"] == 1
+    assert sorted(reacts[0]["u_ids"]) == sorted(users)
 
+def error_react(reacted, unreacted, mess_id):
+    for user in reacted:
+        with pytest.raises(ValueError):
+            message_react(user, mess_id, 1)
+    for user in unreacted:
+        with pytest.raises(ValueError):
+            message_unreact(user, mess_id, 1)
 
-# Not enough specification to test react:
-#   - Where does the react ID come from?
-#   - Do different users have different react IDs for the same react?
-#   - Is there more than one react? (Hayden's video says there only likes are being used)
-#   - Can multiple users react the same message? Should there be some way to count reacts?
-''' TODO:
-def react_message_test():
+            
+
+def test_react_message(clear):
     admintok, admin, usertok, user, channel = message_env()
     ownertok, owner = channel_owner_env(admintok,channel)
+    user1tok, user1 = extra_member_env(1)
 
     message_send(admintok, channel, "1")
     message_send(usertok, channel, "2")
     message_send(ownertok, channel, "3")
     message_send(usertok, channel, "4")
 
-    message_react(usertok, channel, )
-'''
+    message_ids = [get_message_id(admintok, channel, i) for i in range(4)]
 
-# Not enough specifications to test search:
-#   - What counts as "matching the query"?
+    # Bad react id
+    for i in range(10):
+        if i == 1: continue
+        with pytest.raises(ValueError):
+            message_react(admintok, message_ids[3], i)
 
+    # Adding reacts
+    
+    message_react(admintok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [admin])
+    error_react([admintok], [usertok, ownertok], message_ids[3])
+
+    message_react(usertok, message_ids[3], 1)
+    assert_react(usertok, channel, 3, [admin, user])
+    error_react([admintok, usertok], [ ownertok], message_ids[3])
+
+
+    message_react(ownertok, message_ids[3], 1)
+    assert_react(ownertok, channel, 3, [admin, user, owner])
+    error_react([admintok, usertok, ownertok], [], message_ids[3])
+
+    # removing reacts
+    message_unreact(usertok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [admin, owner])
+    error_react([admintok,  ownertok], [usertok], message_ids[3])
+    
+    message_unreact(admintok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [owner])
+    error_react([ownertok], [ admintok, usertok], message_ids[3])
+    
+    message_unreact(ownertok, message_ids[3], 1)
+    assert_react(admintok, channel, 3, [])
+    error_react( [], [admintok, usertok, ownertok], message_ids[3])
+
+    message_react(usertok, message_ids[1], 1)
+    assert_react(admintok, channel, 1 , [user])
     
 
+    # User not in channel
+    with pytest.raises(AccessError):
+        message_react(user1tok, message_ids[2], 1)
+    
+    channel_leave(usertok, channel)
+    with pytest.raises(AccessError):
+        message_unreact(usertok, message_ids[1],1)
+
+
+    

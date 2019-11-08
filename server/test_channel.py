@@ -44,7 +44,7 @@ def test_channels_create_and_list_all(clear):
     channel_1 = channels_create(token, "channel1", True)
     lst = channels_listall(token)
     assert lst["channels"][0]["name"] == "channel1"
-    assert lst["channels"][0]["id"] == 0
+    assert lst["channels"][0]["channel_id"] == 0
 
     #check if channel name shown in channel details
     channel1_details = channel_details(token, channel_1["channel_id"])
@@ -54,9 +54,9 @@ def test_channels_create_and_list_all(clear):
     channel_2 = channels_create(token, "channel2", True)
     lst = channels_listall(token)
     assert lst["channels"][0]["name"] == "channel1"
-    assert lst["channels"][0]["id"] == 0
+    assert lst["channels"][0]["channel_id"] == 0
     assert lst["channels"][1]["name"] == "channel2"
-    assert lst["channels"][1]["id"] == 1
+    assert lst["channels"][1]["channel_id"] == 1
 
     #check if channel name shown in channel details
     channel2_details = channel_details(token, channel_2["channel_id"])
@@ -96,12 +96,12 @@ def test_channel_join(clear):
 
     yeet = False
     zoomer = False
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         print(x["u_id"])
         if x["u_id"] == userID:
             yeet = True
 
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID2:
             zoomer = True
 
@@ -113,7 +113,7 @@ def test_channel_join(clear):
     channel_join(token2, channel_2["channel_id"])
     channel2_details = channel_details(token, channel_2["channel_id"])
     boomer = False
-    for x in channel2_details["members"]:
+    for x in channel2_details["all_members"]:
         if x["u_id"] == userID2:
             boomer = True
     assert boomer == True
@@ -137,12 +137,12 @@ def test_channel_leave(clear):
     channel1_details = channel_details(token, channel_1["channel_id"])
     boomer = False
     zoomer = False
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID:
             boomer = True
     assert boomer == True
 
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID2:
             zoomer = True
     assert zoomer == True
@@ -150,8 +150,8 @@ def test_channel_leave(clear):
     #checks if user successfully left
     channel_leave(token2, channel_1["channel_id"])
     channel1_details = channel_details(token, channel_1["channel_id"])
-    assert len(channel1_details["members"]) == 1
-    assert channel1_details["members"][0]["u_id"] == userID
+    assert len(channel1_details["all_members"]) == 1
+    assert channel1_details["all_members"][0]["u_id"] == userID
 
 def test_channel_invite(clear):
     login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
@@ -176,12 +176,12 @@ def test_channel_invite(clear):
     channel1_details = channel_details(token, channel_1["channel_id"])
     boomer = False
     zoomer = False
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID:
             boomer = True
     assert boomer == True
 
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID2:
             zoomer = True
     assert zoomer == True
@@ -193,17 +193,17 @@ def test_channel_invite(clear):
     boomer = False
     zoomer = False
     genz = False
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID:
             boomer = True
     assert boomer == True
 
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID2:
             zoomer = True
     assert zoomer == True
 
-    for x in channel1_details["members"]:
+    for x in channel1_details["all_members"]:
         if x["u_id"] == userID3:
             genz = True
     assert genz == True
@@ -227,24 +227,24 @@ def test_channels_list(clear):
 
     channel_1 = channels_create(token, "channel1", True)
     lst = channels_list(token)
-    assert lst["channels"][0]["id"] == channel_1["channel_id"]
+    assert lst["channels"][0]["channel_id"] == channel_1["channel_id"]
 
     #check if creator of channel_1 and channel_2 is part of two channels
     channel_2 = channels_create(token, "channel2", True)
     lst = channels_list(token)
-    assert lst["channels"][0]["id"] == channel_1["channel_id"]
-    assert lst["channels"][1]["id"] == channel_2["channel_id"]
+    assert lst["channels"][0]["channel_id"] == channel_1["channel_id"]
+    assert lst["channels"][1]["channel_id"] == channel_2["channel_id"]
 
     #check if channel_1 is listed for user2 after join
     channel_join(token2, channel_1["channel_id"])
     lst = channels_list(token2)
-    assert lst["channels"][0]["id"] == channel_1["channel_id"]
+    assert lst["channels"][0]["channel_id"] == channel_1["channel_id"]
 
     #check if channel_2 is listed fo ruser2 after invite
     channel_invite(token, channel_2["channel_id"], userID2)
     lst = channels_list(token2)
-    assert lst["channels"][0]["id"] == channel_1["channel_id"]
-    assert lst["channels"][1]["id"] == channel_2["channel_id"]
+    assert lst["channels"][0]["channel_id"] == channel_1["channel_id"]
+    assert lst["channels"][1]["channel_id"] == channel_2["channel_id"]
 
 
 
@@ -294,7 +294,7 @@ def test_channel_addowner(clear):
     userID3 = login3["u_id"]
     token3 = login3["token"]
 
-    #check if ValueError is raised when channel id is unknown
+    #check if ValueError is raised when channel channel_id is unknown
     with pytest.raises(ValueError):
          channel_addowner(token,-1, userID3)
     channel1_details = channel_details(token, channel_1["channel_id"])
@@ -305,7 +305,7 @@ def test_channel_addowner(clear):
     with pytest.raises(ValueError):
         channel_addowner(token,channel_1["channel_id"], userID2)
     
-    #check if ValueError is raised when channel id is unknown
+    #check if ValueError is raised when channel channel_id is unknown
     with pytest.raises(ValueError):
          channel_addowner(token,555, userID3)   
 
@@ -341,7 +341,7 @@ def test_channel_removeowner(clear):
     channel1_details = channel_details(token2, channel_1["channel_id"])
     assert len(channel1_details["owner_members"]) == 1
 
-    #check if ValueError is raised when channel id is unknown
+    #check if ValueError is raised when channel channel_id is unknown
     with pytest.raises(ValueError):
          channel_removeowner(token, -1, userID)
 

@@ -1,5 +1,5 @@
 
-from server.server import get_channels, get_users, get_num_users, inc_users, OWNER, ADMIN, MEMBER
+from server.server import get_channel, get_user, set_user, get_num_users, inc_users, OWNER, ADMIN, MEMBER
 
 class User:
 
@@ -18,7 +18,7 @@ class User:
         self._channels = set()
         self._admin_channels = set()
         self._owner_channels = set()
-        get_users()[self._u_id] = self
+        set_user(self._u_id, self)
         inc_users()
 
 
