@@ -193,7 +193,7 @@ def tokcheck(token) -> int:
 def authorise(function):
 	def wrapper(token,*args,**kwargs):
 		client_id = tokcheck(token)
-		return function(*args, **kwargs)
+		return function(client_id,*args, **kwargs)
 	return wrapper
 		
 
