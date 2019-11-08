@@ -6,6 +6,8 @@ from multiprocessing import Lock
 from typing import List, Dict
 from server.AccessError import AccessError
 import re # used for checking email formating
+import urllib.request
+from PIL import Image
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 import jwt
 from __main__ import export
@@ -630,6 +632,16 @@ def user_profile_sethandle(token, handle_str):
 
 @export("/user/profiles/uploadphoto", methods = ["POST"])
 def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
+	# Check for authorisation
+	client_id = tokcheck(token)
+	# Download the image
+	urllib.request.urlretrieve(img_url, "./static/" + client_id + ".pn")
+	# Crop if image is too big 
+	if y_end > 500 or x_end > 500:
+		imageObject = Image.open("./static/" + client_id + ".pn")
+		cropped = imageObject.crop((0,0,500,500))
+		cropped.save("./static/" + client_id + ".pn")
+		
 	return {}
 
 @export("/standup/start", methods = ["POST"])
