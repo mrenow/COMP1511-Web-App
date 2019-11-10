@@ -130,14 +130,3 @@ class Channel:
 
     def remove_owner(self, u_id):
         self._owners_set.discard(u_id)
-
-   
-
-        
-'''
-owner_id = dict(u_id = owners,
-        first_name = get_user(owners).get_name_first,
-        last_name = get_user(owners).get_name_last)owner_id = dict(u_id = owners,
-        first_name = get_user(owners).get_name_first,
-        last_name = get_user(owners).get_name_last)
-'''

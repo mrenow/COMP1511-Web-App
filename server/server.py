@@ -8,7 +8,18 @@ from server.AccessError import AccessError
 import re # used for checking email formating
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 import jwt
-from __main__ import export
+
+# Initially define export to do nothing
+def export(route, methods):
+	def decorator(function):
+		return function
+	return decorator
+	
+# Overwrite export with the definition given in the program's entry point if applicable
+try:
+	from __main__ import export
+except(ImportError):
+	pass
 
 # 
 # CONSTANTS 
@@ -163,7 +174,7 @@ def authcheck(client_id, user_id = None, channel_id = None, chowner_id = None, i
 
 	if user_id != None and user_id == client_id:
 		auth = True
-	if channel_id != None and channel_id in get_user(client_id).get_channels():
+	if channel_id != None and client_id in get_channel(channel_id).get_members():
 		auth = True
 	if chowner_id != None and client_id in get_channel(chowner_id).get_owners():
 		auth = True
