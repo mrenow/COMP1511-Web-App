@@ -8,6 +8,8 @@ get_channels
 
 class Channel:
     def __init__(self, name_str, owner_id, is_public):
+        if len(name) > 20:
+            raise ValueError("Name cannot be over 20 characters")
         self._name_str = name_str
         self._owners_set = set([owner_id])
         self._members_set = set([owner_id])
@@ -24,9 +26,6 @@ class Channel:
         get_user(owner_id).get_owner_channels().add(self._id)
         inc_channels()
 
-    def set_name(self, name_str):
-        self._name_str = name_str
-    
     def set_is_public(self, is_public):
         self._is_public = is_public
     
@@ -111,10 +110,13 @@ class Channel:
         get_user(u_id).get_channels().add(self._id) 
 
 
-    def details(self):
+    def to_json_members(self):
         return dict(name = self._name_str,
                     owner_members = [get_user(u_id).to_json() for u_id in self._owners_set],
                     all_members = [get_user(u_id).to_json() for u_id in self._members_set])
+    def to_json_id(self):
+        return dict(name = self._name_str,
+                    channel_id = self._id)
 
     def leave(self, u_id):
         self._members_set.discard(u_id)
@@ -132,12 +134,3 @@ class Channel:
         self._owners_set.discard(u_id)
 
    
-
-        
-'''
-owner_id = dict(u_id = owners,
-        first_name = get_user(owners).get_name_first,
-        last_name = get_user(owners).get_name_last)owner_id = dict(u_id = owners,
-        first_name = get_user(owners).get_name_first,
-        last_name = get_user(owners).get_name_last)
-'''
