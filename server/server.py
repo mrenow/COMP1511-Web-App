@@ -38,7 +38,7 @@ valid_toks = set()
 
 
 # Contains all checks to be done regularly
-def update():
+def update_messages():
 	
 	print("to send", get_unsent())
 	lock_unsent()
@@ -77,13 +77,13 @@ def authcheck(client_id, user_id=None, channel_id=None, chowner_id=None, is_admi
 		return
 
 	if user_id != None:
-		raise AccessError(f"auth: User {client_id} is not user {user_id}.")
+		raise AccessError(f"User {client_id} is not user {user_id}.")
 	if channel_id != None:
-		raise AccessError(f"auth: User {client_id} is not in channel {channel_id}")
+		raise AccessError(f"User {client_id} is not in channel {channel_id}")
 	if chowner_id != None:
-		raise AccessError(f"auth: User {client_id} is not an owner of {channel_id}.")
+		raise AccessError(f"User {client_id} is not an owner of {channel_id}.")
 	if is_admin:
-		raise AccessError(f"auth: User {client_id} is not admin")
+		raise AccessError(f"User {client_id} is not admin")
 
 
 def tokcheck(token) -> int:	
@@ -190,7 +190,7 @@ def channel_details(token, channel_id):
 @export("/channel/messages", methods = ["GET"])
 def channel_messages(token, channel_id, start):
 	client_id = tokcheck(token)	
-	update()
+	update_messages()
 	
 	authcheck(client_id, channel_id = channel_id)
 	if start > get_channel(channel_id).get_num_messages():
@@ -214,7 +214,7 @@ def channel_leave(token, channel_id):
 def channel_join(token, channel_id):
 	client_id = tokcheck(token)
 	if get_channel(channel_id).get_is_public() == False:
-		raise AccessError("channel is private")
+		raise AccessError("Channel is private")
 	get_channel(channel_id).join(client_id)
 	return {}
 
