@@ -2,16 +2,18 @@ import sys
 from json import dumps
 from flask import Flask, request
 from datetime import datetime, timedelta
+import pytz
 from multiprocessing import Lock
 from typing import List, Dict
 from server.AccessError import AccessError
+from server.constants import *
 import re # used for checking email formating
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 import jwt
 
 # Initially define export to do nothing
 def export(route, methods):
-	def decorator(function):
+	def decorator(function):	
 		return function
 	return decorator
 	
@@ -24,16 +26,10 @@ except(ImportError):
 # 
 # CONSTANTS 
 #
-ADMIN = 2
-MEMBER = 3
-OWNER = 1
-print("asldkfhasoidfhasdf")
 
-MAX_STANDUP_SECONDS = 60*15
-MAX_MESSAGE_LEN = 1000
 STANDUP_START_STR = "Standup results."
 
-private_key = "secure password"
+
 
 users = {} # u_id: user obj
 channels = {} # chann
@@ -151,8 +147,8 @@ def update():
 	messages_to_send_lock.acquire()
 	try:
 		for index, m in enumerate(messages_to_send):
-			print(m.get_time(), datetime.now())
-			if m.get_time() < datetime.now():
+			print(m.get_time(), datetime.now(TIMEZONE))
+			if m.get_time() < datetime.now(TIMEZONE):
 				get_channel(m.get_channel()).send_message(m.get_id())
 				del messages_to_send[index]
 	# Always release lock please thankyou
@@ -204,7 +200,7 @@ def tokcheck(token) -> int:
 def maketok(u_id) -> str:
 	global tokcount 
 	global valid_toks
-	payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now())}
+	payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now(TIMEZONE))}
 	valid_toks.add(tokcount)
 	tokcount += 1
 	return jwt.encode(payload, private_key, algorithm= "HS256")
@@ -384,15 +380,11 @@ def channels_delete(token, channel_id):
 if message > 1000 chars val error
 '''
 @export("/message/sendlater", methods = ["POST"])
-def message_sendlater(token, channel_id, message, time_sent_millis):
+def message_sendlater(token, channel_id, message, time_sent):
 	global channels, messages, messages_to_send
-	time_sent = datetime.utcfromtimestamp(time_sent_millis/1000) + timedelta(hours=11)
-
-
 	
-
-	if time_sent < datetime.now():
-		raise ValueError(f"message_sendlater: time is {datetime.now() - time_sent} in the past")
+	if time_sent < datetime.now(TIMEZONE):
+		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
 	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 	

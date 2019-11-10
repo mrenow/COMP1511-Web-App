@@ -5,22 +5,22 @@ from flask_mail import Mail
 from json import dumps
 from flask import Flask, request
 from server.AccessError import AccessError
-
+from datetime import datetime, tzinfo
+from server.constants import TIMEZONE
 
 APP = Flask(__name__)
 CORS(APP)
 
-int_prefixes = ["time_","start", "end", "length"]
-int_suffixes = ["_id"]
+int_suffixes = ["_id", "start", "end", "length"]
+
 
 def correct_type(pair):
 	key, value = pair
-	for prefix in int_prefixes:
-		if key.startswith(prefix):
-			return (key, int(value))
 	for suffix in int_suffixes:
 		if key.endswith(suffix): 
 			return (key, int(value))
+	if key.startswith("time_"):
+		return (key, datetime.fromtimestamp(int(value), tz = TIMEZONE))
 	return (key, value)
 
 
@@ -68,7 +68,7 @@ def echo1():
 if __name__ == '__main__':
 	# Generate all routes
 	import server.server
-    
+
 	#APP.run(port=(sys.argv[1] if len(sys.argv) > 1 else 5000))
 	APP.run(port = 5001, debug = True)
 

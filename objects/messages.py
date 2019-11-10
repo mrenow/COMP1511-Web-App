@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from server.server import get_num_messages, inc_messages, get_user, get_channel, get_message, set_message, remove_message, get_messages_to_send, MAX_MESSAGE_LEN
-
+from server.constants import TIMEZONE
 class Message:
 
     def __init__(self, text, channel, sender, time = None, is_standup = False):
@@ -10,10 +10,10 @@ class Message:
         send_immediate = (time == None) 
         
         if send_immediate:
-            self._time_sent = datetime.now()
+            self._time_sent = datetime.now(TIMEZONE)
         else:
             self._time_sent = time
-            if time < datetime.now() - timedelta(minutes = 1):
+            if time < datetime.now(TIMEZONE) - timedelta(minutes = 1):
                 raise ValueError(f"Time {time} is in the past.")
 
 
@@ -101,7 +101,7 @@ class Message:
         return dict(message_id = self._message_id,
                     u_id = self._u_id,
                     message = self._message,
-                    time_created  = (self._time_sent - datetime(1970,1,1)).total_seconds(),
+                    time_created  = self._time_sent.timestamp(),
                     reacts = self.get_reacts(user),
                     is_pinned = self._is_pinned)
 class React:

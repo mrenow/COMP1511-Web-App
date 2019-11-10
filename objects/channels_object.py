@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from .messages import Message
-from server.server import get_num_channels, inc_channels, get_user, get_channel, get_message, set_user, set_message, set_channel, MAX_MESSAGE_LEN, STANDUP_START_STR, MAX_STANDUP_SECONDS
+from server.server import get_num_channels, inc_channels, get_user, get_channel, get_message, set_user, set_message, set_channel
+from server.constants import *
 '''
 get_channels
 '''
@@ -63,7 +64,7 @@ class Channel:
 				f"Standup duration ({seconds}s) exceeds maximum ({MAX_STANDUP_SECONDS}s).")
 
 		# Overwrite old standup message with new unsent message.
-		time_finish = datetime.now() + timedelta(seconds=seconds)
+		time_finish = datetime.now(TIMEZONE) + timedelta(seconds=seconds)
 		self._standup_message_id = Message(
 			STANDUP_START_STR, self._id, u_id, time=time_finish, is_standup=True).get_id()
 
