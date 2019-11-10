@@ -130,11 +130,6 @@ def get_messages_to_send():
 	global messages_to_send
 	return messages_to_send
 
-from objects.channels_object import Channel
-from objects.messages import Message
-from objects.users_object import User
-
-
 def reset():
 	global users, channels, messages, num_messages, num_channels, user_count
 	users = {} # u_id: user obj
@@ -143,6 +138,11 @@ def reset():
 	num_messages = 0
 	num_channels = 0
 	user_count = 0
+
+from objects.channels_object import Channel
+from objects.messages import Message
+from objects.users_object import User
+
 
 # Contains all checks to be done regularly
 def update():
@@ -278,13 +278,7 @@ def auth_passwordreset_reset(reset_code, new_password):
 @export("/channel/invite", methods = ["POST"])
 def channel_invite(token, channel_id, u_id):
 	client_id = tokcheck(token) 
-	if channel_id not in channels:
-		raise ValueError((f"channel_invite: Channel does not exist."))
-	if u_id not in users:
-		raise ValueError((f"channel_invite: User does not exist."))
-	if client_id not in get_channel(channel_id).get_members():
-		raise AccessError((f"auth: User is not a member of this channel"))
-	
+	authcheck(client_id, channel_id = channel_id)
 	get_channel(channel_id).join(u_id)
 
 	return {}
@@ -298,11 +292,7 @@ Raises a value error when channel id does not exist
 @export("/channel/details", methods = ["GET"])
 def channel_details(token, channel_id):
 	client_id = tokcheck(token)
-	if channel_id not in channels:
-		raise ValueError((f"channel_invite: Channel does not exist."))
-	if client_id not in get_channel(channel_id).get_members():
-		raise AccessError((f"auth: User is not a member of this channel"))
-	
+	authcheck(client_id, channel_id = channel_id)
 	return get_channel(channel_id).to_json_members()
 
 @export("/channel/messages", methods = ["GET"])
@@ -325,16 +315,12 @@ def channel_messages(token, channel_id, start):
 @export("/channel/leave", methods = ["POST"])
 def channel_leave(token, channel_id):
 	client_id = tokcheck(token)
-	if channel_id not in channels:
-		raise ValueError((f"channel_invite: Channel does not exist."))
 	get_channel(channel_id).leave(client_id)
 	return {}
 
 @export("/channel/join", methods = ["POST"])
 def channel_join(token, channel_id):
 	client_id = tokcheck(token)
-	if channel_id not in channels:
-		raise ValueError((f"channel_invite: Channel does not exist."))
 	if get_channel(channel_id).get_is_public() == False:
 		raise AccessError("channel is private")
 	get_channel(channel_id).join(client_id)
@@ -343,11 +329,7 @@ def channel_join(token, channel_id):
 @export("/channel/addowner", methods = ["POST"])
 def channel_addowner(token, channel_id, u_id):
 	client_id = tokcheck(token)
-	if channel_id not in channels:
-		raise ValueError((f"channel_invite: Channel does not exist."))
 	authcheck (client_id, chowner_id = channel_id, is_admin = True)
-	if u_id in get_channel(channel_id).get_owners():
-		raise ValueError("User already an owner")
 	get_channel(channel_id).add_owner(u_id)
 
 	return {}
@@ -355,32 +337,25 @@ def channel_addowner(token, channel_id, u_id):
 @export("/channel/removeowner", methods = ["POST"])
 def channel_removeowner(token, channel_id, u_id):
 	client_id = tokcheck(token)
-	if channel_id not in channels:
-		raise ValueError((f"channel_invite: Channel does not exist."))
 	authcheck (client_id, chowner_id = channel_id, is_admin = True)
-	if u_id not in get_channel(channel_id).get_owners():
-		raise ValueError("User is not an owner")
 	get_channel(channel_id).remove_owner(u_id)
-
 	return {}
 
 @export("/channels/list", methods = ["GET"])
 def channels_list(token):
 	client_id = tokcheck(token)
-	channels_list = []
-	for x in get_user(client_id).get_channels():
-		channels_list.append(x.to_json_id())
-	return {"channels": channels_list}
-
+	channels_list = [get_channel(channel_id).to_json_id() for channel_id in get_user(client_id).get_channels()]
+	return dict(channels = channels_list)
+	
 @export("/channels/listall", methods = ["GET"])
 def channels_listall(token):
 	"""
 	Lists all channels with format 
 	"""
 	client_id = tokcheck(token)
-
-	channels_list = [channel_obj.to_json() for channel_obj in channels.values()]
-	return {"channels": channels_list}
+	channels_list = [channel_obj.to_json_id() for channel_obj in channels.values()]
+	return dict(channels = channels_list)
+	
 
 @export("/channels/create", methods=["POST"])
 def channels_create(token, name, is_public):
@@ -388,14 +363,11 @@ def channels_create(token, name, is_public):
 	client_id = tokcheck(token)
 	authcheck(client_id, is_admin=True)
 
-
 	new_channel = Channel(name, client_id, is_public)
-
 	get_user(client_id).get_channels().add(new_channel.get_id())
 	set_channel(new_channel.get_id(), new_channel)
 
-	return {"channel_id": new_channel.get_id()}
-
+	return dict(channel_id = new_channel.get_id())
 '''
 Added to the specification.
 '''
@@ -414,9 +386,7 @@ if message > 1000 chars val error
 @export("/message/sendlater", methods = ["POST"])
 def message_sendlater(token, channel_id, message, time_sent_millis):
 	global channels, messages, messages_to_send
-	print("Time: ", time_sent_millis  )
 	time_sent = datetime.utcfromtimestamp(time_sent_millis/1000) + timedelta(hours=11)
-	print("Time: ", time_sent)
 
 
 	
