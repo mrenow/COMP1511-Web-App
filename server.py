@@ -36,12 +36,12 @@ def export(route, methods):
 			except ValueError as err:
 				return dict(code = 400,
 							name = "ValueError",
-							message = str(err)
+							message = f"{function.__name__}: {err}"
 				),400
 			except AccessError as err:
 				return dict(code = 400,
 							name = "AccessError",
-							message = str(err)
+							message = f"{function.__name__}: {err}"
 				),400
 		return wrapper
 	return decorator
