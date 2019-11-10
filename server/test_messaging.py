@@ -4,6 +4,11 @@ from datetime import datetime, timedelta
 from server.AccessError import AccessError
 from server.server import *
 from server.constants import *
+from server.state import *
+
+
+TEST_INVALID_MESSAGE = "0"*1001
+TEST_VALID_MESSAGE = "0"*1000
 
 @pytest.fixture
 def clear():
@@ -15,9 +20,8 @@ def get_message_id(token, channel, index):
 
 # Creates an environment of a admin (channel owner) and a user in one channel
 def message_env():
-    global users, channels, messages
+    global _users, _channels, _messages
     auth_response = auth_register("admin@email.com", "adminpass", "afirst", "alast")
-    print(users, channels, messages)
     admintok, admin = auth_response["token"], auth_response["u_id"]
     
     auth_response = auth_register("user@email.com", "userpass", "ufirst", "ulast")

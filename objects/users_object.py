@@ -1,10 +1,10 @@
-
-from server.server import get_channel, get_user, set_user, get_num_users, inc_users, OWNER, ADMIN, MEMBER
+from server.state import *
+from server.constants import *
 
 class User:
 
     def __init__(self, name_first, name_last, email, password):
-        self._u_id = get_num_users()
+        self._u_id = num_users()
         self._password = password
         self._name_first = name_first
         self._name_last = name_last
@@ -82,6 +82,8 @@ class User:
     def set_handle_str(self, handle_str):
         self._handle_str = handle_str
 
+
+    
     def get_user_profile(self):
         return dict(email = self._email, 
                     name_first = self._name_first, 

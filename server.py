@@ -5,8 +5,8 @@ from flask_mail import Mail
 from json import dumps
 from flask import Flask, request
 from server.AccessError import AccessError
-from datetime import datetime, tzinfo
 from server.constants import TIMEZONE
+from datetime import datetime, tzinfo
 
 APP = Flask(__name__)
 CORS(APP)

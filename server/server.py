@@ -3,10 +3,14 @@ from json import dumps
 from flask import Flask, request
 from datetime import datetime, timedelta
 import pytz
-from multiprocessing import Lock
 from typing import List, Dict
 from server.AccessError import AccessError
 from server.constants import *
+from server.state import *
+from objects.channels_object import Channel
+from objects.messages import Message
+from objects.users_object import User
+
 import re # used for checking email formating
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 import jwt
@@ -27,133 +31,26 @@ except(ImportError):
 # CONSTANTS 
 #
 
-STANDUP_START_STR = "Standup results."
 
 
-
-users = {} # u_id: user obj
-channels = {} # chann
-messages = {} # message_id: message obj
-
-messages_to_send_lock = Lock()
-messages_to_send = [] 
-
-active_standup = False
-
-num_messages = 0
-user_count = 0
-num_channels = 0
 tokcount = 0
 valid_toks = set()
 
 
-TEST_INVALID_MESSAGE = "0"*1001
-TEST_VALID_MESSAGE = "0"*1000
-
-
-def inc_users():
-	global user_count
-	user_count += 1
-
-def inc_channels():
-	global num_channels
-	num_channels += 1
-
-def inc_messages():
-	global num_messages
-	num_messages += 1
-
-def get_num_messages():
-	global num_messages
-	return num_messages
-def get_num_users():
-	global user_count
-	return user_count
-def get_num_channels():
-	global num_channels
-	return num_channels
-
-def get_channel(channel_id):
-	try:
-		return channels[channel_id]
-	except(KeyError):
-		raise ValueError(f"Channel {channel_id} does not exist. channels: {channels} in {__name__}")
-	
-def get_user(u_id):
-	try:
-		return users[u_id]
-	except(KeyError):
-		raise ValueError(f"User {u_id} does not exist. users: {users} in {__name__}")
-
-def get_message(message_id):
-	try:
-		return messages[message_id]
-	except(KeyError):
-		raise ValueError(f"Message {message_id} does not exist. messages: {messages} in {__name__}")
-
-def set_user(u_id, user_obj):
-	global users
-	users[u_id] = user_obj
-
-def set_channel(channel_id, channel_obj):
-	global channels
-	channels[channel_id] = channel_obj
-
-def set_message(message_id, message_obj):
-	global messages
-	messages[message_id] = message_obj
-
-def remove_channel(channel_id):
-	try:
-		del channels[channel_id]
-	except(KeyError):
-		raise ValueError(f"Channel {channel_id} does not exist. channels: {channels}")
-	
-def remove_user(u_id):
-	try:
-		del users[u_id]
-	except(KeyError):
-		raise ValueError(f"User {u_id} does not exist. users: {users}")
-
-def remove_message(message_id):
-	try:
-		del messages[message_id]
-	except(KeyError):
-		raise ValueError(f"Message {message_id} does not exist. messages: {messages}")
-	
-
-def get_messages_to_send():
-	global messages_to_send
-	return messages_to_send
-
-def reset():
-	global users, channels, messages, num_messages, num_channels, user_count
-	users = {} # u_id: user obj
-	channels = {} # chann
-	messages = {} # message_id: message obj
-	num_messages = 0
-	num_channels = 0
-	user_count = 0
-
-from objects.channels_object import Channel
-from objects.messages import Message
-from objects.users_object import User
-
-
 # Contains all checks to be done regularly
 def update():
-	global messages_to_send, messages_to_send_lock
-	print("to send", messages_to_send)
-	messages_to_send_lock.acquire()
+	
+	print("to send", get_unsent())
+	lock_unsent()
 	try:
-		for index, m in enumerate(messages_to_send):
+		for index, m in enumerate(get_unsent()):
 			print(m.get_time(), datetime.now(TIMEZONE))
 			if m.get_time() < datetime.now(TIMEZONE):
 				get_channel(m.get_channel()).send_message(m.get_id())
-				del messages_to_send[index]
+				del get_unsent()[index]
 	# Always release lock please thankyou
 	finally:
-		messages_to_send_lock.release()
+		release_unsent()
 
 '''
 Raises an Access error if all of the conditions specified are not met.
@@ -191,22 +88,21 @@ def authcheck(client_id, user_id=None, channel_id=None, chowner_id=None, is_admi
 
 def tokcheck(token) -> int:	
 	
-	global valid_toks
+	
 	payload = jwt.decode(token, private_key, algorithms= ["HS256"])
 	if payload["tok_id"] in valid_toks:
 		return payload["u_id"]
 	raise ValueError("Invalid Token")
 
 def maketok(u_id) -> str:
-	global tokcount 
-	global valid_toks
+	global tokcount
 	payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now(TIMEZONE))}
 	valid_toks.add(tokcount)
 	tokcount += 1
 	return jwt.encode(payload, private_key, algorithm= "HS256")
 
 def killtok(token) -> Dict["is_success", bool]:
-	global valid_toks
+	
 	payload = jwt.decode(token, private_key, algorithms= ["HS256"])
 	tok_id = payload["tok_id"]
 	if payload["tok_id"] in valid_toks:
@@ -216,9 +112,9 @@ def killtok(token) -> Dict["is_success", bool]:
 
 @export('/auth/login', methods = ["POST"])
 def auth_login(email, password):
-	global users
+	
 	#Check in users if email exists then try to match the pw
-	for user in users.values():
+	for user in user_iter():
 		if user._email == email:
 				if user._password == password:		
 					return dict(token = maketok(user._u_id), u_id = user._u_id)
@@ -239,7 +135,7 @@ def auth_register(email, password, name_first, name_last):
 		raise ValueError("Invalid Email Address")
 	else:
 
-		for user in users.values():
+		for user in user_iter():
 			if user.get_email() == email:
 				raise ValueError("Email already in use")
 
@@ -349,13 +245,13 @@ def channels_listall(token):
 	Lists all channels with format 
 	"""
 	client_id = tokcheck(token)
-	channels_list = [channel_obj.to_json_id() for channel_obj in channels.values()]
+	channels_list = [channel_obj.to_json_id() for channel_obj in channel_iter()]
 	return dict(channels = channels_list)
 	
 
 @export("/channels/create", methods=["POST"])
 def channels_create(token, name, is_public):
-	global channels
+	
 	client_id = tokcheck(token)
 	authcheck(client_id, is_admin=True)
 
@@ -381,7 +277,7 @@ if message > 1000 chars val error
 '''
 @export("/message/sendlater", methods = ["POST"])
 def message_sendlater(token, channel_id, message, time_sent):
-	global channels, messages, messages_to_send
+	
 	
 	if time_sent < datetime.now(TIMEZONE):
 		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
@@ -389,7 +285,7 @@ def message_sendlater(token, channel_id, message, time_sent):
 	authcheck(client_id, channel_id = channel_id)
 	
 	message_obj = Message(message, channel_id, client_id, time_sent)
-	print(messages_to_send)
+	print(get_unsent())
 	return {}
 
 
@@ -398,7 +294,7 @@ Ezra: done
 '''
 @export("/message/send", methods = ["POST"])
 def message_send(token, channel_id, message):
-	global channels, messages
+	
 	
 
 	client_id = tokcheck(token)
@@ -520,9 +416,6 @@ def user_profile(token, u_id):
 	client_id = tokcheck(token)
 	authcheck(client_id)
 	# Check for valid user
-	global users
-	if u_id not in users: 
-		raise ValueError("Invalid User id or User does not exist")	
 	user = get_user(u_id)
 	return dict(
 		email = user.get_email(),
@@ -557,11 +450,11 @@ def user_profile_setemail(token, email):
 	client_id = tokcheck(token)
 	authcheck(client_id)
 	# Check if email is in correct format
-	global regex
+	
 	if(re.search(regex,email)):  
-		global users
+		
 		# Check for email address duplicates
-		for user in users.values():
+		for user in user_iter():
 				# Do not raise error if user does not change field
 				if user.get_id() != client_id and user._email == email:
 					raise ValueError("Email already in use")
@@ -584,8 +477,8 @@ def user_profile_sethandle(token, handle_str):
 	if len(handle_str) < 3:
 		raise ValueError("Handle name is too short")
 	# Check if handle str is already in use by another user
-	global users
-	for user in users.values():
+	
+	for user in user_iter():
 		# Do not raise error if user keeps their own name unchanged
 		if user.get_id() != client_id and user._handle_str == handle_str:
 
@@ -601,7 +494,7 @@ def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
 
 @export("/standup/start", methods = ["POST"])
 def standup_start(token, channel_id, length):
-	global channels
+	
 	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 
@@ -613,7 +506,7 @@ def standup_start(token, channel_id, length):
 
 @export("/standup/send", methods = ["POST"])
 def standup_send(token, channel_id, message):
-	global channels
+	
 	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 	get_channel(channel_id).standup_send(client_id, message)
@@ -621,7 +514,7 @@ def standup_send(token, channel_id, message):
 	return {}
 @export("/standup/active", methods = ["GET"])
 def standup_active(token, channel_id):
-	global channels
+	
 	client_id = tokcheck(token)
 	
 	is_active = get_channel(channel_id).standup_active()
@@ -639,8 +532,6 @@ def search(token, query_str):
 def admin_userpermission_change(token, u_id, permission_id):
 	user_id = tokcheck(token)
 	authcheck(user_id, is_admin = True)
-	if u_id not in users:
-		raise ValueError((f"channel_invite: User does not exist."))
 	if permission_id not in (OWNER, ADMIN, MEMBER):
 		raise ValueError("Permission ID not valid")
 	get_user(u_id).set_permission(permission_id)

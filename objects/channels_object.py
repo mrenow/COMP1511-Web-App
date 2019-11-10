@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from .messages import Message
-from server.server import get_num_channels, inc_channels, get_user, get_channel, get_message, set_user, set_message, set_channel
+from server.state import *
 from server.constants import *
 '''
 get_channels
@@ -15,7 +15,7 @@ class Channel:
 		self._owners_set = set([owner_id])
 		self._members_set = set([owner_id])
 		self._is_public = is_public
-		self._id = get_num_channels()
+		self._id = num_channels()
 
 		# Functions as the entire standup
 		self._standup_message_id = None
