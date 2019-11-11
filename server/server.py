@@ -502,14 +502,7 @@ def message_pin(token, message_id):
 	
 	return {}
 
-'''
-Unpins message.
-Value Error:
 
-Access Error:
-
-returns
-'''
 @export("/message/unpin", methods = ["POST"])
 def message_unpin(token, message_id):
 	"""Upins message

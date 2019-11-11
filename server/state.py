@@ -26,13 +26,10 @@ def inc_messages():
 	_num_messages += 1
 
 def num_messages():
-	global _num_messages
 	return _num_messages
 def num_users():
-	global _user_count
 	return _user_count
 def num_channels():
-	global _num_channels
 	return _num_channels
 def channel_iter():
     return _channels.values()
@@ -59,15 +56,12 @@ def get_message(message_id):
 		raise ValueError(f"Message {message_id} does not exist. messages: {_messages} in {__name__}")
 
 def set_user(u_id, user_obj):
-	global _users
 	_users[u_id] = user_obj
 
 def set_channel(channel_id, channel_obj):
-	global _channels
 	_channels[channel_id] = channel_obj
 
 def set_message(message_id, message_obj):
-	global _messages
 	_messages[message_id] = message_obj
 
 def remove_channel(channel_id):
@@ -90,7 +84,6 @@ def remove_message(message_id):
 	
 
 def get_unsent():
-	global _unsent_messages
 	return _unsent_messages
     
 def lock_unsent():
