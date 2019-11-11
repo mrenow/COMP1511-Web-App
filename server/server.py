@@ -89,22 +89,62 @@ def authcheck(client_id, user_id=None, channel_id=None, chowner_id=None, is_admi
 
 
 def tokcheck(token) -> int:	
-	
-	
+	'''
+	checks if a token is valid
+
+	checks a token is in valid_toks and then returns the u_id within the payload
+
+	Args:
+		token: a encoded string used for getting user ID for authorization
+	Returns: 
+		a user id contained encrypted in the token
+	Raises:
+		ValueError: token is invalid
+
+	'''
+	global valid_toks
 	payload = jwt.decode(token, private_key, algorithms= ["HS256"])
 	if payload["tok_id"] in valid_toks:
 		return payload["u_id"]
 	raise ValueError("Invalid Token")
 
+def authorise(function):
+	def wrapper(token,*args,**kwargs):
+		client_id = tokcheck(token)
+		return function(client_id,*args, **kwargs)
+	return wrapper
+		
+
+
 def maketok(u_id) -> str:
-	global tokcount
+	'''
+	Creates a token for a user.
+
+	Generates a token with u_id that is encrypted in its payload
+
+	Args: 
+		u_id:a number representing used to identify a user
+	Returns:
+		A token with a payload that is encrypted
+
+	'''
+	global tokcount 
 	payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now(TIMEZONE))}
 	valid_toks.add(tokcount)
 	tokcount += 1
 	return jwt.encode(payload, private_key, algorithm= "HS256")
 
 def killtok(token) -> Dict["is_success", bool]:
-	
+	'''
+	removes specific token 
+
+	looks through a list of valid tokens and removes given token
+
+	Args:
+		token: a encoded string used for getting user ID for authorization
+	Returns: 
+		returns a dictionary indicating whether decoding was successful
+	'''
 	payload = jwt.decode(token, private_key, algorithms= ["HS256"])
 	tok_id = payload["tok_id"]
 	if payload["tok_id"] in valid_toks:
@@ -114,7 +154,20 @@ def killtok(token) -> Dict["is_success", bool]:
 
 @export('/auth/login', methods = ["POST"])
 def auth_login(email, password):
-	
+	'''
+	checks email and password
+
+	Checks entered credentials is correct.Compares the email and password taken 
+	with data of existing users,raises error if incorrect
+
+	Args: 
+		email
+		password
+	Returns:
+		Nothing
+	Raises:
+		ValueError: Incorrect email or password
+	'''
 	#Check in users if email exists then try to match the pw
 	for user in user_iter():
 		if user._email == email:
@@ -126,11 +179,37 @@ def auth_login(email, password):
 
 @export("/auth/logout", methods = ["POST"])
 def auth_logout(token):
+	'''
+	logs the user out of active session
+
+	calls killtok with given token, killtok then removes token
+	from valid token list
+
+	Args:
+		token: a encoded string used for getting user ID for authorization
+	Returns:
+		a dictionary indicating whether if log out is successful
+	'''
+
 	return killtok(token)
 
 @export("/auth/register", methods = ["POST"])
 def auth_register(email, password, name_first, name_last):
+	'''
+	creates an account for first time users
 
+	takes in the information inputted and stores it in a new user object
+
+	Args:
+		email: used to identify account
+		password :
+		name_first: user's first name
+		name_last: user's last name
+	Returns: 
+		a dictionary storing user id and token 
+	Raises:
+		ValueError: invalid or existing email, incorrect length for name or passowrd
+	'''
 	# Check if email is good
 	print(email, password)
 	if not re.search(regex,email):
@@ -143,7 +222,7 @@ def auth_register(email, password, name_first, name_last):
 
 		# Password
 		if len(password) < 6:
-			raise ValueError("Password too shorSt")
+			raise ValueError("Password too short")
 
 		# First and last name within 1 and 50 characters
 		if len(name_first) > 50:
@@ -155,9 +234,9 @@ def auth_register(email, password, name_first, name_last):
 		if len(name_last) < 1:
 			raise ValueError("Last name is too short")
 
-		obj = User(name_first, name_last, email, password)
-		u_id = obj.get_id()
-		set_user(u_id,obj)
+		new_user = User(name_first, name_last, email, password)
+		u_id = new_user.get_id()
+		set_user(u_id,new_user)
 		return dict(token = maketok(u_id), u_id = u_id)
 		
 @export("/auth/passwordreset_request", methods = ["POST"])
@@ -169,12 +248,12 @@ def auth_passwordreset_request(email):
 def auth_passwordreset_reset(reset_code, new_password):
 	return {}
 
+
 @export("/channel/invite", methods = ["POST"])
-def channel_invite(token, channel_id, u_id):
-	client_id = tokcheck(token) 
+@authorise
+def channel_invite(client_id, channel_id, u_id):
 	authcheck(client_id, channel_id = channel_id)
 	get_channel(channel_id).join(u_id)
-
 	return {}
 
 
@@ -184,14 +263,14 @@ Raises a value error when channel id does not exist
 '''
 
 @export("/channel/details", methods = ["GET"])
-def channel_details(token, channel_id):
-	client_id = tokcheck(token)
+@authorise
+def channel_details(client_id, channel_id):
 	authcheck(client_id, channel_id = channel_id)
 	return get_channel(channel_id).to_json_members()
 
 @export("/channel/messages", methods = ["GET"])
-def channel_messages(token, channel_id, start):
-	client_id = tokcheck(token)	
+@authorise
+def channel_messages(client_id, channel_id, start):
 	update_messages()
 	
 	authcheck(client_id, channel_id = channel_id)
@@ -207,56 +286,51 @@ def channel_messages(token, channel_id, start):
 				end = end)
 
 @export("/channel/leave", methods = ["POST"])
-def channel_leave(token, channel_id):
-	client_id = tokcheck(token)
+@authorise
+def channel_leave(client_id, channel_id):
 	get_channel(channel_id).leave(client_id)
 	return {}
 
 @export("/channel/join", methods = ["POST"])
-def channel_join(token, channel_id):
-	client_id = tokcheck(token)
+@authorise
+def channel_join(client_id, channel_id):
 	if get_channel(channel_id).get_is_public() == False:
 		raise AccessError("Channel is private")
 	get_channel(channel_id).join(client_id)
 	return {}
 
 @export("/channel/addowner", methods = ["POST"])
-def channel_addowner(token, channel_id, u_id):
-	client_id = tokcheck(token)
+@authorise
+def channel_addowner(client_id, channel_id, u_id):
 	authcheck (client_id, chowner_id = channel_id, is_admin = True)
 	get_channel(channel_id).add_owner(u_id)
 
 	return {}
 
 @export("/channel/removeowner", methods = ["POST"])
-def channel_removeowner(token, channel_id, u_id):
-	client_id = tokcheck(token)
+@authorise
+def channel_removeowner(client_id, channel_id, u_id):
 	authcheck (client_id, chowner_id = channel_id, is_admin = True)
 	get_channel(channel_id).remove_owner(u_id)
 	return {}
 
 @export("/channels/list", methods = ["GET"])
-def channels_list(token):
-	client_id = tokcheck(token)
+@authorise
+def channels_list(client_id):
 	channels_list = [get_channel(channel_id).to_json_id() for channel_id in get_user(client_id).get_channels()]
 	return dict(channels = channels_list)
-	
+
 @export("/channels/listall", methods = ["GET"])
-def channels_listall(token):
-	"""
-	Lists all channels with format 
-	"""
-	client_id = tokcheck(token)
+@authorise
+def channels_listall(client_id):
 	channels_list = [channel_obj.to_json_id() for channel_obj in channel_iter()]
 	return dict(channels = channels_list)
 	
 
-@export("/channels/create", methods=["POST"])
-def channels_create(token, name, is_public):
-	
-	client_id = tokcheck(token)
+@export("/channels/create", methods = ["POST"])
+@authorise
+def channels_create(client_id, name, is_public):
 	authcheck(client_id, is_admin=True)
-
 	new_channel = Channel(name, client_id, is_public)
 	get_user(client_id).get_channels().add(new_channel.get_id())
 	set_channel(new_channel.get_id(), new_channel)
@@ -267,8 +341,8 @@ Added to the specification.
 '''
 
 @export("/channels/delete", methods = ["POST"])
-def channels_delete(token, channel_id):
-	client_id = tokcheck(token)
+@authorise
+def channels_delete(client_id, channel_id):
 	authcheck(client_id, channel_id = channel_id)
 	
 	return {}
@@ -296,12 +370,12 @@ def message_sendlater(token, channel_id, message, time_sent):
 	Raises:
 		ValueError: When sent_time is at an earlier timestamp than the current time
 	"""
+
 	if time_sent < datetime.now(TIMEZONE):
 		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
-	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 	
-	message_obj = Message(message, channel_id, client_id, time_sent)
+	message_obj = Message(message, channel_id, client_id, time_sent_millis)
 	print(get_unsent())
 	return {}
 
@@ -328,7 +402,6 @@ def message_send(token, channel_id, message):
 		AccessError:  The authorised user has not joined the channel they are trying to post to
 	"""
 
-	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 	
 	message_obj = Message(message, channel_id, client_id)
@@ -354,8 +427,6 @@ def message_remove(token, message_id):
 			- Message with message_id was sent by the authorised user making this request
 			- The authorised user is an admin or owner of this channel or the slackr
 	"""
-
-	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	print("	",get_message(message_id).get_message())
 	authcheck(client_id, channel_id = mess.get_channel())
@@ -389,7 +460,6 @@ def message_edit(token, message_id, message):
 	if not message:
 		message_remove(token, message_id)
 		return {}
-	client_id = tokcheck(token)
 	mess = get_message(message_id) 
 	authcheck(client_id, channel_id = mess.get_channel())
 	print("owners:",get_channel(mess.get_channel()).get_owners())
@@ -420,7 +490,6 @@ def message_react(token, message_id, react_id):
 			- Message with ID message_id already contains an active React with ID react_id
 	"""
 
-	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	authcheck(client_id, channel_id = mess.get_channel())
 	### Iteration 2 only 
@@ -456,7 +525,6 @@ def message_unreact(token, message_id, react_id):
 			- Message with ID message_id already contains an active React with ID react_id
 	"""
 
-	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	authcheck(client_id, channel_id = mess.get_channel())
 
@@ -491,7 +559,6 @@ def message_pin(token, message_id):
 		AccessError: The authorised user is not a member of the channel that the message is within
 	"""
 
-	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	if mess.is_pinned():
 		raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
@@ -520,7 +587,6 @@ def message_unpin(token, message_id):
 		AccessError: The authorised user is not a member of the channel that the message is within
 	"""
 
-	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	
 	if not mess.is_pinned():
@@ -531,9 +597,23 @@ def message_unpin(token, message_id):
 	return {}
 
 @export("/user/profile", methods = ["GET"])
-def user_profile(token, u_id):
+@authorise
+def user_profile(client_id, u_id):
+	'''
+	shows basic information of a user
+
+	finds the corresponding user with u_id from user global dictionary
+	and retrieves relevant info
+
+	Args:
+		client_id: user ID of requester
+		u_id: user ID of user who the requester wants to know about
+	Returns:
+		a dictionary with email, full name, and handle of selected user
+	Raises:
+		ValueError: u_id is invalid
+	'''
 	# Check for authorisation
-	client_id = tokcheck(token)
 	authcheck(client_id)
 	# Check for valid user
 	user = get_user(u_id)
@@ -545,9 +625,24 @@ def user_profile(token, u_id):
 
   
 @export("/user/profile/setname", methods = ["PUT"])
-def user_profile_setname(token, name_first, name_last):
+@authorise
+def user_profile_setname(client_id, name_first, name_last):
+	'''
+	changes name of requester
+
+	calls name setters from corresponding user object
+
+	Args:
+		client_id: user ID of requester
+		name_first: user inputted string for new first name
+		name_last: user inputted string for new last name 
+	Returns:
+		empty dictionary
+	Raises:
+		ValueErrors: name is too long or too short
+
+	'''
 	# Check for authorisation
-	client_id = tokcheck(token)
 	authcheck(client_id)
 	# Check if first and last names are within length restrictions otherwise return a ValueError
 	if len(name_first) > 50: 
@@ -565,9 +660,22 @@ def user_profile_setname(token, name_first, name_last):
 	return {}
 
 @export("/user/profile/setemail", methods = ["PUT"])
-def user_profile_setemail(token, email):
+@authorise
+def user_profile_setemail(client_id, email):
+	'''
+	changes email of requester
+
+	calls email setters from corresponding user object
+
+	Args:
+		client_id: user ID of requester
+		email: user inputted string for new email
+	Returns:
+		empty dictionary
+	Raises:
+		ValueErrors: invalid or already in use email
+	'''
 	# Check for authorisation
-	client_id = tokcheck(token)
 	authcheck(client_id)
 	# Check if email is in correct format
 	
@@ -587,9 +695,22 @@ def user_profile_setemail(token, email):
 	return {}
 
 @export("/user/profile/sethandle", methods = ["PUT"])
-def user_profile_sethandle(token, handle_str):
+@authorise
+def user_profile_sethandle(client_id, handle_str):
+	'''
+	changes handle of requester
+
+	calls handle setters from corresponding user object
+
+	Args:
+		client_id: user ID of requester
+		handle_str: user inputted string for new handle
+	Returns:
+		empty dictionary
+	Raises:
+		ValueErrors: handle is too long or too short, handle is already in use
+	'''
 	# Check for authorisation
-	client_id = tokcheck(token)
 	authcheck(client_id)
 	# Check if handle str is the right len
 	if len(handle_str) > 20:
@@ -609,9 +730,8 @@ def user_profile_sethandle(token, handle_str):
 	return {}
 
 @export("/user/profiles/uploadphoto", methods = ["POST"])
-def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
-	# Check for authorisation
-	client_id = tokcheck(token)
+@authorise
+def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end):
 	# Download the image
 	urllib.request.urlretrieve(img_url, "./static/" + client_id + ".pn")
 	# Crop if image is too big 
@@ -619,33 +739,49 @@ def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
 		imageObject = Image.open("./static/" + client_id + ".pn")
 		cropped = imageObject.crop((0,0,500,500))
 		cropped.save("./static/" + client_id + ".pn")
-		
 	return {}
 
 @export("/standup/start", methods = ["POST"])
+@authorise
 def standup_start(token, channel_id, length):
+	"""Commences standup
 	
+	For a given channel, start the standup period whereby for the next "length" seconds 
+	if someone calls "standup_send" with a message, it is buffered during the X second window 
+	then at the end of the X second window a message will be added to the message queue in 
+	the channel from the user who started the standup. X is an integer that denotes 
+	the number of seconds that the standup occurs for
+
+	Args: 
+		token: A str used to identify and verify a user
+		channel_id: An int used to identify a specific channel
+		length: An int representing the number of seconds the standup occurs for
+
+	Returns:
+		time_finish: A timestamp of when standup will finish
+
+	Raises:
+		ValueError: Channel ID is not a valid channel
+		ValueError: An active standup is currently running in this channel
+	"""
+
 	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
-
 	# Raises an error if standup already active
 	time_finish = get_channel(channel_id).standup_start(client_id, length)
-
-
 	return dict(time_finish = time_finish)
 
 @export("/standup/send", methods = ["POST"])
-def standup_send(token, channel_id, message):
-	
-	client_id = tokcheck(token)
+@authorise
+def standup_send(client_id, channel_id, message):
 	authcheck(client_id, channel_id = channel_id)
 	get_channel(channel_id).standup_send(client_id, message)
 
 	return {}
+
 @export("/standup/active", methods = ["GET"])
-def standup_active(token, channel_id):
-	
-	client_id = tokcheck(token)
+@authorise
+def standup_active(client_id, channel_id):
 	
 	is_active = get_channel(channel_id).standup_active()
 	time_finish = get_channel(channel_id).standup_time() if is_active else None
@@ -655,16 +791,17 @@ def standup_active(token, channel_id):
 
 
 @export("/search", methods = ["GET"])
-def search(token, query_str):
+@authorise
+def search(client_id, query_str):
 	return {}
 	
 @export("/admin/userpermission/change", methods = ["POST"])
-def admin_userpermission_change(token, u_id, permission_id):
-	user_id = tokcheck(token)
-	authcheck(user_id, is_admin = True)
+@authorise
+def admin_userpermission_change(client_id, u_id, permission_id):
+	authcheck(client_id, is_admin = True)
 	if permission_id not in (OWNER, ADMIN, MEMBER):
 		raise ValueError("Permission ID not valid")
-	get_user(u_id).set_permission(permission_id)
+	get_user(client_id).set_permission(permission_id)
 	return {}
 
 def relevance_score(string):
