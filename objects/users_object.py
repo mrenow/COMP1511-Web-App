@@ -1,23 +1,23 @@
-
-from server.server import get_channel, get_user, set_user, get_num_users, inc_users, OWNER, ADMIN, MEMBER
+from server.state import *
+from server.constants import *
 
 class User:
 
     def __init__(self, name_first, name_last, email, password):
-        self._u_id = get_num_users()
+        self._u_id = num_users()
         self._password = password
         self._name_first = name_first
         self._name_last = name_last
         self._email = email
-        if self._u_id == 0:
-            self._permission_id = OWNER
-        else:
-            self._permission_id = MEMBER
         self._handle_str = name_first + name_last
         self._profile_picture = None
         self._channels = set()
         self._admin_channels = set()
         self._owner_channels = set()
+        if self._u_id == 0:
+            self._permission_id = OWNER
+        else:
+            self._permission_id = MEMBER
         set_user(self._u_id, self)
         inc_users()
 
@@ -82,6 +82,8 @@ class User:
     def set_handle_str(self, handle_str):
         self._handle_str = handle_str
 
+
+    
     def get_user_profile(self):
         return dict(email = self._email, 
                     name_first = self._name_first, 
