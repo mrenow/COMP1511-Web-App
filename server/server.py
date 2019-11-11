@@ -351,8 +351,10 @@ def channels_delete(client_id, channel_id):
 '''
 if message > 1000 chars val error
 '''
+
 @export("/message/sendlater", methods = ["POST"])
-def message_sendlater(token, channel_id, message, time_sent):
+@authorise
+def message_sendlater(client_id, channel_id, message, time_sent):
 	"""Sends a message later at a given time.
 	
 	Send a message from authorised_user to the channel specified by 
@@ -375,7 +377,7 @@ def message_sendlater(token, channel_id, message, time_sent):
 		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
 	authcheck(client_id, channel_id = channel_id)
 	
-	message_obj = Message(message, channel_id, client_id, time_sent_millis)
+	message_obj = Message(message, channel_id, client_id, time_sent)
 	print(get_unsent())
 	return {}
 
@@ -384,7 +386,8 @@ def message_sendlater(token, channel_id, message, time_sent):
 Ezra: done
 '''
 @export("/message/send", methods = ["POST"])
-def message_send(token, channel_id, message):
+@authorise
+def message_send(client_id, channel_id, message):
 	"""Sends a message
 
 	Send a message from authorised_user to the channel specified by channel_id
@@ -412,7 +415,8 @@ def message_send(token, channel_id, message):
 Ezra: done 
 '''
 @export("/message/remove", methods = ["DELETE"])
-def message_remove(token, message_id):
+@authorise
+def message_remove(client_id, message_id):
 	"""Removes a message
 
 	Given a message_id for a message, this message is removed from the channel
@@ -438,7 +442,8 @@ def message_remove(token, message_id):
 Ezra: done 
 '''
 @export("/message/edit", methods = ["PUT"])
-def message_edit(token, message_id, message):
+@authorise
+def message_edit(client_id, message_id, message):
 	"""Edits a message
 
 	Given a message, update it's text with new text, provided the 
@@ -458,7 +463,7 @@ def message_edit(token, message_id, message):
 	
 	message = message.strip()
 	if not message:
-		message_remove(token, message_id)
+		message_remove(client_id, message_id)
 		return {}
 	mess = get_message(message_id) 
 	authcheck(client_id, channel_id = mess.get_channel())
@@ -472,7 +477,8 @@ def message_edit(token, message_id, message):
 Ezra: done 
 '''
 @export("/message/react", methods = ["POST"])
-def message_react(token, message_id, react_id): 
+@authorise
+def message_react(client_id, message_id, react_id): 
 	"""React with a like to the message
 
 	Given a message within a channel the authorised user is part 
@@ -507,7 +513,8 @@ def message_react(token, message_id, react_id):
 Ezra: done 
 '''
 @export("/message/unreact", methods = ["POST"])
-def message_unreact(token, message_id, react_id):
+@authorise
+def message_unreact(client_id, message_id, react_id):
 	"""Unreacts a post
 
 	Given a message within a channel the authorised user is part of, 
@@ -542,7 +549,8 @@ def message_unreact(token, message_id, react_id):
 Ezra: done 
 '''
 @export("/message/pin", methods = ["POST"])
-def message_pin(token, message_id):		
+@authorise
+def message_pin(client_id, message_id):		
 	"""Pins a message 
 
 	Given a message within a channel, mark it as "pinned" to be 
@@ -578,7 +586,8 @@ Access Error:
 returns
 '''
 @export("/message/unpin", methods = ["POST"])
-def message_unpin(token, message_id):
+@authorise
+def message_unpin(client_id, message_id):
 	"""Upins message
 
 	Given a message within a channel, remove it's mark as unpinned
@@ -847,7 +856,7 @@ def admin_userpermission_change(client_id, u_id, permission_id):
 	authcheck(client_id, is_admin = True)
 	if permission_id not in (OWNER, ADMIN, MEMBER):
 		raise ValueError("Permission ID not valid")
-	get_user(client_id).set_permission(permission_id)
+	get_user(u_id).set_permission(permission_id)
 	return {}
 
 def relevance_score(string):
