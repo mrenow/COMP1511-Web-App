@@ -48,7 +48,7 @@ def export(route, methods):
 		return wrapper
 	return decorator
 
-def show_request(request:Flask.request_class):
+def show_request(request):
 	print(
 		f"\n{request} \n" + 
 		f"\tArgs: {request.args} \n" +  
