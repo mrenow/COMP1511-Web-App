@@ -279,8 +279,23 @@ if message > 1000 chars val error
 '''
 @export("/message/sendlater", methods = ["POST"])
 def message_sendlater(token, channel_id, message, time_sent):
+	"""Sends a message later at a given time.
 	
-	
+	Send a message from authorised_user to the channel specified by 
+	channel_id automatically at a specified time in the future
+
+	Args: 
+		token: A str used to identify and verify a user
+		channel_id: An int used to identify a specific channel
+		message: A str representing the message body that the user wants to send
+		time_sent: A timestamp in which the user wants the send the message
+
+	Returns:
+		message_id: An int that is used to help identitfy the message sent
+
+	Raises:
+		ValueError: When sent_time is at an earlier timestamp than the current time
+	"""
 	if time_sent < datetime.now(TIMEZONE):
 		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
 	client_id = tokcheck(token)
@@ -296,8 +311,22 @@ Ezra: done
 '''
 @export("/message/send", methods = ["POST"])
 def message_send(token, channel_id, message):
+	"""Sends a message
+
+	Send a message from authorised_user to the channel specified by channel_id
+
+	Args: 
+		token: A str used to identify and verify a user
+		channel_id: An int used to identify a specific channel
+		message: A str representing the message body that the user wants to send
 	
-	
+	Returns:
+		message_id: An int that is used to help identitfy the message sent
+
+	Raises:
+		ValueError: When message is over 1000 characters long
+		AccessError:  The authorised user has not joined the channel they are trying to post to
+	"""
 
 	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
@@ -311,6 +340,20 @@ Ezra: done
 '''
 @export("/message/remove", methods = ["DELETE"])
 def message_remove(token, message_id):
+	"""Removes a message
+
+	Given a message_id for a message, this message is removed from the channel
+	if the person requesting this is an admin or the one who posted it
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+	
+	Raises:
+		AccessError: When none of these conditions are met:
+			- Message with message_id was sent by the authorised user making this request
+			- The authorised user is an admin or owner of this channel or the slackr
+	"""
 
 	client_id = tokcheck(token)
 	mess = get_message(message_id)
@@ -325,6 +368,23 @@ Ezra: done
 '''
 @export("/message/edit", methods = ["PUT"])
 def message_edit(token, message_id, message):
+	"""Edits a message
+
+	Given a message, update it's text with new text, provided the 
+	user requesting this has the authority to. If the new message 
+	is an empty string, the message is deleted.
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+		message: A str representing the message body that the user wants to send
+
+	Raises:
+		AccessError: When none of these conditions are met:
+			- Message with message_id was sent by the authorised user making this request
+			- The authorised user is an admin or owner of this channel or the slackr
+	"""
+	
 	message = message.strip()
 	if not message:
 		message_remove(token, message_id)
@@ -343,6 +403,23 @@ Ezra: done
 '''
 @export("/message/react", methods = ["POST"])
 def message_react(token, message_id, react_id): 
+	"""React with a like to the message
+
+	Given a message within a channel the authorised user is part 
+	of, add a "react" to that particular message
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+		react_id: An int used to identify a specific reaction
+
+	Raises:
+		ValueError: When none of these conditions are met:
+			- message_id is not a valid message within a channel that the authorised user has joined
+			- react_id is not a valid React ID. The only valid react ID the frontend has is 1
+			- Message with ID message_id already contains an active React with ID react_id
+	"""
+
 	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	authcheck(client_id, channel_id = mess.get_channel())
@@ -362,6 +439,23 @@ Ezra: done
 '''
 @export("/message/unreact", methods = ["POST"])
 def message_unreact(token, message_id, react_id):
+	"""Unreacts a post
+
+	Given a message within a channel the authorised user is part of, 
+	remove a "react" to that particular message
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+		react_id: An int used to identify a specific reaction
+
+	Raises:
+		ValueError: When none of these conditions are met:
+			- message_id is not a valid message within a channel that the authorised user has joined
+			- react_id is not a valid React ID. The only valid react ID the frontend has is 1
+			- Message with ID message_id already contains an active React with ID react_id
+	"""
+
 	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	authcheck(client_id, channel_id = mess.get_channel())
@@ -381,6 +475,22 @@ Ezra: done
 '''
 @export("/message/pin", methods = ["POST"])
 def message_pin(token, message_id):		
+	"""Pins a message 
+
+	Given a message within a channel, mark it as "pinned" to be 
+	given special display treatment by the frontend
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+	
+	Raises:
+		ValueError: message_id is not a valid message
+		ValueError: The authorised user is not an admin
+		ValueError: Message with ID message_id is already pinned
+		AccessError: The authorised user is not a member of the channel that the message is within
+	"""
+
 	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	if mess.is_pinned():
@@ -401,7 +511,22 @@ Access Error:
 returns
 '''
 @export("/message/unpin", methods = ["POST"])
-def message_unpin(token, message_id):	
+def message_unpin(token, message_id):
+	"""Upins message
+
+	Given a message within a channel, remove it's mark as unpinned
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+	
+	Raises:
+		ValueError: message_id is not a valid message
+		ValueError: The authorised user is not an admin
+		ValueError: Message with ID message_id is already unpinned
+		AccessError: The authorised user is not a member of the channel that the message is within
+	"""
+
 	client_id = tokcheck(token)
 	mess = get_message(message_id)
 	
