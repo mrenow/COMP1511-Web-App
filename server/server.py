@@ -296,6 +296,7 @@ def message_sendlater(token, channel_id, message, time_sent):
 	Raises:
 		ValueError: When sent_time is at an earlier timestamp than the current time
 	"""
+
 	if time_sent < datetime.now(TIMEZONE):
 		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
 	client_id = tokcheck(token)
@@ -631,7 +632,27 @@ def user_profiles_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
 
 @export("/standup/start", methods = ["POST"])
 def standup_start(token, channel_id, length):
+	"""Commences standup
 	
+	For a given channel, start the standup period whereby for the next "length" seconds 
+	if someone calls "standup_send" with a message, it is buffered during the X second window 
+	then at the end of the X second window a message will be added to the message queue in 
+	the channel from the user who started the standup. X is an integer that denotes 
+	the number of seconds that the standup occurs for
+
+	Args: 
+		token: A str used to identify and verify a user
+		channel_id: An int used to identify a specific channel
+		length: An int representing the number of seconds the standup occurs for
+
+	Returns:
+		time_finish: A timestamp of when standup will finish
+
+	Raises:
+		ValueError: Channel ID is not a valid channel
+		ValueError: An active standup is currently running in this channel
+	"""
+
 	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 
@@ -643,7 +664,8 @@ def standup_start(token, channel_id, length):
 
 @export("/standup/send", methods = ["POST"])
 def standup_send(token, channel_id, message):
-	
+	"""
+	"""
 	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 	get_channel(channel_id).standup_send(client_id, message)
