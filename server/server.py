@@ -112,6 +112,7 @@ def authorise(function):
 	def wrapper(token,*args,**kwargs):
 		client_id = tokcheck(token)
 		return function(client_id,*args, **kwargs)
+	wrapper.__name__ = function.__name__
 	return wrapper
 		
 
