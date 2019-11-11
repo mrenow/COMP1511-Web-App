@@ -9,15 +9,15 @@ class User:
         self._name_first = name_first
         self._name_last = name_last
         self._email = email
-        if self._u_id == 0:
-            self._permission_id = OWNER
-        else:
-            self._permission_id = MEMBER
         self._handle_str = name_first + name_last
         self._profile_picture = None
         self._channels = set()
         self._admin_channels = set()
         self._owner_channels = set()
+        if self._u_id == 0:
+            self._permission_id = OWNER
+        else:
+            self._permission_id = MEMBER
         set_user(self._u_id, self)
         inc_users()
 

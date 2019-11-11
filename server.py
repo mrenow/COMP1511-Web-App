@@ -69,7 +69,7 @@ if __name__ == '__main__':
 	import server.server
     
 	#APP.run(port=(sys.argv[1] if len(sys.argv) > 1 else 5000))
-	APP.run(port = 5001, debug = True)
+	APP.run(port = 5009, debug = True)
 
 
 
