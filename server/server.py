@@ -783,28 +783,67 @@ def standup_start(client_id, channel_id, length):
 	time_finish = get_channel(channel_id).standup_start(client_id, length)
 	return dict(time_finish = time_finish)
 
-@export("/standup/send", methods = ["POST"])
-@authorise
-def standup_send(client_id, channel_id, message):
-	authcheck(client_id, channel_id = channel_id)
-	get_channel(channel_id).standup_send(client_id, message)
-
-	return {}
-
 @export("/standup/active", methods = ["GET"])
 @authorise
 def standup_active(client_id, channel_id):
-	
+	"""Checks whether or not theres an active standup
+
+	For a given channel, return whether a standup is active in it, and what 
+	time the standup finishes. If no standup is active, then time_finish returns None
+
+	Args:
+		client_id: An int used to identify a specific client
+		channel_id: An int used to identify a specific channel
+
+	Returns:
+		is_active: A boolean of whether or not a standup is currently active in the channel
+		time_finish: A timestamp of when the standup will finish
+		None: Return None when theres no active standup
+	"""
+
 	is_active = get_channel(channel_id).standup_active()
 	time_finish = get_channel(channel_id).standup_time() if is_active else None
 	
 	return dict(is_active = is_active,
 					time_finish = time_finish.timestamp() if time_finish else time_finish)
 
+@export("/standup/send", methods = ["POST"])
+@authorise
+def standup_send(client_id, channel_id, message):
+	"""Adds a message to the standup queue
+
+	Sending a message to get buffered in the standup queue, assuming a standup is currently active
+
+	Args:
+		client_id: An int used to identify a specific client
+		channel_id: An int used to identify a specific channel
+		message: A str representing the message body that the user wants to send
+
+	Raises:
+		ValueError: Channel ID is not a valid channel
+		ValueError: Message is more than 1000 characters
+		ValueError: An active standup is not currently running in this channel
+	"""
+	authcheck(client_id, channel_id = channel_id)
+	get_channel(channel_id).standup_send(client_id, message)
+
+	return {}
 
 @export("/search", methods = ["GET"])
 @authorise
 def search(client_id, query_str):
+	"""Searches for certain messages
+
+	Given a query string, return a collection of messages in all of the
+	channels that the user has joined that match the query
+
+	Args:
+		client_id: An int used to identify a specific client
+		query_str: A str that the client wants to search for in all messages
+
+	Returns:
+		messages[]: a list of messages which match the query_str
+	"""
 	return {}
 	
 @export("/admin/userpermission/change", methods = ["POST"])
