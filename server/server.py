@@ -12,6 +12,8 @@ from objects.messages import Message
 from objects.users_object import User
 
 import re # used for checking email formating
+import urllib.request
+from PIL import Image
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 import jwt
 
@@ -349,12 +351,27 @@ def channels_delete(client_id, channel_id):
 '''
 if message > 1000 chars val error
 '''
-@export("/message/sendlater", methods=["POST"])
-@authorise
-def message_sendlater(client_id, channel_id, message, time_sent_millis):
-	if time_sent_millis < datetime.now(TIMEZONE):
-		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent_millis} in the past")
+@export("/message/sendlater", methods = ["POST"])
+def message_sendlater(token, channel_id, message, time_sent):
+	"""Sends a message later at a given time.
+	
+	Send a message from authorised_user to the channel specified by 
+	channel_id automatically at a specified time in the future
 
+	Args: 
+		token: A str used to identify and verify a user
+		channel_id: An int used to identify a specific channel
+		message: A str representing the message body that the user wants to send
+		time_sent: A timestamp in which the user wants the send the message
+
+	Returns:
+		message_id: An int that is used to help identitfy the message sent
+
+	Raises:
+		ValueError: When sent_time is at an earlier timestamp than the current time
+	"""
+	if time_sent < datetime.now(TIMEZONE):
+		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
 	authcheck(client_id, channel_id = channel_id)
 	
 	message_obj = Message(message, channel_id, client_id, time_sent_millis)
@@ -366,8 +383,24 @@ def message_sendlater(client_id, channel_id, message, time_sent_millis):
 Ezra: done
 '''
 @export("/message/send", methods = ["POST"])
-@authorise
-def message_send(client_id, channel_id, message):
+def message_send(token, channel_id, message):
+	"""Sends a message
+
+	Send a message from authorised_user to the channel specified by channel_id
+
+	Args: 
+		token: A str used to identify and verify a user
+		channel_id: An int used to identify a specific channel
+		message: A str representing the message body that the user wants to send
+	
+	Returns:
+		message_id: An int that is used to help identitfy the message sent
+
+	Raises:
+		ValueError: When message is over 1000 characters long
+		AccessError:  The authorised user has not joined the channel they are trying to post to
+	"""
+
 	authcheck(client_id, channel_id = channel_id)
 	
 	message_obj = Message(message, channel_id, client_id)
@@ -378,8 +411,21 @@ def message_send(client_id, channel_id, message):
 Ezra: done 
 '''
 @export("/message/remove", methods = ["DELETE"])
-@authorise
-def message_remove(client_id, message_id):
+def message_remove(token, message_id):
+	"""Removes a message
+
+	Given a message_id for a message, this message is removed from the channel
+	if the person requesting this is an admin or the one who posted it
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+	
+	Raises:
+		AccessError: When none of these conditions are met:
+			- Message with message_id was sent by the authorised user making this request
+			- The authorised user is an admin or owner of this channel or the slackr
+	"""
 	mess = get_message(message_id)
 	print("	",get_message(message_id).get_message())
 	authcheck(client_id, channel_id = mess.get_channel())
@@ -391,8 +437,24 @@ def message_remove(client_id, message_id):
 Ezra: done 
 '''
 @export("/message/edit", methods = ["PUT"])
-@authorise
-def message_edit(client_id, message_id, message):
+def message_edit(token, message_id, message):
+	"""Edits a message
+
+	Given a message, update it's text with new text, provided the 
+	user requesting this has the authority to. If the new message 
+	is an empty string, the message is deleted.
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+		message: A str representing the message body that the user wants to send
+
+	Raises:
+		AccessError: When none of these conditions are met:
+			- Message with message_id was sent by the authorised user making this request
+			- The authorised user is an admin or owner of this channel or the slackr
+	"""
+	
 	message = message.strip()
 	if not message:
 		message_remove(token, message_id)
@@ -409,8 +471,24 @@ def message_edit(client_id, message_id, message):
 Ezra: done 
 '''
 @export("/message/react", methods = ["POST"])
-@authorise
-def message_react(client_id, message_id, react_id): 
+def message_react(token, message_id, react_id): 
+	"""React with a like to the message
+
+	Given a message within a channel the authorised user is part 
+	of, add a "react" to that particular message
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+		react_id: An int used to identify a specific reaction
+
+	Raises:
+		ValueError: When none of these conditions are met:
+			- message_id is not a valid message within a channel that the authorised user has joined
+			- react_id is not a valid React ID. The only valid react ID the frontend has is 1
+			- Message with ID message_id already contains an active React with ID react_id
+	"""
+
 	mess = get_message(message_id)
 	authcheck(client_id, channel_id = mess.get_channel())
 	### Iteration 2 only 
@@ -428,8 +506,24 @@ def message_react(client_id, message_id, react_id):
 Ezra: done 
 '''
 @export("/message/unreact", methods = ["POST"])
-@authorise
-def message_unreact(client_id, message_id, react_id):
+def message_unreact(token, message_id, react_id):
+	"""Unreacts a post
+
+	Given a message within a channel the authorised user is part of, 
+	remove a "react" to that particular message
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+		react_id: An int used to identify a specific reaction
+
+	Raises:
+		ValueError: When none of these conditions are met:
+			- message_id is not a valid message within a channel that the authorised user has joined
+			- react_id is not a valid React ID. The only valid react ID the frontend has is 1
+			- Message with ID message_id already contains an active React with ID react_id
+	"""
+
 	mess = get_message(message_id)
 	authcheck(client_id, channel_id = mess.get_channel())
 
@@ -447,8 +541,23 @@ def message_unreact(client_id, message_id, react_id):
 Ezra: done 
 '''
 @export("/message/pin", methods = ["POST"])
-@authorise
-def message_pin(client_id, message_id):		
+def message_pin(token, message_id):		
+	"""Pins a message 
+
+	Given a message within a channel, mark it as "pinned" to be 
+	given special display treatment by the frontend
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+	
+	Raises:
+		ValueError: message_id is not a valid message
+		ValueError: The authorised user is not an admin
+		ValueError: Message with ID message_id is already pinned
+		AccessError: The authorised user is not a member of the channel that the message is within
+	"""
+
 	mess = get_message(message_id)
 	if mess.is_pinned():
 		raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
@@ -468,8 +577,22 @@ Access Error:
 returns
 '''
 @export("/message/unpin", methods = ["POST"])
-@authorise
-def message_unpin(client_id, message_id):	
+def message_unpin(token, message_id):
+	"""Upins message
+
+	Given a message within a channel, remove it's mark as unpinned
+
+	Args: 
+		token: A str used to identify and verify a user
+		message_id: An int used to identify a specific message
+	
+	Raises:
+		ValueError: message_id is not a valid message
+		ValueError: The authorised user is not an admin
+		ValueError: Message with ID message_id is already unpinned
+		AccessError: The authorised user is not a member of the channel that the message is within
+	"""
+
 	mess = get_message(message_id)
 	
 	if not mess.is_pinned():
@@ -615,6 +738,13 @@ def user_profile_sethandle(client_id, handle_str):
 @export("/user/profiles/uploadphoto", methods = ["POST"])
 @authorise
 def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end):
+	# Download the image
+	urllib.request.urlretrieve(img_url, "./static/" + client_id + ".pn")
+	# Crop if image is too big 
+	if y_end > 500 or x_end > 500:
+		imageObject = Image.open("./static/" + client_id + ".pn")
+		cropped = imageObject.crop((0,0,500,500))
+		cropped.save("./static/" + client_id + ".pn")
 	return {}
 
 @export("/standup/start", methods = ["POST"])
