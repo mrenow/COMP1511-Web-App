@@ -3,6 +3,12 @@ import pytest
 from datetime import datetime, timedelta
 from server.AccessError import AccessError
 from server.server import *
+from server.constants import *
+from server.state import *
+
+
+TEST_INVALID_MESSAGE = "0"*1001
+TEST_VALID_MESSAGE = "0"*1000
 
 @pytest.fixture
 def clear():
@@ -14,9 +20,8 @@ def get_message_id(token, channel, index):
 
 # Creates an environment of a admin (channel owner) and a user in one channel
 def message_env():
-    global users, channels, messages
+    global _users, _channels, _messages
     auth_response = auth_register("admin@email.com", "adminpass", "afirst", "alast")
-    print(users, channels, messages)
     admintok, admin = auth_response["token"], auth_response["u_id"]
     
     auth_response = auth_register("user@email.com", "userpass", "ufirst", "ulast")
@@ -44,7 +49,7 @@ def extra_member_env(id):
 
 
 def ms_offset(milliseconds):
-    return datetime.now() + timedelta(milliseconds = milliseconds)
+    return datetime.now(TIMEZONE) + timedelta(milliseconds = milliseconds)
 def extract_messages(message_list):
     return [mess['message'] for mess in message_list]
 def extract_users(message_list):
@@ -341,7 +346,7 @@ def test_standup(clear):
     
     
     # Finish time to be in 15 minutes +- 1 second
-    assert timedelta(seconds = -1) < finish - (datetime.now() + timedelta(seconds = 3)) < timedelta(seconds = 1)
+    assert timedelta(seconds = -1) < finish - (datetime.now(TIMEZONE) + timedelta(seconds = 3)) < timedelta(seconds = 1)
     
     standup_send(usertok, channel, "I walked my dog")
     standup_send(admintok, channel, "I stayed up till 4 am redefining specifications")
