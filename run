@@ -2,7 +2,7 @@
 
 set -m
 
-port_b=5009
+port_b=5001
 while [[ `netstat -taln | egrep $port_b` != "" ]]
 do
   echo "Failed on port $port_b, trying another"

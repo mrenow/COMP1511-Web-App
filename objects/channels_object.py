@@ -117,14 +117,14 @@ class Channel:
 		get_user(u_id).get_channels().add(self._id)
 
 	def to_json_members(self):
-		return dict(name=self._name_str,
-                    owner_members=[get_user(u_id).to_json()
+		return {"name" : self._name_str,
+                    "owner_members" : [get_user(u_id).to_json()
                                    for u_id in self._owners_set],
-                    all_members=[get_user(u_id).to_json() for u_id in self._members_set])
+                    "all_members" : [get_user(u_id).to_json() for u_id in self._members_set]}
 
 	def to_json_id(self):
-		return dict(name=self._name_str,
-                    channel_id=self._id)
+		return {"name" : self._name_str,
+                    "channel_id" : self._id}
 
 	def leave(self, u_id):
 		self._members_set.discard(u_id)

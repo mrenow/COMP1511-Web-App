@@ -6,6 +6,7 @@ from json import dumps
 from flask import Flask, request
 from server.AccessError import AccessError
 from server.constants import TIMEZONE
+from server.state import *
 from datetime import datetime, tzinfo
 
 APP = Flask(__name__)
@@ -56,21 +57,16 @@ def show_request(request:Flask.request_class):
 def show_response(response):
 	print(f"Response: {response}\n")
 
-@APP.route('/echo/get', methods=['GET', 'POST'])
-def echo1(): 
-	""" Description of function """
-	response =  dumps({
-        'echo' : request.args.get('echo'),
-    })
-	show_response(response)
-	return response
 
 if __name__ == '__main__':
 	# Generate all routes
-	import server.server
-
+	import server.auth
+	import server.user
+	import server.message
+	import server.channel
+	import server.standup
 	#APP.run(port=(sys.argv[1] if len(sys.argv) > 1 else 5000))
-	APP.run(port = 5009, debug = True)
+	APP.run(port = 5001, debug = True)
 
 
 
