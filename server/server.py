@@ -103,6 +103,8 @@ def tokcheck(token) -> int:
 
 	'''
 	global valid_toks
+
+	print("tokcheck: token: ", token)
 	payload = jwt.decode(token, private_key, algorithms= ["HS256"])
 	if payload["tok_id"] in valid_toks:
 		return payload["u_id"]
@@ -110,8 +112,10 @@ def tokcheck(token) -> int:
 
 def authorise(function):
 	def wrapper(token,*args,**kwargs):
+		print("wrapper: token: ", token)
+	
 		client_id = tokcheck(token)
-		return function(client_id,*args, **kwargs)
+		return function(client_id, *args, **kwargs)
 	wrapper.__name__ = function.__name__
 	return wrapper
 		
@@ -463,15 +467,15 @@ def message_edit(client_id, message_id, message):
 	"""
 	
 	message = message.strip()
-	if not message:
-		message_remove(client_id, message_id)
-		return {}
-	mess = get_message(message_id) 
+	mess = get_message(message_id)
+	
 	authcheck(client_id, channel_id = mess.get_channel())
-	print("owners:",get_channel(mess.get_channel()).get_owners())
 	authcheck(client_id, user_id = mess.get_user(), chowner_id = mess.get_channel(), is_admin = True)
 	
-	mess.set_message(message)
+	if not message:
+		mess.remove()
+	else:
+		mess.set_message(message)
 	return {}
 
 '''
@@ -753,7 +757,7 @@ def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end
 
 @export("/standup/start", methods = ["POST"])
 @authorise
-def standup_start(token, channel_id, length):
+def standup_start(client_id, channel_id, length):
 	"""Commences standup
 	
 	For a given channel, start the standup period whereby for the next "length" seconds 
@@ -774,8 +778,6 @@ def standup_start(token, channel_id, length):
 		ValueError: Channel ID is not a valid channel
 		ValueError: An active standup is currently running in this channel
 	"""
-
-	client_id = tokcheck(token)
 	authcheck(client_id, channel_id = channel_id)
 	# Raises an error if standup already active
 	time_finish = get_channel(channel_id).standup_start(client_id, length)
