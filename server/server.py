@@ -794,7 +794,7 @@ def admin_userpermission_change(client_id, u_id, permission_id):
 	authcheck(client_id, is_admin = True)
 	if permission_id not in (OWNER, ADMIN, MEMBER):
 		raise ValueError("Permission ID not valid")
-	get_user(client_id).set_permission(permission_id)
+	get_user(u_id).set_permission(permission_id)
 	return {}
 
 def relevance_score(string):
