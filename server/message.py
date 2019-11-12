@@ -17,7 +17,7 @@ def message_sendlater(client_id, channel_id, message, time_sent):
 	channel_id automatically at a specified time in the future
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		channel_id: An int used to identify a specific channel
 		message: A str representing the message body that the user wants to send
 		time_sent: A timestamp in which the user wants the send the message
@@ -50,7 +50,7 @@ def message_send(client_id, channel_id, message):
 	Send a message from authorised_user to the channel specified by channel_id
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		channel_id: An int used to identify a specific channel
 		message: A str representing the message body that the user wants to send
 	
@@ -81,7 +81,7 @@ def message_remove(client_id, message_id):
 	if the person requesting this is an admin or the one who posted it
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 	
 	Raises:
@@ -111,7 +111,7 @@ def message_edit(client_id, message_id, message):
 	is an empty string, the message is deleted.
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 		message: A str representing the message body that the user wants to send
 
@@ -147,7 +147,7 @@ def message_react(client_id, message_id, react_id):
 	of, add a "react" to that particular message
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 		react_id: An int used to identify a specific reaction
 
@@ -186,7 +186,7 @@ def message_unreact(client_id, message_id, react_id):
 	remove a "react" to that particular message
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 		react_id: An int used to identify a specific reaction
 
@@ -225,7 +225,7 @@ def message_pin(client_id, message_id):
 	given special display treatment by the frontend
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 	
 	Raises:
@@ -255,7 +255,7 @@ def message_unpin(client_id, message_id):
 	Given a message within a channel, remove it's mark as unpinned
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 	
 	Raises:
