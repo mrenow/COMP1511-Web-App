@@ -66,7 +66,7 @@ def authorise(function):
 		
 
 
-def maketok(u_id) -> str:
+def maketok(u_id):
 	'''
 	Creates a token for a user.
 
@@ -79,6 +79,7 @@ def maketok(u_id) -> str:
 
 	'''
 	global tokcount 
+	
 	payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now(TIMEZONE))}
 	valid_toks.add(tokcount)
 	tokcount += 1
@@ -97,6 +98,7 @@ def killtok(token):
 	'''
 	payload = jwt.decode(token, private_key, algorithms= ["HS256"])
 	tok_id = payload["tok_id"]
+	
 	if payload["tok_id"] in valid_toks:
 		valid_toks.remove(tok_id)
 		return {"is_success" : True}

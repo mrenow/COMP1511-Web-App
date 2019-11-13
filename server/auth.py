@@ -25,10 +25,10 @@ def auth_login(email, password):
 		ValueError: Incorrect email or password
 	'''
 	#Check in users if email exists then try to match the pw
-	for user in user_iter():
-		if user._email == email:
-				if user._password == password:		
-					return {"token" : maketok(user._u_id), "u_id" : user._u_id}
+	for user_obj in user_iter():
+		if user_obj.get_email == email:
+				if user_obj.get_password == password:		
+					return {"token" : maketok(user_obj.get_id), "u_id" : user_obj.get_id}
 				raise ValueError("Wrong Password for Given Email Address")
 	raise ValueError("Incorrect Email Login")
 
@@ -67,13 +67,12 @@ def auth_register(email, password, name_first, name_last):
 		ValueError: invalid or existing email, incorrect length for name or passowrd
 	'''
 	# Check if email is good
-	print(email, password)
 	if not re.search(regex,email):
 		raise ValueError("Invalid Email Address")
 	else:
-
-		for user in user_iter():
-			if user.get_email() == email:
+		# Checks if email is already in use
+		for user_obj in user_iter():
+			if user_obj.get_email() == email:
 				raise ValueError("Email already in use")
 
 		# Password
