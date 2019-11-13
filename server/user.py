@@ -12,9 +12,10 @@ from objects.users_object import User
 
 
 from server.export import export
-import re # used for checking email formating
+import re  # used for checking email formating
 
-regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
+regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
+
 
 @export("/user/profile", methods=["GET"])
 @authorise
@@ -154,10 +155,10 @@ def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end
 	return {}
 
 
-@export("/admin/userpermission/change", methods = ["POST"])
+@export("/admin/userpermission/change", methods=["POST"])
 @authorise
 def admin_userpermission_change(client_id, u_id, permission_id):
-	authcheck(client_id, is_admin = True)
+	authcheck(client_id, is_admin=True)
 	if permission_id not in (OWNER, ADMIN, MEMBER):
 		raise ValueError("Permission ID not valid")
 	get_user(u_id).set_permission(permission_id)

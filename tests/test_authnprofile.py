@@ -28,40 +28,51 @@ def test_auth_login(clear):
 	with pytest.raises(ValueError):
 		userId2, token2 = auth_login("good1@email.com", "654321X")
 
+
 def test_auth_logout(clear):
 	# See user profile section
-    pass
+	pass
+
 
 def test_auth_register(clear):
 	# Edge Case
-    userId, token = auth_register("good@email.com", "123456", "0"*50, "0"*50)
-	# Bad email 
-    with pytest.raises(ValueError):
-        userId1, token1 = auth_register("bademail.com", "123456", "jason", "xing")
-	# Bad password 
-    with pytest.raises(ValueError):
-        userId2, token2 = auth_register("good1@email.com", "nopw", "jason", "xing")
+	userId, token = auth_register("good@email.com", "123456", "0"*50, "0"*50)
+# Bad email
+	with pytest.raises(ValueError):
+		userId1, token1 = auth_register(
+			"bademail.com", "123456", "jason", "xing")
+	# Bad password
+	with pytest.raises(ValueError):
+		userId2, token2 = auth_register(
+			"good1@email.com", "nopw", "jason", "xing")
 	# Bad first name
-    with pytest.raises(ValueError):
-        userId3, token3 = auth_register("good1@email.com", "123456", "0"*51, "xing")
-	# Bad last name 
-    with pytest.raises(ValueError):
-        userId4, token4 = auth_register("good1@email.com", "123456", "jason","0"*51)
+	with pytest.raises(ValueError):
+		userId3, token3 = auth_register(
+			"good1@email.com", "123456", "0"*51, "xing")
+	# Bad last name
+	with pytest.raises(ValueError):
+		userId4, token4 = auth_register(
+			"good1@email.com", "123456", "jason", "0"*51)
 	# Email in use
-    with pytest.raises(ValueError):
-        userId6, token6 = auth_register("good@email.com", "123456", "jason", "xing")
-        
+	with pytest.raises(ValueError):
+		userId6, token6 = auth_register(
+			"good@email.com", "123456", "jason", "xing")
+
 
 def test_auth_passwordreset_request(clear):
 	# Set up
-    userId1, token1 = auth_register("good@email.com", "123456", "jason", "xing")
-	# Can't access email so no tests
+	userId1, token1 = auth_register(
+		"good@email.com", "123456", "jason", "xing")
+# Can't access email so no tests
+
+
 def test_auth_passwordreset_reset():
-    # Set up
+	# Set up
 	userId1, token1 = auth_register("good10@email.com", "123456", "jason", "xing")
 	# Test if new password is valid
 	with pytest.raises(ValueError):
 		auth_passwordreset_reset("123456", "123X")
+
 
 def test_user_profile(clear):
 	# Set up
@@ -80,8 +91,9 @@ def test_user_profile(clear):
 		user_profile(token2, userId2)
 	user_profile(token1, userId1)
 
+
 def test_user_profile_setname(clear):
-    # Set up
+	# Set up
 	login1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId1 = login1["u_id"]
 	token1 = login1["token"]
@@ -98,9 +110,10 @@ def test_user_profile_setname(clear):
 	auth_logout(token1)
 	with pytest.raises(ValueError):
 		user_profile_setname(token1, "jason", "xing")
-	
+
+
 def test_user_profile_setemail(clear):
-    # Set up
+	# Set up
 	login1 = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId1 = login1["u_id"]
 	token1 = login1["token"]
@@ -120,13 +133,15 @@ def test_user_profile_setemail(clear):
 	auth_logout(token3)
 	with pytest.raises(ValueError):
 		user_profile_setname(token3, "jasonxing@email.com", "Jyden")
-	
+
+
 def test_user_profile_sethandle(clear):
-    # Set up
-	login = auth_register("albertyeh199909@gmail.com", "fksafkljfg1111", "Albert", "Yeh")
+	# Set up
+	login = auth_register("albertyeh199909@gmail.com",
+                       "fksafkljfg1111", "Albert", "Yeh")
 	userId1 = login["u_id"]
 	token1 = login["token"]
-	
+
 	# Edge case
 	user_profile_sethandle(token1, "0"*20)
 	# Handle is too long
@@ -137,8 +152,9 @@ def test_user_profile_sethandle(clear):
 	with pytest.raises(ValueError):
 		user_profile_sethandle(token1, "jason")
 
+
 def test_user_profiles_uploadphoto(clear):
-    # Set up
+	# Set up
 	login = auth_register("good1@email.com", "123456", "jason", "xing")
 	userId1 = login["u_id"]
 	token1 = login["token"]
@@ -150,8 +166,10 @@ def test_user_profiles_uploadphoto(clear):
 
 	# x and y values are too big
 	with pytest.raises(ValueError):
-		user_profiles_uploadphoto(token1, "https://assets.pernod-ricard.com/nz/media_images/test.jpg?hUV74FvXQrWUBk1P2.fBvzoBUmjZ1wct", 0 , 0, 700, 700)
+		user_profiles_uploadphoto(
+			token1, "https://assets.pernod-ricard.com/nz/media_images/test.jpg?hUV74FvXQrWUBk1P2.fBvzoBUmjZ1wct", 0, 0, 700, 700)
 	# Check token is valid (login token)
 	auth_logout(token2)
 	with pytest.raises(AccessError):
-		user_profiles_uploadphoto(token2, "https://assets.pernod-ricard.com/nz/media_images/test.jpg?hUV74FvXQrWUBk1P2.fBvzoBUmjZ1wct", 0 , 0, 600, 600)
+		user_profiles_uploadphoto(
+			token2, "https://assets.pernod-ricard.com/nz/media_images/test.jpg?hUV74FvXQrWUBk1P2.fBvzoBUmjZ1wct", 0, 0, 600, 600)

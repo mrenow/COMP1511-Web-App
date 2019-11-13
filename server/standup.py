@@ -55,7 +55,7 @@ def standup_active(client_id, channel_id):
 	time_finish = get_channel(channel_id).standup_time() if is_active else None
 
 	return {"is_active": is_active,
-             "time_finish": time_finish.timestamp() if time_finish else time_finish}
+         "time_finish": time_finish.timestamp() if time_finish else time_finish}
 
 
 @export("/standup/send", methods=["POST"])

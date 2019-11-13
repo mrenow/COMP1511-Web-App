@@ -8,7 +8,7 @@ from objects.channels_object import Channel
 from objects.messages import Message
 
 from server.export import export
-@export("/message/sendlater", methods = ["POST"])
+@export("/message/sendlater", methods=["POST"])
 @authorise
 def message_sendlater(client_id, channel_id, message, time_sent):
 	"""Sends a message later at a given time.
@@ -17,7 +17,7 @@ def message_sendlater(client_id, channel_id, message, time_sent):
 	channel_id automatically at a specified time in the future
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		channel_id: An int used to identify a specific channel
 		message: A str representing the message body that the user wants to send
 		time_sent: A timestamp in which the user wants the send the message
@@ -30,9 +30,10 @@ def message_sendlater(client_id, channel_id, message, time_sent):
 	"""
 
 	if time_sent < datetime.now(TIMEZONE):
-		raise ValueError(f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
-	authcheck(client_id, channel_id = channel_id)
-	
+		raise ValueError(
+			f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
+	authcheck(client_id, channel_id=channel_id)
+
 	message_obj = Message(message, channel_id, client_id, time_sent)
 	print(get_unsent())
 	return {}
@@ -41,7 +42,7 @@ def message_sendlater(client_id, channel_id, message, time_sent):
 '''
 Ezra: done
 '''
-@export("/message/send", methods = ["POST"])
+@export("/message/send", methods=["POST"])
 @authorise
 def message_send(client_id, channel_id, message):
 	"""Sends a message
@@ -49,7 +50,7 @@ def message_send(client_id, channel_id, message):
 	Send a message from authorised_user to the channel specified by channel_id
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		channel_id: An int used to identify a specific channel
 		message: A str representing the message body that the user wants to send
 	
@@ -61,16 +62,17 @@ def message_send(client_id, channel_id, message):
 		AccessError:  The authorised user has not joined the channel they are trying to post to
 	"""
 
-	authcheck(client_id, channel_id = channel_id)
-	
+	authcheck(client_id, channel_id=channel_id)
+
 	message_obj = Message(message, channel_id, client_id)
 
 	return {}
 
+
 '''
 Ezra: done 
 '''
-@export("/message/remove", methods = ["DELETE"])
+@export("/message/remove", methods=["DELETE"])
 @authorise
 def message_remove(client_id, message_id):
 	"""Removes a message
@@ -79,7 +81,7 @@ def message_remove(client_id, message_id):
 	if the person requesting this is an admin or the one who posted it
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 	
 	Raises:
@@ -88,16 +90,18 @@ def message_remove(client_id, message_id):
 			- The authorised user is an admin or owner of this channel or the slackr
 	"""
 	mess = get_message(message_id)
-	print("	",get_message(message_id).get_message())
-	authcheck(client_id, channel_id = mess.get_channel())
-	authcheck(client_id, user_id = mess.get_user(), chowner_id = mess.get_channel(), is_admin = True)
+	print("	", get_message(message_id).get_message())
+	authcheck(client_id, channel_id=mess.get_channel())
+	authcheck(client_id, user_id=mess.get_user(),
+	          chowner_id=mess.get_channel(), is_admin=True)
 	mess.remove()
 	return {}
+
 
 '''
 Ezra: done 
 '''
-@export("/message/edit", methods = ["PUT"])
+@export("/message/edit", methods=["PUT"])
 @authorise
 def message_edit(client_id, message_id, message):
 	"""Edits a message
@@ -107,7 +111,7 @@ def message_edit(client_id, message_id, message):
 	is an empty string, the message is deleted.
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 		message: A str representing the message body that the user wants to send
 
@@ -116,32 +120,34 @@ def message_edit(client_id, message_id, message):
 			- Message with message_id was sent by the authorised user making this request
 			- The authorised user is an admin or owner of this channel or the slackr
 	"""
-	
+
 	message = message.strip()
 	mess = get_message(message_id)
-	
-	authcheck(client_id, channel_id = mess.get_channel())
-	authcheck(client_id, user_id = mess.get_user(), chowner_id = mess.get_channel(), is_admin = True)
-	
+
+	authcheck(client_id, channel_id=mess.get_channel())
+	authcheck(client_id, user_id=mess.get_user(),
+	          chowner_id=mess.get_channel(), is_admin=True)
+
 	if not message:
 		mess.remove()
 	else:
 		mess.set_message(message)
 	return {}
 
+
 '''
 Ezra: done 
 '''
-@export("/message/react", methods = ["POST"])
+@export("/message/react", methods=["POST"])
 @authorise
-def message_react(client_id, message_id, react_id): 
+def message_react(client_id, message_id, react_id):
 	"""React with a like to the message
 
 	Given a message within a channel the authorised user is part 
 	of, add a "react" to that particular message
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 		react_id: An int used to identify a specific reaction
 
@@ -153,22 +159,25 @@ def message_react(client_id, message_id, react_id):
 	"""
 
 	mess = get_message(message_id)
-	authcheck(client_id, channel_id = mess.get_channel())
-	### Iteration 2 only 
+	authcheck(client_id, channel_id=mess.get_channel())
+	### Iteration 2 only
 	if react_id != 1:
-		raise ValueError(f"message_react: React id {react_id} is not valid on message {mess.get_id}: '{mess.get_message()[:10]}...'")
+		raise ValueError(
+			f"message_react: React id {react_id} is not valid on message {mess.get_id}: '{mess.get_message()[:10]}...'")
 	###
 
 	if mess.has_react(react_id) and client_id in mess.get_react(react_id).get_users():
-		raise ValueError(f"message_react: User {client_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+		raise ValueError(
+			f"message_react: User {client_id} already has react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
 	mess.add_react(client_id, react_id)
-	
+
 	return {}
+
 
 '''
 Ezra: done 
 '''
-@export("/message/unreact", methods = ["POST"])
+@export("/message/unreact", methods=["POST"])
 @authorise
 def message_unreact(client_id, message_id, react_id):
 	"""Unreacts a post
@@ -177,7 +186,7 @@ def message_unreact(client_id, message_id, react_id):
 	remove a "react" to that particular message
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 		react_id: An int used to identify a specific reaction
 
@@ -189,31 +198,34 @@ def message_unreact(client_id, message_id, react_id):
 	"""
 
 	mess = get_message(message_id)
-	authcheck(client_id, channel_id = mess.get_channel())
+	authcheck(client_id, channel_id=mess.get_channel())
 
 	if not mess.has_react(react_id):
-		raise ValueError(f"message_unreact: React_id {react_id} not on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
-		
+		raise ValueError(
+			f"message_unreact: React_id {react_id} not on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+
 	if client_id not in mess.get_react(react_id).get_users():
-		raise ValueError(f"message_unreact: User {client_id} does not have react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
-	
+		raise ValueError(
+			f"message_unreact: User {client_id} does not have react_id {react_id} on message {mess.get_id()}: '{mess.get_message()[:10]}...'")
+
 	mess.remove_react(client_id, react_id)
-	
+
 	return {}
+
 
 '''
 Ezra: done 
 '''
-@export("/message/pin", methods = ["POST"])
+@export("/message/pin", methods=["POST"])
 @authorise
-def message_pin(client_id, message_id):		
+def message_pin(client_id, message_id):
 	"""Pins a message 
 
 	Given a message within a channel, mark it as "pinned" to be 
 	given special display treatment by the frontend
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 	
 	Raises:
@@ -225,16 +237,17 @@ def message_pin(client_id, message_id):
 
 	mess = get_message(message_id)
 	if mess.is_pinned():
-		raise ValueError(f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
-  
-	authcheck(client_id, chowner_id = mess.get_channel(), is_admin = True)
-	
+		raise ValueError(
+			f"message_pin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is already pinned.")
+
+	authcheck(client_id, chowner_id=mess.get_channel(), is_admin=True)
+
 	mess.set_pin(True)
-	
+
 	return {}
 
 
-@export("/message/unpin", methods = ["POST"])
+@export("/message/unpin", methods=["POST"])
 @authorise
 def message_unpin(client_id, message_id):
 	"""Upins message
@@ -242,7 +255,7 @@ def message_unpin(client_id, message_id):
 	Given a message within a channel, remove it's mark as unpinned
 
 	Args: 
-		token: A str used to identify and verify a user
+		client_id: An int used to identify a specific client
 		message_id: An int used to identify a specific message
 	
 	Raises:
@@ -253,25 +266,39 @@ def message_unpin(client_id, message_id):
 	"""
 
 	mess = get_message(message_id)
-	
+
 	if not mess.is_pinned():
-		raise ValueError(f"message_unpin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is not pinned.")
-	authcheck(client_id, chowner_id = mess.get_channel(), is_admin = True)
+		raise ValueError(
+			f"message_unpin: Message {mess.get_id()} '{mess.get_message()[:10]}...' is not pinned.")
+	authcheck(client_id, chowner_id=mess.get_channel(), is_admin=True)
 	mess.set_pin(False)
-	
+
 	return {}
 
 
-
-@export("/search", methods = ["GET"])
+@export("/search", methods=["GET"])
 @authorise
 def search(client_id, query_str):
-	return {}
+	"""Searches for messages that match query_str
+
+	Given a query string, return a collection of messages 
+	in all of the channels that the user has joined that match the query
+
+	Args: 
+		client_id: An int used to identify a specific client
+		query_str: A str representing the message body the user wants to search
+
+	Returns:
+		message[]: A list of messages that matches the given query_str
+	"""
 	
+	return {}
+
 
 def relevance_score(string):
 	return 1
-	
+
+
 def sort_message(msg_list):
-	msg_list.sort(key = relevance_score)
+	msg_list.sort(key=relevance_score)
 	return msg_list

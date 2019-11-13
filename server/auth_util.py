@@ -33,6 +33,7 @@ def authcheck(client_id, user_id=None, channel_id=None, chowner_id=None, is_admi
 	if is_admin:
 		raise AccessError(f"User {client_id} is not admin")
 
+
 def authorise(function):
 	'''
 	Turns func(token, **kwargs) into func(client_id, **kwargs), throwing a value
@@ -48,10 +49,10 @@ def authorise(function):
 		ValueError: token is invalid
 
 	'''
-	def wrapper(token,*args,**kwargs):
+	def wrapper(token, *args, **kwargs):
 
 		try:
-			payload = jwt.decode(token, private_key, algorithms= ["HS256"])
+			payload = jwt.decode(token, private_key, algorithms=["HS256"])
 		except(Exception):
 			return ValueError("Invalid Token")
 
@@ -59,11 +60,10 @@ def authorise(function):
 			raise ValueError("Invalid Token")
 
 		client_id = payload["u_id"]
-	
+
 		return function(client_id, *args, **kwargs)
 	wrapper.__name__ = function.__name__
 	return wrapper
-		
 
 
 def maketok(u_id):
@@ -78,12 +78,13 @@ def maketok(u_id):
 		A token with a payload that is encrypted
 
 	'''
-	global tokcount 
-	
-	payload = {"u_id": u_id, "tok_id": tokcount, "time" : str(datetime.now(TIMEZONE))}
+	global tokcount
+	payload = {"u_id": u_id, "tok_id": tokcount,
+            "time": str(datetime.now(TIMEZONE))}
 	valid_toks.add(tokcount)
 	tokcount += 1
-	return jwt.encode(payload, private_key, algorithm= "HS256")
+	return jwt.encode(payload, private_key, algorithm="HS256")
+
 
 def killtok(token):
 	'''
@@ -96,10 +97,10 @@ def killtok(token):
 	Returns: 
 		returns a dictionary indicating whether decoding was successful
 	'''
-	payload = jwt.decode(token, private_key, algorithms= ["HS256"])
+	payload = jwt.decode(token, private_key, algorithms=["HS256"])
 	tok_id = payload["tok_id"]
 	
 	if payload["tok_id"] in valid_toks:
 		valid_toks.remove(tok_id)
-		return {"is_success" : True}
-	return {"is_success" : False}
+		return {"is_success": True}
+	return {"is_success": False}
