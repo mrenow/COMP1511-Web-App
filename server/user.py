@@ -60,15 +60,6 @@ def user_profile_setname(client_id, name_first, name_last):
 		ValueErrors: name is too long or too short
 
 	'''
-	# Check if first and last names are within length restrictions otherwise return a ValueError
-	if len(name_first) > 50:
-		raise ValueError("First name provided is too long")
-	if len(name_last) > 50:
-		raise ValueError("Last name provided is too long")
-	if len(name_first) < 1:
-		raise ValueError("First name provided is too short")
-	if len(name_last) < 1:
-		raise ValueError("Last name provided is too short")
 
 	get_user(client_id).set_name_first(name_first)
 	get_user(client_id).set_name_last(name_last)
@@ -126,11 +117,7 @@ def user_profile_sethandle(client_id, handle_str):
 	Raises:
 		ValueErrors: handle is too long or too short, handle is already in use
 	'''
-	# Check if handle str is the right len
-	if len(handle_str) > 20:
-		raise ValueError("Handle name is too long")
-	if len(handle_str) < 3:
-		raise ValueError("Handle name is too short")
+	
 	# Check if handle str is already in use by another user
 
 	for user_obj in user_iter():

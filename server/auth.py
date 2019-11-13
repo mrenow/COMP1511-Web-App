@@ -77,20 +77,6 @@ def auth_register(email, password, name_first, name_last):
 			if user_obj.get_email() == email:
 				raise ValueError("Email already in use")
 
-		# Password
-		if len(password) < 6:
-			raise ValueError("Password too short")
-
-		# First and last name within 1 and 50 characters
-		if len(name_first) > 50:
-			raise ValueError("First name is too long")
-		if len(name_last) > 50:
-			raise ValueError("Last name is too long")
-		if len(name_first) < 1:
-			raise ValueError("First name is too short")
-		if len(name_last) < 1:
-			raise ValueError("Last name is too short")
-
 		new_user = User(name_first, name_last, email, password)
 		u_id = new_user.get_id()
 		set_user(u_id, new_user)

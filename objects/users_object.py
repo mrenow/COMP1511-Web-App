@@ -28,12 +28,14 @@ class User:
 		return self._name_first
 
 	def set_name_first(self, name_first):
+		self.valid_first_name(name_first)
 		self._name_first = name_first
 
 	def get_name_last(self):
 		return self._name_last
 
 	def set_name_last(self, name_last):
+		self.valid_last_name(name_last)
 		self._name_last = name_last
 
 	def get_email(self):
@@ -42,6 +44,13 @@ class User:
 	def set_email(self, email):
 		self._email = email
 
+	def get_password(self):
+		return self._password	
+	
+	def set_password(self, password):
+		self.valid_password(password)
+		self._password = password
+	
 	def get_permission(self):
 		return self._permission_id
 
@@ -70,6 +79,7 @@ class User:
 		return self._handle_str
 
 	def set_handle_str(self, handle_str):
+		self.valid_handle(handle_str)
 		self._handle_str = handle_str
 
 	def get_user_profile(self):
@@ -82,3 +92,27 @@ class User:
 		return {"u_id": self._u_id,
                     "name_first": self._name_first,
                     "name_last": self._name_last}
+
+	def valid_password(self, password):
+		if len(password) < 6:
+			raise ValueError("Password too short")
+
+	def valid_first_name(self, name_first):
+		# First name within 1 and 50 characters
+		if len(name_first) > 50:
+			raise ValueError("First name is too long")
+		if len(name_first) < 1:
+			raise ValueError("First name is too short")
+
+	def valid_last_name(self, name_last):
+		if len(name_last) > 50:
+			raise ValueError("Last name is too long")	
+		if len(name_last) < 1:
+			raise ValueError("Last name is too short")
+
+	def valid_handle(self, handle_str):
+			# Check if handle str is the right len
+		if len(handle_str) > 20:
+			raise ValueError("Handle name is too long")
+		if len(handle_str) < 3:
+			raise ValueError("Handle name is too short")
