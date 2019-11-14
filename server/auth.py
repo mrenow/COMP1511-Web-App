@@ -27,9 +27,9 @@ def auth_login(email, password):
 	'''
 	#Check in users if email exists then try to match the pw
 	for user_obj in user_iter():
-		if user_obj.get_email == email:
-				if user_obj.get_password == password:		
-					return {"token" : maketok(user_obj.get_id), "u_id" : user_obj.get_id}
+		if user_obj.get_email() == email:
+				if user_obj.get_password() == password:
+					return {"token" : maketok(user_obj.get_id()), "u_id" : user_obj.get_id()}
 				raise ValueError("Wrong Password for Given Email Address")
 	raise ValueError("Incorrect Email Login")
 
