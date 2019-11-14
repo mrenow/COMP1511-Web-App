@@ -367,7 +367,18 @@ def test_search(clear):
 
 	channel_1 = channels_create(token, "channel1", True)
 	channel_2 = channels_create(token, "channel2", True)
+	channel_3 = channels_create(token, "channel3", True)
 
 	login2 = auth_register("ezra@gmail.com", "dlfajhldkhf1111", "Ezra", "Hui")
 	userID2 = login2["u_id"]
 	token2 = login2["token"]
+
+	message_send(token,channel_1, "Epstein didn't kill himself")
+	message_send(token2, channel_2, "hello")
+	message_send(token2, channel_2, "himself")
+	message_send(token, channel_3, "self")
+
+	search_result = search(token, "self")
+	search_result[0] == "Epstein didn't kill himself"
+	search_result[1] == "himself"
+	search_result[2] == "self"
