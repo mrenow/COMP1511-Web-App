@@ -68,19 +68,11 @@ def auth_register(email, password, name_first, name_last):
 	Raises:
 		ValueError: invalid or existing email, incorrect length for name or passowrd
 	'''
-	# Check if email is good
-	if not re.search(regex,email):
-		raise ValueError("Invalid Email Address")
-	else:
-		# Checks if email is already in use
-		for user_obj in user_iter():
-			if user_obj.get_email() == email:
-				raise ValueError("Email already in use")
-
-		new_user = User(name_first, name_last, email, password)
-		u_id = new_user.get_id()
-		set_user(u_id, new_user)
-		return {"token": maketok(u_id), "u_id": u_id}
+	
+	new_user = User(name_first, name_last, email, password)
+	u_id = new_user.get_id()
+	set_user(u_id, new_user)
+	return {"token": maketok(u_id), "u_id": u_id}
 
 
 @export("/auth/passwordreset_request", methods=["POST"])

@@ -1,14 +1,20 @@
 from server.state import *
 from server.constants import *
-
+import re  # used for checking email formating
+regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
 
 class User:
 
 	def __init__(self, name_first, name_last, email, password):
 		self._u_id = num_users()
+		self.valid_password(password)
 		self._password = password
+		self.valid_first_name(name_first)
 		self._name_first = name_first
+		self.valid_last_name(name_last)
 		self._name_last = name_last
+		self.email_unused(email, None)
+		self.valid_email(regex, email)
 		self._email = email
 		self._handle_str = name_first + name_last
 		self._profile_picture = None
@@ -41,7 +47,9 @@ class User:
 	def get_email(self):
 		return self._email
 
-	def set_email(self, email):
+	def set_email(self, email, client_id):
+		self.valid_email(regex, email)
+		self.email_unused(email, client_id)
 		self._email = email
 
 	def get_password(self):
@@ -78,7 +86,8 @@ class User:
 	def get_handle_str(self):
 		return self._handle_str
 
-	def set_handle_str(self, handle_str):
+	def set_handle_str(self, handle_str, client_id):
+		self.handle_unused(handle_str, client_id)
 		self.valid_handle(handle_str)
 		self._handle_str = handle_str
 
@@ -116,3 +125,21 @@ class User:
 			raise ValueError("Handle name is too long")
 		if len(handle_str) < 3:
 			raise ValueError("Handle name is too short")
+
+	# Checks if email is already in use
+	def email_unused(self,email, client_id):
+		for user_obj in user_iter():
+				# Do not raise error if user does not change field
+				if user_obj.get_id() != client_id and user_obj.get_email() == email:
+					raise ValueError("Email already in use")
+	# Check if email is good
+	def valid_email(self,regex,email):
+		if not re.search(regex, email):
+			raise ValueError("Invalid Email Address")
+
+	# Check if handle str is already in use by another user
+	def handle_unused(self, handle, client_id):
+		for user_obj in user_iter():
+		# Do not raise error if user keeps their own name unchanged
+			if user_obj.get_id() != client_id and user_obj.get_handle_str() == handle:
+				raise ValueError("Handle name already in use")
