@@ -77,7 +77,7 @@ def auth_register(email, password, name_first, name_last):
 		for user in user_iter():
 			if user.get_email() == email:
 				raise ValueError("Email already in use")
-
+            
 		# Password
 		if len(password) < 6:
 			raise ValueError("Password too short")

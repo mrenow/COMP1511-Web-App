@@ -26,7 +26,17 @@ def correct_type(pair):
 
 
 def export(route, methods):
+	'''
+	Adds input function to flask app with specified route and methods then sanitises inputs from frontend. 
+	Handles ValueErrors and AccessErrors.
+
+	Args:
+		route: Route at which this function is called
+		methods: 
+
+	'''
 	def decorator(function):
+		# Endpoint name is required to prevent name conflicts
 		@APP.route(route, methods = methods, endpoint = function.__name__)
 		def wrapper():
 			try:
@@ -54,9 +64,9 @@ def show_request(request):
 		f"\tArgs: {request.args} \n" +  
 		f"\tForm: {request.form}\n" 
 	)
+
 def show_response(response):
 	print(f"Response: {response}\n")
-
 
 if __name__ == '__main__':
 	# Generate all routes

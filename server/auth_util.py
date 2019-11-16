@@ -73,7 +73,7 @@ def maketok(u_id) -> str:
 	Generates a token with u_id that is encrypted in its payload
 
 	Args: 
-		u_id:a number representing used to identify a user
+		u_id: a number representing used to identify a user
 	Returns:
 		A token with a payload that is encrypted
 

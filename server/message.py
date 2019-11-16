@@ -106,7 +106,7 @@ Ezra: done
 def message_edit(client_id, message_id, message):
 	"""Edits a message
 
-	Given a message, update it's text with new text, provided the 
+	Given a message, update its text with new text, provided the 
 	user requesting this has the authority to. If the new message 
 	is an empty string, the message is deleted.
 
@@ -133,7 +133,6 @@ def message_edit(client_id, message_id, message):
 	else:
 		mess.set_message(message)
 	return {}
-
 
 '''
 Ezra: done 
