@@ -26,12 +26,9 @@ class User:
 
 	def __init__(self, name_first, name_last, email, password):
 		self._u_id = num_users()
-		self.valid_password(password)
-		self._password = password
-		self.valid_first_name(name_first)
-		self._name_first = name_first
-		self.valid_last_name(name_last)
-		self._name_last = name_last
+		self.set_password(password)
+		self.set_name_first(name_first)
+		self.set_name_last(name_last)
 		self.email_unused(email, None)
 		self.valid_email(email)
 		self._email = email
