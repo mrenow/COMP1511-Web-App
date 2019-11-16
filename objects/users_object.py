@@ -33,7 +33,7 @@ class User:
 		self.valid_last_name(name_last)
 		self._name_last = name_last
 		self.email_unused(email, None)
-		self.valid_email(regex, email)
+		self.valid_email(email)
 		self._email = email
 		self._handle_str = name_first + name_last
 		self._profile_picture = None
@@ -67,7 +67,7 @@ class User:
 		return self._email
 
 	def set_email(self, email, client_id):
-		self.valid_email(regex, email)
+		self.valid_email(email)
 		self.email_unused(email, client_id)
 		self._email = email
 
@@ -120,11 +120,13 @@ class User:
 		return {"u_id": self._u_id,
                     "name_first": self._name_first,
                     "name_last": self._name_last}
-
+	
+	# Check if password is too short
 	def valid_password(self, password):
 		if len(password) < 6:
 			raise ValueError("Password too short")
 
+	# Check if name has correct length
 	def valid_first_name(self, name_first):
 		# First name within 1 and 50 characters
 		if len(name_first) > 50:
@@ -132,14 +134,15 @@ class User:
 		if len(name_first) < 1:
 			raise ValueError("First name is too short")
 
+	# Check if name has correct length
 	def valid_last_name(self, name_last):
 		if len(name_last) > 50:
 			raise ValueError("Last name is too long")	
 		if len(name_last) < 1:
 			raise ValueError("Last name is too short")
 
-	def valid_handle(self, handle_str):
-			# Check if handle str is the right len
+	# Check if handle str is the right len
+	def valid_handle(self, handle_str):	
 		if len(handle_str) > 20:
 			raise ValueError("Handle name is too long")
 		if len(handle_str) < 3:
@@ -152,13 +155,13 @@ class User:
 				if user_obj.get_id() != client_id and user_obj.get_email() == email:
 					raise ValueError("Email already in use")
 	# Check if email is good
-	def valid_email(self,regex,email):
-		if not re.search(regex, email):
+	def valid_email(self,email):
+		if not re.search(regex,email):
 			raise ValueError("Invalid Email Address")
 
 	# Check if handle str is already in use by another user
 	def handle_unused(self, handle, client_id):
 		for user_obj in user_iter():
-		# Do not raise error if user keeps their own name unchanged
+			# Do not raise error if user keeps their own name unchanged
 			if user_obj.get_id() != client_id and user_obj.get_handle_str() == handle:
 				raise ValueError("Handle name already in use")
