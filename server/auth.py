@@ -7,7 +7,10 @@ import re  # used for checking email formating
 
 from server.export import export
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
-
+"""
+	
+    
+"""
 
 @export('/auth/login', methods=["POST"])
 def auth_login(email, password):

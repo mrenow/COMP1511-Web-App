@@ -3,6 +3,25 @@ from server.constants import *
 import re  # used for checking email formating
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
 
+"""
+	User class
+
+    User structure containing all attributes of a user and 
+    all the methods in which it can be interacted with.
+
+    Attributes:
+        _u_id: An int used to identify a specifc user
+        _password: A str used for authentication
+        _name_first: User's first name
+        _name_last: User's last name
+        _email: User's email used to register an account
+        _handle: User's username, by default is set to user's first name + last name
+        _profile_picture: An image user can set to represent them
+        _channel_ids: a set of channels a user is a member of
+        _owner_channel_ids: set of channels a user owns
+        _permission_id: an int indicating user permission level
+"""
+
 class User:
 
 	def __init__(self, name_first, name_last, email, password):
