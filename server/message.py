@@ -290,8 +290,13 @@ def search(client_id, query_str):
 	Returns:
 		message[]: A list of messages that matches the given query_str
 	"""
+	search_list = []
+	for message_obj in message_iter():
+		if query_str in message_obj.get_message():
+			msg_dict = message_obj.to_json(client_id)
+			search_list.append(msg_dict)
 	
-	return {}
+	return {"messages":search_list}
 
 
 def relevance_score(string):

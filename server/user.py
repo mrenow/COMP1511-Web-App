@@ -12,9 +12,8 @@ from objects.users_object import User
 
 
 from server.export import export
-import re  # used for checking email formating
 
-regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
+
 
 
 @export("/user/profile", methods=["GET"])
@@ -60,15 +59,6 @@ def user_profile_setname(client_id, name_first, name_last):
 		ValueErrors: name is too long or too short
 
 	'''
-	# Check if first and last names are within length restrictions otherwise return a ValueError
-	if len(name_first) > 50:
-		raise ValueError("First name provided is too long")
-	if len(name_last) > 50:
-		raise ValueError("Last name provided is too long")
-	if len(name_first) < 1:
-		raise ValueError("First name provided is too short")
-	if len(name_last) < 1:
-		raise ValueError("Last name provided is too short")
 
 	get_user(client_id).set_name_first(name_first)
 	get_user(client_id).set_name_last(name_last)
@@ -94,18 +84,7 @@ def user_profile_setemail(client_id, email):
 	'''
 	# Check if email is in correct format
 
-	if re.search(regex, email):
-
-		# Check for email address duplicates
-		for user_obj in user_iter():
-				# Do not raise error if user does not change field
-				if user_obj.get_id() != client_id and user_obj.get_email() == email:
-					raise ValueError("Email already in use")
-
-		get_user(client_id).set_email(email)
-
-	else:
-		raise ValueError("Invalid Email Address")
+	get_user(client_id).set_email(email, client_id)
 
 	return {}
 
@@ -126,18 +105,8 @@ def user_profile_sethandle(client_id, handle_str):
 	Raises:
 		ValueErrors: handle is too long or too short, handle is already in use
 	'''
-	# Check if handle str is the right len
-	if len(handle_str) > 20:
-		raise ValueError("Handle name is too long")
-	if len(handle_str) < 3:
-		raise ValueError("Handle name is too short")
-	# Check if handle str is already in use by another user
-
-	for user_obj in user_iter():
-		# Do not raise error if user keeps their own name unchanged
-		if user_obj.get_id() != client_id and user_obj.get_handle_str() == handle_str:
-				raise ValueError("Handle name already in use")
-	get_user(client_id).set_handle_str(handle_str)
+	
+	get_user(client_id).set_handle_str(handle_str, client_id)
 
 	return {}
 

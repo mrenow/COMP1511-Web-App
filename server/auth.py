@@ -7,7 +7,10 @@ import re  # used for checking email formating
 
 from server.export import export
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
-
+"""
+	
+    
+"""
 
 @export('/auth/login', methods=["POST"])
 def auth_login(email, password):
@@ -27,9 +30,9 @@ def auth_login(email, password):
 	'''
 	#Check in users if email exists then try to match the pw
 	for user_obj in user_iter():
-		if user_obj.get_email == email:
-				if user_obj.get_password == password:		
-					return {"token" : maketok(user_obj.get_id), "u_id" : user_obj.get_id}
+		if user_obj.get_email() == email:
+				if user_obj.get_password() == password:
+					return {"token" : maketok(user_obj.get_id()), "u_id" : user_obj.get_id()}
 				raise ValueError("Wrong Password for Given Email Address")
 	raise ValueError("Incorrect Email Login")
 
@@ -68,33 +71,11 @@ def auth_register(email, password, name_first, name_last):
 	Raises:
 		ValueError: invalid or existing email, incorrect length for name or passowrd
 	'''
-	# Check if email is good
-	if not re.search(regex,email):
-		raise ValueError("Invalid Email Address")
-	else:
-		# Checks if email is already in use
-		for user_obj in user_iter():
-			if user_obj.get_email() == email:
-				raise ValueError("Email already in use")
-            
-		# Password
-		if len(password) < 6:
-			raise ValueError("Password too short")
-
-		# First and last name within 1 and 50 characters
-		if len(name_first) > 50:
-			raise ValueError("First name is too long")
-		if len(name_last) > 50:
-			raise ValueError("Last name is too long")
-		if len(name_first) < 1:
-			raise ValueError("First name is too short")
-		if len(name_last) < 1:
-			raise ValueError("Last name is too short")
-
-		new_user = User(name_first, name_last, email, password)
-		u_id = new_user.get_id()
-		set_user(u_id, new_user)
-		return {"token": maketok(u_id), "u_id": u_id}
+	
+	new_user = User(name_first, name_last, email, password)
+	u_id = new_user.get_id()
+	set_user(u_id, new_user)
+	return {"token": maketok(u_id), "u_id": u_id}
 
 
 @export("/auth/passwordreset_request", methods=["POST"])
