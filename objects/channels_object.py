@@ -3,11 +3,23 @@ from .messages import Message
 from server.state import *
 from server.constants import *
 
-'''
-get_channels
-'''
-
 class Channel:
+	"""
+	An object representing a channel. 
+
+	Attributes:
+		_name: String that will be displayed to identify the channel in the frontend.
+		_id: Channel's ID number, used as a key in the global dictionary to obtain the object.
+		_is_public: Boolean denoting whether anyone can join the channel without invitation.
+		_message_list: List of message ID's in order of time sent. Most recent message is at index 0.
+
+		_owners_set: set of the IDs of all owners of the channel 
+		_members_set: Set of the IDs of all members in the channel. Also includes all owners.
+
+		_standup_message_id: ID of the message that is the current channel's latest standup. Equals None
+			if no standup has ever been initiated. A standup is active if the message's is_sent() returns false.
+	"""
+
 	def __init__(self, name, owner_id, is_public):
 		if len(name) > 20:
 			raise ValueError("Name cannot be over 20 characters")
@@ -53,13 +65,20 @@ class Channel:
 		return len(self._message_list)
 
 	def send_message(self, message_id):
-		self._message_list.append(message_id)
+		"""
+		Appends a message to the front of the message list and marks the message as sent.
+		
+		Args:
+			message_id: int
+		"""
+		self._message_list.insert(0,message_id)
 		get_message(message_id).send()
 
 		return message_id
 
 	def standup_active(self):
-		# Check if a standup is currently active
+		# Standup_message_id is None when no standup has ever been sent and standups deactivate
+		# after the message has been sent.
 		return self._standup_message_id != None and not get_message(self._standup_message_id).is_sent()
 
 	def standup_start(self, u_id, duration_seconds):
@@ -76,6 +95,9 @@ class Channel:
 		return time_finish
 
 	def standup_send(self, u_id, text):
+		"""
+
+		"""
 		if not self.standup_active():
 			raise ValueError(f"No standup active in channel {self._name}")
 		if MAX_MESSAGE_LEN < len(text):
@@ -90,12 +112,16 @@ class Channel:
 
 
 
-	'''
-	Returns the completion datetime of the last standup initiated on the channel.
-	Returns earliest possible time if no standup has been initiated.
-	'''
+
 
 	def standup_time(self):
+		'''
+		Retrives the finishing time of the current standup
+
+		Returns:
+			A datetime object that represents the completion datetime of the last standup initiated on the channel.
+			datetime.min is returned if no standup has ever been initiated.
+		'''
 		# Return earliest possible time if no standup has ever been initiated
 		if self._standup_message_id == None:
 			return datetime.min
@@ -103,9 +129,19 @@ class Channel:
 			return get_message(self._standup_message_id).get_time()
 
 	def channel_messages(self, start, u_id):
-		return [get_message(mess).to_json(u_id) for mess in self._message_list[-(start+1) : -(start+51) : -1]]
+		# Gets the last 50 messages 
+		return [get_message(mess).to_json(u_id) for mess in self._message_list[start: start+50]]
 
 	def delete_message(self, message_id):
+		"""
+		Deletes a message from this channel's message_list, preserving order.
+		
+		Args:
+			message_id: int
+
+		Raises:
+			ValueError: Message ID does not exist in channel
+		"""
 		for index, entry in enumerate(self._message_list):
 			if message_id == entry:
 				del self._message_list[index]
@@ -113,16 +149,42 @@ class Channel:
 		ValueError(f"Message {message_id} not found")
 
 	def join(self, u_id):
+		"""
+		Joins a user to this channel.
+
+		Args:
+			u_id: int
+		
+		Raises:
+			ValueError: User does not exist.
+		"""
 		self._members_set.add(u_id)
 		get_user(u_id).get_channels().add(self._id)
 		
 
 	def to_json_members(self):
+		"""
+		Converts channel information to json format for displaying members.
+
+		Returns:
+			A dictionary of {name, owner_members, all_members}:
+				name: str
+				owner_members: List of jsons representing each owner
+				all_members: List of jsons representing each member
+		"""
 		return dict(name=self._name,
                     owner_members=[get_user(u_id).to_json() for u_id in self._owners_set],
                     all_members=[get_user(u_id).to_json() for u_id in self._members_set])
 
 	def to_json_id(self):
+		"""
+		Converts channel infomration into a format for simple listing.
+
+		Returns:
+			A dictionary of {name, channel_id}:
+				name: str
+				channel_id: int
+		"""
 		return dict(name=self._name,
                     channel_id=self._id)
 

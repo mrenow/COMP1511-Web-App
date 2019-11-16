@@ -23,8 +23,6 @@ def auth_login(email, password):
 	Args: 
 		email
 		password
-	Returns:
-		Nothing
 	Raises:
 		ValueError: Incorrect email or password
 	'''
