@@ -13,26 +13,29 @@ class Message:
         _message: A str representing the body of the message.
         _u_id: An int used to identify the user who sent the message.
         _is_sent: A boolean representing the sending status of the message; False by default.
-        _is_standup: A boolean indicating whether or not the message is a standup.
+        _is_standup: A boolean indicating whether or not the message is part of a standup.
         _is_pinned: A boolean indicating whether or not the message is pinned or not.
         _reacts: A dictionary containing react_ids as keys and react objects as values.
+        _time_sent: A timestamp of the time in which the message was sent.
     """
     
     def __init__(self, text, channel, sender, time = None, is_standup = False):
         """Initializes the message class
-        ### REQUIRES REFACTORING FIRST
+        
         Args:
-            text: A str representing the body of the message.
-            channel: The channel in which the message will be posted to.
-            sender: 
-            time:
-            is_standup:
+            text: sets _message
+            channel: sets _channel_id
+            sender: sets _u_id
+            time: sets send_immediate
+            is_standup: sets _is_standup
 
+        Raises:
+            ValueError: When length of text exceeds maximum specified text length.
+            ValueError: When client wants to send a message later but enters a time that is past already
         """
         if MAX_MESSAGE_LEN < len(text):
             raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.") 
         
-        # Send immediately if no time has been specified
         send_immediate = (time == None) 
         
         if send_immediate:
@@ -47,17 +50,17 @@ class Message:
         self._message = text
         self._u_id = sender
             
-        self._is_sent = False # Set to true when a channel sends the message
+        self._is_sent = False # Set to true by channel
         self._is_standup = is_standup
         self._is_pinned = False
-        self._reacts = {} # Dictionary of react id: react object
+        self._reacts = {} # Dictionary of react id: react object.
 
         self._message_id = num_messages()
-        inc_messages()
-        
-        set_message(self._message_id, self)
 
-        # Automatically send or send later
+        set_message(self._message_id, self)
+        inc_messages()
+
+        # Automatically send or send later.
         if send_immediate:
             get_channel(channel).send_message(self._message_id)
         else:
@@ -103,7 +106,6 @@ class Message:
             self._reacts.get(react)._u_ids.add(user)
     
     def set_message(self, text):
-        # Standups are excempt from length checks
         if not self._is_standup and MAX_MESSAGE_LEN < len(text):
             raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.") 
         
@@ -125,6 +127,18 @@ class Message:
         return react_id in self._reacts
         
     def to_json(self, user):
+    """Converts message information into a format for simple listing.
+
+		Returns:
+			A dictionary of {message_id, u_id, message, time_created, reacts, is_pinned}:
+                message_id: An int used to identify the message.
+                u_id: An int used to identify the user who sent the message.
+                message: A str representing the body of the message.
+                time_created: A timestamp of the time in which the message was sent.
+                reacts: A dictionary containing react_ids as keys and react objects as values.
+                is_pinned: A boolean indicating whether or not the message is pinned or not.
+				
+	""" 
         return dict(message_id = self._message_id,
                     u_id = self._u_id,
                     message = self._message,
@@ -138,9 +152,8 @@ class React:
     which the class can be interacted with.
 
     Attributes:
-        ### ASK EZRA
-        _u_ids: A set containing the u_id's of all users that have used this react
-        _react_id: An int 
+        _u_ids: A set containing the u_id's of all users that have used this react on a specific parent message
+        _react_id: An int representing the type of react used
     """
 
     def __init__(self, id, user):
@@ -148,6 +161,13 @@ class React:
         self._react_id = id
 
     def to_json(self, user):
+    """Converts react information into a format for simple listing.
+
+		Returns:
+			A dictionary of {react_id, is_this_user_reacted}:
+                react_id: An int representing a specific react type
+                is_this_user_reacted: A boolean if user has reacted or not
+	"""     
         return dict(u_ids = list(self._u_ids),
                     react_id = self._react_id,
                     is_this_user_reacted = (user in self._u_ids))
