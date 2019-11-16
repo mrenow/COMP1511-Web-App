@@ -68,7 +68,10 @@ def get_user(u_id):
 		raise ValueError(
 			f"User {u_id} does not exist. users: {_users} in {__name__}")
 
-
+def get_user_dictionary():
+	global _users
+	return _users
+	
 def get_message(message_id):
 	try:
 		return _messages[message_id]
