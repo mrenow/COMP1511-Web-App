@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from server.AccessError import AccessError
-from server.constants import *
-from server.state import *
-from server.auth_util import *
+from server.constants import * # pylint: disable=unused-wildcard-import
+from server.state import * # pylint: disable=unused-wildcard-import
+from server.auth_util import * # pylint: disable=unused-wildcard-import
 from server.export import export
 @export("/standup/start", methods=["POST"])
 @authorise

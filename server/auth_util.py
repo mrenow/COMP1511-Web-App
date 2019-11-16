@@ -1,8 +1,8 @@
 import jwt
 from datetime import datetime, timedelta
 from server.AccessError import AccessError
-from server.constants import *
-from server.state import *
+from server.constants import * # pylint: disable=unused-wildcard-import
+from server.state import * # pylint: disable=unused-wildcard-import
 
 '''
 	Handles all token and permission check functions.
