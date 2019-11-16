@@ -23,8 +23,6 @@ def auth_login(email, password):
 	Args: 
 		email: Email address used to register account.
 		password: A str used for authentication.
-	Returns:
-		Nothing
 	Raises:
 		ValueError: Incorrect email 
 		ValueError: Incorrect password
@@ -59,17 +57,17 @@ def auth_logout(token):
 @export("/auth/register", methods=["POST"])
 def auth_register(email, password, name_first, name_last):
 	'''
-	creates an account for first time users
+	Creates an account for first time users
 
-	takes in the information inputted and stores it in a new user object
+	Takes in the information inputted and stores it in a new user object
 
 	Args:
-		email: used to identify account
+		email: Used to identify account
 		password : A str used for authentication
-		name_first: user's first name
-		name_last: user's last name
+		name_first: User's first name
+		name_last: User's last name
 	Returns: 
-		a dictionary storing user id and token 
+		A dictionary storing user id and token 
 	Raises:
 		ValueError: Email is already used
 		ValueError: Email is not valid

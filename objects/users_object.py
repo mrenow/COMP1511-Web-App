@@ -14,12 +14,12 @@ regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
         _password: A str used for authentication
         _name_first: User's first name
         _name_last: User's last name
-        _email: User's email used to register an account
-        _handle: User's username, by default is set to user's first name + last name
+        _email: User's Email used to register an account
+        _handle: User's Username, by default is set to user's first name + last name
         _profile_picture: An image user can set to represent them
-        _channel_ids: a set of channels a user is a member of
-        _owner_channel_ids: set of channels a user owns
-        _permission_id: an int indicating user permission level
+        _channel_ids: A set of channels a user is a member of
+        _owner_channel_ids: A set of channels a user owns
+        _permission_id: An int indicating user permission level
 """
 
 class User:
@@ -124,7 +124,7 @@ class User:
 	# Check if password is too short
 	def valid_password(self, password):
 		'''
-		checks if password is longer than 6 characters
+		Checks if password is longer than 6 characters
 		
 		
 		Args:
@@ -138,7 +138,7 @@ class User:
 	# Check if name has correct length
 	def valid_first_name(self, name_first):
 		'''
-		checks if name is less than 50 and greater than 1 characters
+		Checks if name is less than 50 and greater than 1 characters
 		
 		
 		Args:
@@ -156,7 +156,7 @@ class User:
 	# Check if name has correct length
 	def valid_last_name(self, name_last):
 		'''
-		checks if name is less than 50 and greater than 1 characters
+		Checks if name is less than 50 and greater than 1 characters
 		
 		
 		Args:
@@ -173,7 +173,7 @@ class User:
 	# Check if handle str is the right len
 	def valid_handle(self, handle_str):	
 		'''
-		checks if handel is less than 20 and greater than 3 characters
+		Checks if handel is less than 20 and greater than 3 characters
 		
 		
 		Args:
@@ -194,10 +194,10 @@ class User:
 		
 		
 		Args:
-			email: email address used to register account
+			email: Email address used to register account
 			client_id: ID represneting a user
 		Raises:
-			ValueError: email already in use
+			ValueError: Email already in use
 		'''
 		for user_obj in user_iter():
 				# Do not raise error if user does not change field
@@ -206,13 +206,13 @@ class User:
 	# Check if email is good
 	def valid_email(self,email):
 		'''
-		uses re.search to check if email has correct format
+		Uses re.search to check if email has correct format
 		
 		
 		Args:
-			email: email address used to register account
+			email: Email address used to register account
 		Raises:
-			ValueError: email given is invalid
+			ValueError: Email given is invalid
 		'''
 		if not re.search(regex,email):
 			raise ValueError("Invalid Email Address")
@@ -220,14 +220,14 @@ class User:
 	# Check if handle str is already in use by another user
 	def handle_unused(self, handle, client_id):
 		'''
-		checks handle against all existing handles
+		Checks handle against all existing handles
 		
 		
 		Args:
 			handle: handle_str: User's handle
 			client_id: ID represneting a user
 		Raises:
-			ValueError: handle already in use
+			ValueError: Handle already in use
 		'''
 		for user_obj in user_iter():
 			# Do not raise error if user keeps their own name unchanged
