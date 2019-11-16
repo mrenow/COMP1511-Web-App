@@ -12,9 +12,8 @@ class User:
 		self._email = email
 		self._handle_str = name_first + name_last
 		self._profile_picture = None
-		self._channels = set()
-		self._admin_channels = set()
-		self._owner_channels = set()
+		self._channel_ids = set()
+		self._owner_channel_ids = set()
 		if self._u_id == 0:
 			self._permission_id = OWNER
 		else:
@@ -50,31 +49,22 @@ class User:
 		self._permission_id = permission
 
 	def get_channels(self):
-		return self._channels
-
-	def get_admin_channels(self):
-		return self._admin_channels
+		return self._channel_ids
 
 	def get_owner_channels(self):
-		return self._owner_channels
+		return self._owner_channel_ids
 
 	def add_channel(self, channel_id):
-		self._channels.add(channel_id)
-
-	def add_admin_channel(self,  channel_id):
-		self._admin_channels.add(channel_id)
+		self._channel_ids.add(channel_id)
 
 	def add_owner_channel(self,  channel_id):
-		self._owner_channels.add(channel_id)
+		self._owner_channel_ids.add(channel_id)
 
 	def remove_channel(self, channel_id):
-		self._channels.discard(channel_id)
-
-	def remove_admin_channel(self,  channel_id):
-		self._admin_channels.discard(channel_id)
+		self._channel_ids.discard(channel_id)
 
 	def remove_owner_channel(self,  channel_id):
-		self._owner_channels.discard(channel_id)
+		self._owner_channel_ids.discard(channel_id)
 
 	def get_handle_str(self):
 		return self._handle_str

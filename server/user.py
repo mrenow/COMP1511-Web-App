@@ -34,14 +34,12 @@ def user_profile(client_id, u_id):
 	Raises:
 		ValueError: u_id is invalid
 	'''
-	# Check for authorisation
-	authcheck(client_id)
 	# Check for valid user
 	user = get_user(u_id)
 	return {"email": user.get_email(),
-         "name_first": user.get_name_first(),
-         "name_last": user.get_name_last(),
-         "handle_str": user.get_handle_str()}
+			"name_first": user.get_name_first(),
+			"name_last": user.get_name_last(),
+			"handle_str": user.get_handle_str()}
 
 
 @export("/user/profile/setname", methods=["PUT"])
@@ -62,8 +60,6 @@ def user_profile_setname(client_id, name_first, name_last):
 		ValueErrors: name is too long or too short
 
 	'''
-	# Check for authorisation
-	authcheck(client_id)
 	# Check if first and last names are within length restrictions otherwise return a ValueError
 	if len(name_first) > 50:
 		raise ValueError("First name provided is too long")
@@ -96,16 +92,14 @@ def user_profile_setemail(client_id, email):
 	Raises:
 		ValueErrors: invalid or already in use email
 	'''
-	# Check for authorisation
-	authcheck(client_id)
 	# Check if email is in correct format
 
-	if(re.search(regex, email)):
+	if re.search(regex, email):
 
 		# Check for email address duplicates
-		for user in user_iter():
+		for user_obj in user_iter():
 				# Do not raise error if user does not change field
-				if user.get_id() != client_id and user._email == email:
+				if user_obj.get_id() != client_id and user_obj.get_email() == email:
 					raise ValueError("Email already in use")
 
 		get_user(client_id).set_email(email)
@@ -132,8 +126,6 @@ def user_profile_sethandle(client_id, handle_str):
 	Raises:
 		ValueErrors: handle is too long or too short, handle is already in use
 	'''
-	# Check for authorisation
-	authcheck(client_id)
 	# Check if handle str is the right len
 	if len(handle_str) > 20:
 		raise ValueError("Handle name is too long")
@@ -141,10 +133,9 @@ def user_profile_sethandle(client_id, handle_str):
 		raise ValueError("Handle name is too short")
 	# Check if handle str is already in use by another user
 
-	for user in user_iter():
+	for user_obj in user_iter():
 		# Do not raise error if user keeps their own name unchanged
-		if user.get_id() != client_id and user._handle_str == handle_str:
-
+		if user_obj.get_id() != client_id and user_obj.get_handle_str() == handle_str:
 				raise ValueError("Handle name already in use")
 	get_user(client_id).set_handle_str(handle_str)
 
