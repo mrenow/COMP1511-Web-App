@@ -5,7 +5,7 @@ from server.constants import *
 
 class Channel:
 	"""
-	An object representing a channel. 
+	An object representing a channel.
 
 	Attributes:
 		_name: String that will be displayed to identify the channel in the frontend.
@@ -13,7 +13,7 @@ class Channel:
 		_is_public: Boolean denoting whether anyone can join the channel without invitation.
 		_message_list: List of message ID's in order of time sent. Most recent message is at index 0.
 
-		_owners_set: set of the IDs of all owners of the channel 
+		_owners_set: set of the IDs of all owners of the channel.
 		_members_set: Set of the IDs of all members in the channel. Also includes all owners.
 
 		_standup_message_id: ID of the message that is the current channel's latest standup. Equals None
@@ -21,9 +21,16 @@ class Channel:
 	"""
 
 	def __init__(self, name, owner_id, is_public):
-		if len(name) > 20:
-			raise ValueError("Name cannot be over 20 characters")
-		self._name = name
+		"""
+		Sets up a channel object with name and owner which may or may not be private.
+
+		Args:
+			name: Name of channel.
+			owner_id: ID of channel creator.
+			is_public: Boolean denoting public status.
+		Raises:
+		"""
+		self.set_name(name)
 		self._owners_set = set([owner_id])
 		self._members_set = set([owner_id])
 		self._is_public = is_public
@@ -43,6 +50,11 @@ class Channel:
 	def set_is_public(self, is_public):
 		self._is_public = is_public
 
+	def set_name(self,name):
+		if len(name) > 20:
+			raise ValueError("Name cannot be over 20 characters")
+		self._name = name
+		
 	def get_name(self):
 		return self._name
 
@@ -67,14 +79,16 @@ class Channel:
 	def send_message(self, message_id):
 		"""
 		Appends a message to the front of the message list and marks the message as sent.
-		
+
 		Args:
 			message_id: ID of the message.
-		"""
-		self._message_list.insert(0,message_id)
-		get_message(message_id).send()
+		Raises:
+			ValueError: Message does not exist.
+		Returns:
 
-		return message_id
+		"""
+		self._message_list.insert(0, message_id)
+		get_message(message_id).send()
 
 	def standup_active(self):
 		# Standup_message_id is None when no standup has ever been sent and standups deactivate
@@ -105,7 +119,7 @@ class Channel:
 
 		# Make a new standup message where the base text is the default starting message
 		new_message =  Message(STANDUP_START_STR, self._id, u_id, time=time_finish, is_standup=True)
-		
+
 		# Latest channel standup is now the new message
 		self._standup_message_id = new_message.get_id()
 		return time_finish
@@ -134,10 +148,6 @@ class Channel:
 		# Append full_text to standup message.
 		message.set_message(message.get_message() + full_text)
 
-
-
-
-
 	def standup_time(self):
 		'''
 		Retreives the finishing time of the current standup
@@ -153,13 +163,24 @@ class Channel:
 			return get_message(self._standup_message_id).get_time()
 
 	def channel_messages(self, start, u_id):
-		# Gets the last 50 messages 
+		'''
+		Retrieves a page of messages from the server.
+
+
+		Args:
+			u_id: ID of the user.
+			start: Index of first message to be returned.
+		Returns:
+			A list containing the next 50 messages starting from the the start index specified.
+			If there are less than 50 messages left, it returns as many messages as possible.
+		'''
+		# Gets the last 50 messages
 		return [get_message(mess).to_json(u_id) for mess in self._message_list[start: start+50]]
 
 	def delete_message(self, message_id):
 		"""
 		Deletes a message from this channel's message_list, preserving order.
-		
+
 		Args:
 			message_id: ID of the message.
 		Raises:
@@ -182,13 +203,13 @@ class Channel:
 		"""
 		self._members_set.add(u_id)
 		get_user(u_id).get_channels().add(self._id)
-		
+
 	def leave(self, u_id):
 		"""
 		Removes a user from the channel.
 
 		Args:
-			u_id: ID of the user 
+			u_id: ID of the user
 		Raises:
 			ValueError: User does not exist.
 		"""
@@ -216,7 +237,7 @@ class Channel:
 
 	def to_json_id(self):
 		"""
-		Converts channel infomration into a format for simple listing.
+		Converts channel infomation into a format for simple listing.
 
 		Returns:
 			A dictionary of {name, channel_id}:
