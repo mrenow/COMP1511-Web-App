@@ -6,7 +6,7 @@ from json import dumps
 from flask import Flask, request
 from server.AccessError import AccessError
 from server.constants import TIMEZONE
-from server.state import *
+from server.state import *# pylint: disable=unused-wildcard-import
 from datetime import datetime, tzinfo
 
 APP = Flask(__name__)

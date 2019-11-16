@@ -3,9 +3,9 @@ from datetime import datetime, timedelta
 import urllib.request
 from PIL import Image
 from server.AccessError import AccessError
-from server.constants import *
-from server.state import *
-from server.auth_util import *
+from server.constants import *# pylint: disable=unused-wildcard-import
+from server.state import *# pylint: disable=unused-wildcard-import
+from server.auth_util import *# pylint: disable=unused-wildcard-import
 
 from objects.channels_object import Channel
 from objects.users_object import User

@@ -231,7 +231,7 @@ const-naming-style=UPPER_CASE
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.
-docstring-min-length=10
+docstring-min-length=-1
 
 # Naming style matching correct function names.
 function-naming-style=snake_case
@@ -306,8 +306,7 @@ indent-after-paren=4
 
 # String used as indentation unit. This is usually "    " (4 spaces) or "\t" (1
 # tab).
-indent-string='\t'
-
+indent-string='    '
 
 # Maximum number of characters on a single line.
 max-line-length=100
