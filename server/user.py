@@ -22,16 +22,16 @@ from server.export import export
 @authorise
 def user_profile(client_id, u_id):
 	'''
-	shows basic information of a user
+	Shows basic information of a user
 
-	finds the corresponding user with u_id from user global dictionary
+	Finds the corresponding user with u_id from user global dictionary
 	and retrieves relevant info
 
 	Args:
-		client_id: user ID of requester
-		u_id: user ID of user who the requester wants to know about
+		client_id: User ID of requester
+		u_id: User ID of user who the requester wants to know about
 	Returns:
-		a dictionary with email, full name, and handle of selected user
+		A dictionary with email, full name, and handle of selected user
 	Raises:
 		ValueError: u_id is invalid
 	'''
@@ -47,18 +47,18 @@ def user_profile(client_id, u_id):
 @authorise
 def user_profile_setname(client_id, name_first, name_last):
 	'''
-	changes name of requester
+	Changes name of requester
 
-	calls name setters from corresponding user object
+	Calls name setters from corresponding user object
 
 	Args:
-		client_id: user ID of requester
-		name_first: user inputted string for new first name
-		name_last: user inputted string for new last name 
+		client_id: User ID of requester
+		name_first: User inputted string for new first name
+		name_last: User inputted string for new last name 
 	Returns:
-		empty dictionary
+		Empty dictionary
 	Raises:
-		ValueErrors: name is too long or too short
+		ValueErrors: Name is too long or too short
 
 	'''
 
@@ -72,18 +72,18 @@ def user_profile_setname(client_id, name_first, name_last):
 @authorise
 def user_profile_setemail(client_id, email):
 	'''
-	changes email of requester
+	Changes email of requester
 
-	calls email setters from corresponding user object
+	Calls email setters from corresponding user object
 
 	Args:
-		client_id: user ID of requester
-		email: user inputted string for new email
+		client_id: User ID of requester
+		email: User inputted string for new email
 	Returns:
-		empty dictionary
+		Empty dictionary
 	Raises:
-		ValueErrors: invalid email address
-		ValueErrors: email address already in use 
+		ValueErrors: Invalid email address
+		ValueErrors: Email address already in use 
 	'''
 	# Check if email is in correct format
 
@@ -96,18 +96,18 @@ def user_profile_setemail(client_id, email):
 @authorise
 def user_profile_sethandle(client_id, handle_str):
 	'''
-	changes handle of requester
+	Changes handle of requester
 
-	calls handle setters from corresponding user object
+	Calls handle setters from corresponding user object
 
 	Args:
-		client_id: user ID of requester
-		handle_str: user inputted string for new handle
+		client_id: User ID of requester
+		handle_str: User inputted string for new handle
 	Returns:
-		empty dictionary
+		Empty dictionary
 	Raises:
-		ValueErrors: handle is too long or too short, handle is already in use
-		ValueErrors: handle is already used by another user
+		ValueErrors: Handle is too long or too short, handle is already in use
+		ValueErrors: Handle is already used by another user
 	'''
 	
 	get_user(client_id).set_handle_str(handle_str, client_id)
@@ -132,19 +132,19 @@ def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end
 @authorise
 def admin_userpermission_change(client_id, u_id, permission_id):
 	'''
-	changes permission level for a user
+	Changes permission level for a user
 
-	calls handle setters from corresponding user object
+	Calls handle setters from corresponding user object
 
 	Args:
-		client_id: user ID of requester
+		client_id: User ID of requester
 		u_id: user ID of change target
 		permission_id: ID representing level of permission
 	Returns:
 		empty dictionary
 	Raises:
 		ValueErrors: u_id does not refer to a valid user
-		ValueErrors: permission_id does not refer to a value permission
+		ValueErrors: Permission_id does not refer to a value permission
 		AccessError: The authorised user is not an admin or owner
 	'''
 	authcheck(client_id, is_admin=True)
