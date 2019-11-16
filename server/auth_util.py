@@ -4,6 +4,9 @@ from server.AccessError import AccessError
 from server.constants import *
 from server.state import *
 
+'''
+	Handles all token and permission check functions.
+'''
 
 tokcount = 0
 valid_toks = set()

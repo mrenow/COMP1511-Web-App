@@ -13,7 +13,9 @@ from objects.users_object import User
 
 from server.export import export
 
-
+'''
+	Handles all user profile and permission change related functions.
+'''
 
 
 @export("/user/profile", methods=["GET"])

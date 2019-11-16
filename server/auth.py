@@ -8,7 +8,7 @@ import re  # used for checking email formating
 from server.export import export
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
 """
-	
+	Handles all authentication related functions for emails and passwords.
     
 """
 
