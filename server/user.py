@@ -12,67 +12,55 @@ from objects.users_object import User
 
 
 from server.export import export
-import re  # used for checking email formating
 
-regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
+'''
+	Handles all user profile and permission change related functions.
+'''
 
 
 @export("/user/profile", methods=["GET"])
 @authorise
 def user_profile(client_id, u_id):
 	'''
-	shows basic information of a user
+	Shows basic information of a user
 
-	finds the corresponding user with u_id from user global dictionary
+	Finds the corresponding user with u_id from user global dictionary
 	and retrieves relevant info
 
 	Args:
-		client_id: user ID of requester
-		u_id: user ID of user who the requester wants to know about
+		client_id: User ID of requester
+		u_id: User ID of user who the requester wants to know about
 	Returns:
-		a dictionary with email, full name, and handle of selected user
+		A dictionary with email, full name, and handle of selected user
 	Raises:
 		ValueError: u_id is invalid
 	'''
-	# Check for authorisation
-	authcheck(client_id)
 	# Check for valid user
 	user = get_user(u_id)
 	return {"email": user.get_email(),
-         "name_first": user.get_name_first(),
-         "name_last": user.get_name_last(),
-         "handle_str": user.get_handle_str()}
+			"name_first": user.get_name_first(),
+			"name_last": user.get_name_last(),
+			"handle_str": user.get_handle_str()}
 
 
 @export("/user/profile/setname", methods=["PUT"])
 @authorise
 def user_profile_setname(client_id, name_first, name_last):
 	'''
-	changes name of requester
+	Changes name of requester
 
-	calls name setters from corresponding user object
+	Calls name setters from corresponding user object
 
 	Args:
-		client_id: user ID of requester
-		name_first: user inputted string for new first name
-		name_last: user inputted string for new last name 
+		client_id: User ID of requester
+		name_first: User inputted string for new first name
+		name_last: User inputted string for new last name 
 	Returns:
-		empty dictionary
+		Empty dictionary
 	Raises:
-		ValueErrors: name is too long or too short
+		ValueErrors: Name is too long or too short
 
 	'''
-	# Check for authorisation
-	authcheck(client_id)
-	# Check if first and last names are within length restrictions otherwise return a ValueError
-	if len(name_first) > 50:
-		raise ValueError("First name provided is too long")
-	if len(name_last) > 50:
-		raise ValueError("Last name provided is too long")
-	if len(name_first) < 1:
-		raise ValueError("First name provided is too short")
-	if len(name_last) < 1:
-		raise ValueError("Last name provided is too short")
 
 	get_user(client_id).set_name_first(name_first)
 	get_user(client_id).set_name_last(name_last)
@@ -84,34 +72,22 @@ def user_profile_setname(client_id, name_first, name_last):
 @authorise
 def user_profile_setemail(client_id, email):
 	'''
-	changes email of requester
+	Changes email of requester
 
-	calls email setters from corresponding user object
+	Calls email setters from corresponding user object
 
 	Args:
-		client_id: user ID of requester
-		email: user inputted string for new email
+		client_id: User ID of requester
+		email: User inputted string for new email
 	Returns:
-		empty dictionary
+		Empty dictionary
 	Raises:
-		ValueErrors: invalid or already in use email
+		ValueErrors: Invalid email address
+		ValueErrors: Email address already in use 
 	'''
-	# Check for authorisation
-	authcheck(client_id)
 	# Check if email is in correct format
 
-	if(re.search(regex, email)):
-
-		# Check for email address duplicates
-		for user in user_iter():
-				# Do not raise error if user does not change field
-				if user.get_id() != client_id and user._email == email:
-					raise ValueError("Email already in use")
-
-		get_user(client_id).set_email(email)
-
-	else:
-		raise ValueError("Invalid Email Address")
+	get_user(client_id).set_email(email, client_id)
 
 	return {}
 
@@ -120,33 +96,21 @@ def user_profile_setemail(client_id, email):
 @authorise
 def user_profile_sethandle(client_id, handle_str):
 	'''
-	changes handle of requester
+	Changes handle of requester
 
-	calls handle setters from corresponding user object
+	Calls handle setters from corresponding user object
 
 	Args:
-		client_id: user ID of requester
-		handle_str: user inputted string for new handle
+		client_id: User ID of requester
+		handle_str: User inputted string for new handle
 	Returns:
-		empty dictionary
+		Empty dictionary
 	Raises:
-		ValueErrors: handle is too long or too short, handle is already in use
+		ValueErrors: Handle is too long or too short, handle is already in use
+		ValueErrors: Handle is already used by another user
 	'''
-	# Check for authorisation
-	authcheck(client_id)
-	# Check if handle str is the right len
-	if len(handle_str) > 20:
-		raise ValueError("Handle name is too long")
-	if len(handle_str) < 3:
-		raise ValueError("Handle name is too short")
-	# Check if handle str is already in use by another user
-
-	for user in user_iter():
-		# Do not raise error if user keeps their own name unchanged
-		if user.get_id() != client_id and user._handle_str == handle_str:
-
-				raise ValueError("Handle name already in use")
-	get_user(client_id).set_handle_str(handle_str)
+	
+	get_user(client_id).set_handle_str(handle_str, client_id)
 
 	return {}
 
@@ -167,6 +131,22 @@ def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end
 @export("/admin/userpermission/change", methods=["POST"])
 @authorise
 def admin_userpermission_change(client_id, u_id, permission_id):
+	'''
+	Changes permission level for a user
+
+	Calls handle setters from corresponding user object
+
+	Args:
+		client_id: User ID of requester
+		u_id: user ID of change target
+		permission_id: ID representing level of permission
+	Returns:
+		empty dictionary
+	Raises:
+		ValueErrors: u_id does not refer to a valid user
+		ValueErrors: Permission_id does not refer to a value permission
+		AccessError: The authorised user is not an admin or owner
+	'''
 	authcheck(client_id, is_admin=True)
 	if permission_id not in (OWNER, ADMIN, MEMBER):
 		raise ValueError("Permission ID not valid")

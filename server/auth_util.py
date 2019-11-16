@@ -4,6 +4,9 @@ from server.AccessError import AccessError
 from server.constants import *
 from server.state import *
 
+'''
+	Handles all token and permission check functions.
+'''
 
 tokcount = 0
 valid_toks = set()
@@ -66,14 +69,14 @@ def authorise(function):
 	return wrapper
 
 
-def maketok(u_id) -> str:
+def maketok(u_id):
 	'''
 	Creates a token for a user.
 
 	Generates a token with u_id that is encrypted in its payload
 
 	Args: 
-		u_id:a number representing used to identify a user
+		u_id: a number representing used to identify a user
 	Returns:
 		A token with a payload that is encrypted
 
@@ -99,6 +102,7 @@ def killtok(token):
 	'''
 	payload = jwt.decode(token, private_key, algorithms=["HS256"])
 	tok_id = payload["tok_id"]
+	
 	if payload["tok_id"] in valid_toks:
 		valid_toks.remove(tok_id)
 		return {"is_success": True}
