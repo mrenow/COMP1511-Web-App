@@ -123,11 +123,30 @@ class User:
 	
 	# Check if password is too short
 	def valid_password(self, password):
+		'''
+		checks if password is longer than 6 characters
+		
+		
+		Args:
+			password: A str used for authentication
+		Raises:
+			ValueError: password too short
+		'''
 		if len(password) < 6:
 			raise ValueError("Password too short")
 
 	# Check if name has correct length
 	def valid_first_name(self, name_first):
+		'''
+		checks if name is less than 50 and greater than 1 characters
+		
+		
+		Args:
+			name_first: User's first name
+		Raises:
+			ValueError: name is too long
+			ValueError: name is too short
+		'''
 		# First name within 1 and 50 characters
 		if len(name_first) > 50:
 			raise ValueError("First name is too long")
@@ -136,6 +155,16 @@ class User:
 
 	# Check if name has correct length
 	def valid_last_name(self, name_last):
+		'''
+		checks if name is less than 50 and greater than 1 characters
+		
+		
+		Args:
+			name_last: User's last name
+		Raises:
+			ValueError: name is too long
+			ValueError: name is too short
+		'''
 		if len(name_last) > 50:
 			raise ValueError("Last name is too long")	
 		if len(name_last) < 1:
@@ -143,6 +172,16 @@ class User:
 
 	# Check if handle str is the right len
 	def valid_handle(self, handle_str):	
+		'''
+		checks if handel is less than 20 and greater than 3 characters
+		
+		
+		Args:
+			handle_str: User's handle
+		Raises:
+			ValueError: name is too long
+			ValueError: name is too short
+		'''
 		if len(handle_str) > 20:
 			raise ValueError("Handle name is too long")
 		if len(handle_str) < 3:
@@ -150,17 +189,46 @@ class User:
 
 	# Checks if email is already in use
 	def email_unused(self,email, client_id):
+		'''
+		checks email against all existing emails
+		
+		
+		Args:
+			email: email address used to register account
+			client_id: ID represneting a user
+		Raises:
+			ValueError: email already in use
+		'''
 		for user_obj in user_iter():
 				# Do not raise error if user does not change field
 				if user_obj.get_id() != client_id and user_obj.get_email() == email:
 					raise ValueError("Email already in use")
 	# Check if email is good
 	def valid_email(self,email):
+		'''
+		uses re.search to check if email has correct format
+		
+		
+		Args:
+			email: email address used to register account
+		Raises:
+			ValueError: email given is invalid
+		'''
 		if not re.search(regex,email):
 			raise ValueError("Invalid Email Address")
 
 	# Check if handle str is already in use by another user
 	def handle_unused(self, handle, client_id):
+		'''
+		checks handle against all existing handles
+		
+		
+		Args:
+			handle: handle_str: User's handle
+			client_id: ID represneting a user
+		Raises:
+			ValueError: handle already in use
+		'''
 		for user_obj in user_iter():
 			# Do not raise error if user keeps their own name unchanged
 			if user_obj.get_id() != client_id and user_obj.get_handle_str() == handle:
