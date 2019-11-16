@@ -10,7 +10,8 @@ from server.state import * # pylint: disable=unused-wildcard-import
 
 tokcount = 0
 valid_toks = set()
-
+resetPW_count = 0
+vaild_resetPW = set()
 
 def authcheck(client_id, user_id=None, channel_id=None, chowner_id=None, is_admin=False):
 
@@ -68,6 +69,23 @@ def authorise(function):
 	wrapper.__name__ = function.__name__
 	return wrapper
 
+def make_resetPw(u_id):
+	global vaild_resetPW
+	global resetPW_count
+
+	payload = {"u_id": user.get_id(), "resetPW_id": resetPW_count, "time" : str(datetime.now())}
+	vaild_resetPW.add(resetPW_count)
+	resetPW_count += 1
+	password = jwt.encode(payload, private_key, algorithm= "HS256")
+	return password
+
+def check_resetPw(reset_code):
+	global valid_resetPW
+	payload = jwt.decode(reset_code, private_key, algorithms= ["HS256"])
+	if payload["resetPW_id"] in valid_resetPW:
+		return payload["u_id"]
+	else:
+		return -1
 
 def maketok(u_id):
 	'''

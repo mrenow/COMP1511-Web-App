@@ -4,6 +4,7 @@ ADMIN = 2
 MEMBER = 3
 OWNER = 1
 
+PORT = 5001
 MAX_STANDUP_SECONDS = 60*15
 MAX_MESSAGE_LEN = 1000
 TIMEZONE = pytz.timezone("Australia/Sydney")

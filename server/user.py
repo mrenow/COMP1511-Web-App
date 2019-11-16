@@ -122,13 +122,13 @@ def user_profile_sethandle(client_id, handle_str):
 		ValueErrors: Handle is too long or too short, handle is already in use
 		ValueErrors: Handle is already used by another user
 	'''
-	
+
 	get_user(client_id).set_handle_str(handle_str, client_id)
 
 	return {}
 
 
-@export("/user/profiles/uploadphoto", methods=["POST"])
+@export("/user/profiles/uploadphoto", methods = ["POST"])
 @authorise
 def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end):
 	# Download the image
@@ -136,10 +136,12 @@ def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end
 	# Crop if image is too big
 	if y_end > 500 or x_end > 500:
 		imageObject = Image.open("./static/" + client_id + ".pn")
-		cropped = imageObject.crop((0, 0, 500, 500))
+		cropped = imageObject.crop((0,0,500,500))
 		cropped.save("./static/" + client_id + ".pn")
-	return {}
+	# Save url of image in user object
+		get_user(client_id)._profile_picture_url = f"http://localhost:{PORT}/static/{client_id}.pn"
 
+	return {}
 
 @export("/admin/userpermission/change", methods=["POST"])
 @authorise

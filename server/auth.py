@@ -4,7 +4,7 @@ from server.state import * # pylint: disable=unused-wildcard-import
 from server.auth_util import * # pylint: disable=unused-wildcard-import
 from objects.users_object import User
 import re  # used for checking email formating
-
+from __main__ import send_mail
 from server.export import export
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 """
@@ -80,11 +80,30 @@ def auth_register(email, password, name_first, name_last):
 	return {"token": maketok(u_id), "u_id": u_id}
 
 
-@export("/auth/passwordreset_request", methods=["POST"])
+@export("/auth/passwordreset_request", methods = ["POST"])
 def auth_passwordreset_request(email):
+	
+	# Search for matching email
+	for user in user_iter():
+		if user.get_email() == email:
+	
+			# If it matches generate pw reset code
+			reset_code = make_resetPw(user.get_id)
+			# Create contents of email and send			
+			msg = Message("Slackr Password Reset Request", recipients=email)
+			msg.body = f"Your passcode for resetting your email is {reset_code}"
+			send_mail(msg)
+	
 	return {}
 
-
-@export("/auth/passwordreset_reset", methods=["POST"])
+@export("/auth/passwordreset_reset", methods = ["POST"])
 def auth_passwordreset_reset(reset_code, new_password):
+	# Check if reset code is correct
+	if check_resetPw >= 0:
+		# Change the password for the user
+		user = get_user(check_resetPw)
+		user.set_password(new_password)
+
+	raise ValueError("Invalid reset code")
+
 	return {}

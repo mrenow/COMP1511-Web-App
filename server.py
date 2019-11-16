@@ -9,12 +9,38 @@ from server.constants import TIMEZONE
 from server.state import *# pylint: disable=unused-wildcard-import
 from datetime import datetime, tzinfo
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_url_path= "/server/static/")
 CORS(APP)
 
+# flask_mail config
+APP.config["DEBUG"] = True
+APP.config["TESTING"] = False
+APP.config["MAIL_SERVER"] = "localhost"
+APP.config["MAIL_PORT"] = 25
+APP.config["MAIL_USE_TLS"] = False
+APP.config["MAIL_USE_SSL"] = False
+APP.config["MAIL_DEBUG"] = True
+APP.config["MAIL_USERNAME"] = "jasonxing2140@gmail.com"
+APP.config["MAIL_PASSWORD"] = "C0mpl1c4t3d4"
+APP.config["MAIL_DEFAULT_SENDER"] = "jasonxing2140@gmail.com"
+APP.config["MAIL_MAX_EMAILS"] = 10
+APP.config["MAIL_SUPPRESS_SEND"] = False
+APP.config["MAIL_ASCII_ATTACHMENTS"] = False
 int_suffixes = ["_id", "start", "end", "length"]
 
+mail = Mail(APP)
 
+def send_mail(msg):
+	'''
+	Sends an email
+
+	Args:
+		msg: The message thats going to be sent, contains title and body
+	'''
+	mail.send(msg)
+
+	return None
+	
 def correct_type(pair):
 	key, value = pair
 	for suffix in int_suffixes:
