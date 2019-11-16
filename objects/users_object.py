@@ -41,7 +41,6 @@ class User:
 		else:
 			self._permission_id = MEMBER
 		set_user(self._u_id, self)
-		inc_users()
 
 	def get_id(self):
 		return self._u_id

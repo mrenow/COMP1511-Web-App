@@ -21,10 +21,8 @@ def auth_login(email, password):
 	with data of existing users,raises error if incorrect
 
 	Args: 
-		email : Email address used to register account
-		password : A str used for authentication
-	Returns:
-		Nothing
+		email: Email address used to register account.
+		password: A str used for authentication.
 	Raises:
 		ValueError: Incorrect email 
 		ValueError: Incorrect password

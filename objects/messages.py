@@ -13,7 +13,7 @@ class Message:
         _message: A str representing the body of the message.
         _u_id: An int used to identify the user who sent the message.
         _is_sent: A boolean representing the sending status of the message; False by default.
-        _is_standup: A boolean indicating whether or not the message is part of a standup.
+        _is_standup: A boolean indicating whether or not the message is a standup.
         _is_pinned: A boolean indicating whether or not the message is pinned or not.
         _reacts: A dictionary containing react_ids as keys and react objects as values.
     """
@@ -31,7 +31,8 @@ class Message:
         """
         if MAX_MESSAGE_LEN < len(text):
             raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.") 
-        # ASK EZAR
+        
+        # Send immediately if no time has been specified
         send_immediate = (time == None) 
         
         if send_immediate:
@@ -46,17 +47,17 @@ class Message:
         self._message = text
         self._u_id = sender
             
-        self._is_sent = False # Set to true by channel
+        self._is_sent = False # Set to true when a channel sends the message
         self._is_standup = is_standup
         self._is_pinned = False
-        self._reacts = {} # Dictionary of react id: react object.
+        self._reacts = {} # Dictionary of react id: react object
 
         self._message_id = num_messages()
-
-        set_message(self._message_id, self)
         inc_messages()
+        
+        set_message(self._message_id, self)
 
-        # Automatically send or send later.
+        # Automatically send or send later
         if send_immediate:
             get_channel(channel).send_message(self._message_id)
         else:
@@ -102,6 +103,7 @@ class Message:
             self._reacts.get(react)._u_ids.add(user)
     
     def set_message(self, text):
+        # Standups are excempt from length checks
         if not self._is_standup and MAX_MESSAGE_LEN < len(text):
             raise ValueError(f"Message '{text[:10]}...' with length {len(text)} exceeds maximum allowable length {MAX_MESSAGE_LEN}.") 
         

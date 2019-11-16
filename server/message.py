@@ -8,6 +8,7 @@ from objects.channels_object import Channel
 from objects.messages import Message
 
 from server.export import export
+
 @export("/message/sendlater", methods=["POST"])
 @authorise
 def message_sendlater(client_id, channel_id, message, time_sent):
@@ -29,13 +30,16 @@ def message_sendlater(client_id, channel_id, message, time_sent):
 		ValueError: When sent_time is at an earlier timestamp than the current time
 	"""
 
+	# Check if desired time to send message is past already
 	if time_sent < datetime.now(TIMEZONE):
 		raise ValueError(
 			f"message_sendlater: time is {datetime.now(TIMEZONE) - time_sent} in the past")
+	# Authentication
 	authcheck(client_id, channel_id=channel_id)
-
+	
+	# Create the message object
 	message_obj = Message(message, channel_id, client_id, time_sent)
-	print(get_unsent())
+	### WHATS THIS ?  print(get_unsent())
 	return {}
 
 
@@ -61,9 +65,9 @@ def message_send(client_id, channel_id, message):
 		ValueError: When message is over 1000 characters long
 		AccessError:  The authorised user has not joined the channel they are trying to post to
 	"""
-
+	# Authentication
 	authcheck(client_id, channel_id=channel_id)
-
+	# Create the message object
 	message_obj = Message(message, channel_id, client_id)
 
 	return {}
@@ -291,13 +295,8 @@ def search(client_id, query_str):
 	Returns:
 		message[]: A list of messages that matches the given query_str
 	"""
-	search_list = []
-	for message_obj in message_iter():
-		if query_str in message_obj.get_message():
-			msg_dict = message_obj.to_json(client_id)
-			search_list.append(msg_dict)
-	
-	return {"messages":search_list}
+
+	return {}
 
 
 def relevance_score(string):
