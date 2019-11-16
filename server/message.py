@@ -8,6 +8,7 @@ from objects.channels_object import Channel
 from objects.messages import Message
 
 from server.export import export
+
 @export("/message/sendlater", methods=["POST"])
 @authorise
 def message_sendlater(client_id, channel_id, message, time_sent):
@@ -291,7 +292,7 @@ def search(client_id, query_str):
 	Returns:
 		message[]: A list of messages that matches the given query_str
 	"""
-	
+
 	return {}
 
 
