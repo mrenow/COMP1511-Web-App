@@ -8,23 +8,27 @@ import re  # used for checking email formating
 from server.export import export
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
 """
-	
+	Handles all authentication related functions for emails and passwords.
     
 """
 
 @export('/auth/login', methods=["POST"])
 def auth_login(email, password):
 	'''
-	checks email and password
+	Checks email and password
 
 	Checks entered credentials is correct.Compares the email and password taken 
 	with data of existing users,raises error if incorrect
 
 	Args: 
-		email
-		password
+		email: Email address used to register account.
+		password: A str used for authentication.
+	Returns:
+		Nothing
 	Raises:
-		ValueError: Incorrect email or password
+		ValueError: Incorrect email 
+		ValueError: Incorrect password
+		ValueError: Email is not valid
 	'''
 	#Check in users if email exists then try to match the pw
 	for user_obj in user_iter():
@@ -61,13 +65,16 @@ def auth_register(email, password, name_first, name_last):
 
 	Args:
 		email: used to identify account
-		password :
+		password : A str used for authentication
 		name_first: user's first name
 		name_last: user's last name
 	Returns: 
 		a dictionary storing user id and token 
 	Raises:
-		ValueError: invalid or existing email, incorrect length for name or passowrd
+		ValueError: Email is already used
+		ValueError: Email is not valid
+		ValueError: Incorrect length for name 
+		ValueError: Incorrect length for password
 	'''
 	
 	new_user = User(name_first, name_last, email, password)

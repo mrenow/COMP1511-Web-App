@@ -13,7 +13,9 @@ from objects.users_object import User
 
 from server.export import export
 
-
+'''
+	Handles all user profile and permission change related functions.
+'''
 
 
 @export("/user/profile", methods=["GET"])
@@ -80,7 +82,8 @@ def user_profile_setemail(client_id, email):
 	Returns:
 		empty dictionary
 	Raises:
-		ValueErrors: invalid or already in use email
+		ValueErrors: invalid email address
+		ValueErrors: email address already in use 
 	'''
 	# Check if email is in correct format
 
@@ -104,6 +107,7 @@ def user_profile_sethandle(client_id, handle_str):
 		empty dictionary
 	Raises:
 		ValueErrors: handle is too long or too short, handle is already in use
+		ValueErrors: handle is already used by another user
 	'''
 	
 	get_user(client_id).set_handle_str(handle_str, client_id)
@@ -127,6 +131,22 @@ def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end
 @export("/admin/userpermission/change", methods=["POST"])
 @authorise
 def admin_userpermission_change(client_id, u_id, permission_id):
+	'''
+	changes permission level for a user
+
+	calls handle setters from corresponding user object
+
+	Args:
+		client_id: user ID of requester
+		u_id: user ID of change target
+		permission_id: ID representing level of permission
+	Returns:
+		empty dictionary
+	Raises:
+		ValueErrors: u_id does not refer to a valid user
+		ValueErrors: permission_id does not refer to a value permission
+		AccessError: The authorised user is not an admin or owner
+	'''
 	authcheck(client_id, is_admin=True)
 	if permission_id not in (OWNER, ADMIN, MEMBER):
 		raise ValueError("Permission ID not valid")
