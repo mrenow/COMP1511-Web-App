@@ -1,6 +1,6 @@
-from server.state import *
-from server.constants import *
-import re  # used for checking email formating
+from server.state import * # pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+from server.constants import * # pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+import re  # used for checking email formating 
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'  # ''
 
 """

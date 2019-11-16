@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from .messages import Message
-from server.state import *
-from server.constants import *
+from server.state import * # pylint: disable=unused-wildcard-import
+from server.constants import * # pylint: disable=unused-wildcard-import
 '''
 get_channels
 '''
