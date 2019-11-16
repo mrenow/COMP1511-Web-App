@@ -26,6 +26,7 @@ class User:
 
 	def __init__(self, name_first, name_last, email, password):
 		self._u_id = num_users()
+		inc_users()
 		self.valid_password(password)
 		self._password = password
 		self.valid_first_name(name_first)
@@ -44,7 +45,6 @@ class User:
 		else:
 			self._permission_id = MEMBER
 		set_user(self._u_id, self)
-		inc_users()
 
 	def get_id(self):
 		return self._u_id
