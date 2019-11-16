@@ -254,7 +254,8 @@ def message_pin(client_id, message_id):
 @export("/message/unpin", methods=["POST"])
 @authorise
 def message_unpin(client_id, message_id):
-	"""Upins message
+	"""
+	Upins message
 
 	Given a message within a channel, remove it's mark as unpinned
 
@@ -283,7 +284,8 @@ def message_unpin(client_id, message_id):
 @export("/search", methods=["GET"])
 @authorise
 def search(client_id, query_str):
-	"""Searches for messages that match query_str
+	"""
+	Searches for messages that match query_str
 
 	Given a query string, return a collection of messages 
 	in all of the channels that the user has joined that match the query

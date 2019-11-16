@@ -3,7 +3,8 @@ from server.state import * # pylint: disable=locally-disabled, multiple-statemen
 from server.constants import * # pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
 
 class Message:
-    """Message class
+    """
+    Message class
 
     Message structure containing all attributes of a message and 
     all the methods in which it can be interacted with.
@@ -20,7 +21,8 @@ class Message:
     """
     
     def __init__(self, text, channel, sender, time = None, is_standup = False):
-        """Initializes the message class
+        """
+        Initializes the message class
         
         Args:
             text: sets _message
@@ -127,16 +129,17 @@ class Message:
         return react_id in self._reacts
         
     def to_json(self, user):
-    """Converts message information into a format for simple listing.
+    """
+    Converts message information into a format for simple listing.
 
-		Returns:
-			A dictionary of {message_id, u_id, message, time_created, reacts, is_pinned}:
-                message_id: An int used to identify the message.
-                u_id: An int used to identify the user who sent the message.
-                message: A str representing the body of the message.
-                time_created: A timestamp of the time in which the message was sent.
-                reacts: A dictionary containing react_ids as keys and react objects as values.
-                is_pinned: A boolean indicating whether or not the message is pinned or not.
+	Returns:
+		A dictionary of {message_id, u_id, message, time_created, reacts, is_pinned}:
+            message_id: An int used to identify the message.
+            u_id: An int used to identify the user who sent the message.
+            message: A str representing the body of the message.
+            time_created: A timestamp of the time in which the message was sent.
+            reacts: A dictionary containing react_ids as keys and react objects as values.
+            is_pinned: A boolean indicating whether or not the message is pinned or not.
 				
 	""" 
         return dict(message_id = self._message_id,
@@ -146,7 +149,8 @@ class Message:
                     reacts = self.get_reacts(user),
                     is_pinned = self._is_pinned)
 class React:
-    """React Class
+    """
+    React Class
 
     A class for react, containing all its attributes and methods in
     which the class can be interacted with.
@@ -161,12 +165,13 @@ class React:
         self._react_id = id
 
     def to_json(self, user):
-    """Converts react information into a format for simple listing.
+    """
+    Converts react information into a format for simple listing.
 
-		Returns:
-			A dictionary of {react_id, is_this_user_reacted}:
-                react_id: An int representing a specific react type
-                is_this_user_reacted: A boolean if user has reacted or not
+	Returns:
+		A dictionary of {react_id, is_this_user_reacted}:
+            react_id: An int representing a specific react type
+            is_this_user_reacted: A boolean if user has reacted or not
 	"""     
         return dict(u_ids = list(self._u_ids),
                     react_id = self._react_id,
