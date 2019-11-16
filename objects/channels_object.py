@@ -28,6 +28,7 @@ class Channel:
 		self._members_set = set([owner_id])
 		self._is_public = is_public
 		self._id = num_channels()
+		inc_channels()
 
 		# Functions as the entire standup
 		self._standup_message_id = None
@@ -38,7 +39,6 @@ class Channel:
 		set_channel(self._id, self)
 		get_user(owner_id).get_channels().add(self._id)
 		get_user(owner_id).get_owner_channels().add(self._id)
-		inc_channels()
 
 	def set_is_public(self, is_public):
 		self._is_public = is_public
@@ -69,7 +69,7 @@ class Channel:
 		Appends a message to the front of the message list and marks the message as sent.
 		
 		Args:
-			message_id: int
+			message_id: ID of the message.
 		"""
 		self._message_list.insert(0,message_id)
 		get_message(message_id).send()
@@ -82,21 +82,45 @@ class Channel:
 		return self._standup_message_id != None and not get_message(self._standup_message_id).is_sent()
 
 	def standup_start(self, u_id, duration_seconds):
+		"""
+		Begins a standup in this channel for a specified duration. Standup will send automatically
+		at the next server request after the duration elapses.
+
+		Args:
+			u_id: ID of the user.
+			duration_seconds: Length of the new standup in seconds.
+		Returns:
+			time_finish: Datetime of the new standup's finish time.
+		Raises:
+			ValueError: User does not exist.
+			ValueError: Standup already active in this channel.
+			ValueError: Duration is too long.
+		"""
 		if self.standup_active():
 			raise ValueError(f"Standup already active in channel {self._name}.")
 		if duration_seconds > MAX_STANDUP_SECONDS:
 			raise ValueError(
 				f"Standup duration ({duration_seconds}s) exceeds maximum ({MAX_STANDUP_SECONDS}s).")
-		# FIX COMMENT
-		# Overwrite old standup message with new unsent message.
 		time_finish = datetime.now(TIMEZONE) + timedelta(seconds=duration_seconds)
+
+		# Make a new standup message where the base text is the default starting message
 		new_message =  Message(STANDUP_START_STR, self._id, u_id, time=time_finish, is_standup=True)
+		
+		# Latest channel standup is now the new message
 		self._standup_message_id = new_message.get_id()
 		return time_finish
 
 	def standup_send(self, u_id, text):
 		"""
+		Appends a user's entry to the current standup.
 
+		Args:
+			u_id: Id of the sender.
+			text: String which is the message's body.
+		Raises:
+			ValueError: This channel does not have an active standup.
+			ValueError: Message is too long.
+			ValueError: User does not exist.
 		"""
 		if not self.standup_active():
 			raise ValueError(f"No standup active in channel {self._name}")
@@ -116,7 +140,7 @@ class Channel:
 
 	def standup_time(self):
 		'''
-		Retrives the finishing time of the current standup
+		Retreives the finishing time of the current standup
 
 		Returns:
 			A datetime object that represents the completion datetime of the last standup initiated on the channel.
@@ -137,8 +161,7 @@ class Channel:
 		Deletes a message from this channel's message_list, preserving order.
 		
 		Args:
-			message_id: int
-
+			message_id: ID of the message.
 		Raises:
 			ValueError: Message ID does not exist in channel
 		"""
@@ -153,14 +176,29 @@ class Channel:
 		Joins a user to this channel.
 
 		Args:
-			u_id: int
-		
+			u_id: ID of the user.
 		Raises:
 			ValueError: User does not exist.
 		"""
 		self._members_set.add(u_id)
 		get_user(u_id).get_channels().add(self._id)
 		
+	def leave(self, u_id):
+		"""
+		Removes a user from the channel.
+
+		Args:
+			u_id: ID of the user 
+		Raises:
+			ValueError: User does not exist.
+		"""
+		self._members_set.discard(u_id)
+
+		# Leaving a channel also removes owner status
+		if u_id in self._owners_set:
+			self._owners_set.discard(u_id)
+		get_user(u_id).get_channels().discard(self._id)
+
 
 	def to_json_members(self):
 		"""
@@ -168,9 +206,9 @@ class Channel:
 
 		Returns:
 			A dictionary of {name, owner_members, all_members}:
-				name: str
-				owner_members: List of jsons representing each owner
-				all_members: List of jsons representing each member
+				name: String denoting the name of the channel.
+				owner_members: List of jsons representing each owner.
+				all_members: List of jsons representing each member.
 		"""
 		return dict(name=self._name,
                     owner_members=[get_user(u_id).to_json() for u_id in self._owners_set],
@@ -182,29 +220,44 @@ class Channel:
 
 		Returns:
 			A dictionary of {name, channel_id}:
-				name: str
-				channel_id: int
+				name: String denoting the name of the channel.
+				channel_id: ID of this channel.
 		"""
 		return dict(name=self._name,
                     channel_id=self._id)
 
-	def leave(self, u_id):
-		self._members_set.discard(u_id)
-		# Leaving a channel also removes owner status
-		if u_id in self._owners_set:
-			self._owners_set.discard(u_id)
-		get_user(u_id).get_channels().discard(self._id)
-
 	def add_owner(self, u_id):
+		"""
+		Promotes a user to an owner of this channel
+
+		Args:
+			u_id: ID of the user.
+		Raises:
+			ValueError: User does not exist.
+			ValueError: User is already an owner.
+		"""
 		if u_id in self._owners_set:
 			raise ValueError(
 				f"User {u_id} is already an owner of channel {self._id}")
+		# Update self and user
 		self._owners_set.add(u_id)
 		get_user(u_id).get_channels().add(self._id)
+		# Join channel if not already a member
 		self.join(u_id)
 
 	def remove_owner(self, u_id):
+		"""
+		Promotes a user to an owner of this channel
+
+		Args:
+			u_id: ID of the user.
+		Raises:
+			ValueError: User does not exist.
+			ValueError: User is not an owner.
+		"""
 		if u_id not in self._owners_set:
 			raise ValueError(
 				f"User {u_id} is not an owner of channel {self._id}")
+		# Update self and user
+		get_user(u_id).get_channels().discard(self._id)
 		self._owners_set.discard(u_id)
