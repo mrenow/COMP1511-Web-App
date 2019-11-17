@@ -16,7 +16,7 @@ from server.export import export
 '''
 	Handles all user profile and permission change related functions.
 '''
-@export("users/all", methods=["GET"])
+@export("/users/all", methods=["GET"])
 @authorise
 def user_getall(client_id):
 	'''
@@ -29,7 +29,7 @@ def user_getall(client_id):
 		_users{}: A global dictionary which stores all the users in the format of:
 			_users{ u_id : user_object}
 	'''
-	return get_user_dictionary
+	return [user_obj.to_json() for user_obj in user_iter()]
 
 @export("/user/profile", methods=["GET"])
 @authorise

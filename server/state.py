@@ -54,30 +54,42 @@ def message_iter():
 
 
 def get_channel(channel_id):
+	"""
+	Gets the channel with specified channel ID.
+	Raises:
+		ValueError: Channel ID does not exist in server.
+	"""
 	try:
 		return _channels[channel_id]
-	except(KeyError):
-		raise ValueError(
-			f"Channel {channel_id} does not exist. channels: {_channels} in {__name__}")
+	except KeyError:
+		raise ValueError(f"Channel {channel_id} does not exist. channels: {_channels} in {__name__}")
 
 
 def get_user(u_id):
+	"""
+	Gets the user with specified user ID.
+	Raises:
+		ValueError: User ID does not exist in server.
+	"""
 	try:
 		return _users[u_id]
-	except(KeyError):
-		raise ValueError(
-			f"User {u_id} does not exist. users: {_users} in {__name__}")
+	except KeyError:
+		raise ValueError(f"User {u_id} does not exist. users: {_users} in {__name__}")
 
 def get_user_dictionary():
 	global _users
 	return _users
 	
 def get_message(message_id):
+	"""
+	Gets the message with specified message ID.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		return _messages[message_id]
-	except(KeyError):
-		raise ValueError(
-			f"Message {message_id} does not exist. messages: {_messages} in {__name__}")
+	except KeyError:
+		raise ValueError(f"Message {message_id} does not exist. messages: {_messages} in {__name__}")
 
 
 def set_user(u_id, user_obj):
@@ -93,24 +105,38 @@ def set_message(message_id, message_obj):
 
 
 def remove_channel(channel_id):
+	"""
+	Removes the specified channel from the server.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		del _channels[channel_id]
-	except(KeyError):
-		raise ValueError(
-			f"Channel {channel_id} does not exist. channels: {_channels}")
+	except KeyError:
+		raise ValueError(f"Channel {channel_id} does not exist. channels: {_channels}")
 
 
 def remove_user(u_id):
+	"""
+	Removes the specified user from the server.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		del _users[u_id]
-	except(KeyError):
+	except KeyError:
 		raise ValueError(f"User {u_id} does not exist. users: {_users}")
 
 
 def remove_message(message_id):
+	"""
+	Removes the specified message from the server.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		del _messages[message_id]
-	except(KeyError):
+	except KeyError:
 		raise ValueError(
 			f"Message {message_id} does not exist. messages: {_messages}")
 
