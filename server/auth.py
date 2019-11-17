@@ -4,7 +4,7 @@ from server.state import * # pylint: disable=unused-wildcard-import
 from server.auth_util import * # pylint: disable=unused-wildcard-import
 from objects.users_object import User
 import re  # used for checking email formating
-from __main__ import send_mail
+from server.upload import send_mail
 from server.export import export
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$' # ''
 """
