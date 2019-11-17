@@ -131,6 +131,21 @@ def user_profile_sethandle(client_id, handle_str):
 @export("/user/profiles/uploadphoto", methods = ["POST"])
 @authorise
 def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end):
+	"""
+	Retrieves a photo via a url
+
+	Retieves a photo via a img url specified by the client and crops accordingly if
+	the size of the photo is too big. Saves cropped photo in /static/.
+
+	Args:
+		client_id: An int used to identity a specific client.
+		img_url: A str specifying the location of an image on the web.
+		x_start: A coordinate that indicates the left most location of the image.
+		y_start: A coordinate that indicates the most bottom most location of the image.
+		x_end: A coordinate that indicates the right most location of the image.
+		y_end: A coordinate that indicates the top most location of the image.
+
+	"""
 	# Download the image
 	urllib.request.urlretrieve(img_url, "./static/" + client_id + ".pn")
 	# Crop if image is too big
