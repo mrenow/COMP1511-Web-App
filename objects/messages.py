@@ -129,19 +129,19 @@ class Message:
         return react_id in self._reacts
         
     def to_json(self, user):
-    """
-    Converts message information into a format for simple listing.
+        """
+        Converts message information into a format for simple listing.
 
-	Returns:
-		A dictionary of {message_id, u_id, message, time_created, reacts, is_pinned}:
-            message_id: An int used to identify the message.
-            u_id: An int used to identify the user who sent the message.
-            message: A str representing the body of the message.
-            time_created: A timestamp of the time in which the message was sent.
-            reacts: A dictionary containing react_ids as keys and react objects as values.
-            is_pinned: A boolean indicating whether or not the message is pinned or not.
-				
-	""" 
+        Returns:
+            A dictionary of {message_id, u_id, message, time_created, reacts, is_pinned}:
+                message_id: An int used to identify the message.
+                u_id: An int used to identify the user who sent the message.
+                message: A str representing the body of the message.
+                time_created: A timestamp of the time in which the message was sent.
+                reacts: A dictionary containing react_ids as keys and react objects as values.
+                is_pinned: A boolean indicating whether or not the message is pinned or not.
+                    
+        """ 
         return dict(message_id = self._message_id,
                     u_id = self._u_id,
                     message = self._message,
@@ -165,14 +165,14 @@ class React:
         self._react_id = id
 
     def to_json(self, user):
-    """
-    Converts react information into a format for simple listing.
+        """
+        Converts react information into a format for simple listing.
 
-	Returns:
-		A dictionary of {react_id, is_this_user_reacted}:
-            react_id: An int representing a specific react type
-            is_this_user_reacted: A boolean if user has reacted or not
-	"""     
+        Returns:
+            A dictionary of {react_id, is_this_user_reacted}:
+                react_id: An int representing a specific react type
+                is_this_user_reacted: A boolean if user has reacted or not
+        """     
         return dict(u_ids = list(self._u_ids),
                     react_id = self._react_id,
                     is_this_user_reacted = (user in self._u_ids))
