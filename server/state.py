@@ -54,6 +54,11 @@ def message_iter():
 
 
 def get_channel(channel_id):
+	"""
+	Gets the channel with specified channel ID.
+	Raises:
+		ValueError: Channel ID does not exist in server.
+	"""
 	try:
 		return _channels[channel_id]
 	except(KeyError):
@@ -62,6 +67,11 @@ def get_channel(channel_id):
 
 
 def get_user(u_id):
+	"""
+	Gets the user with specified user ID.
+	Raises:
+		ValueError: User ID does not exist in server.
+	"""
 	try:
 		return _users[u_id]
 	except(KeyError):
@@ -70,6 +80,11 @@ def get_user(u_id):
 
 
 def get_message(message_id):
+	"""
+	Gets the message with specified message ID.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		return _messages[message_id]
 	except(KeyError):
@@ -90,6 +105,11 @@ def set_message(message_id, message_obj):
 
 
 def remove_channel(channel_id):
+	"""
+	Removes the specified channel from the server.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		del _channels[channel_id]
 	except(KeyError):
@@ -98,6 +118,11 @@ def remove_channel(channel_id):
 
 
 def remove_user(u_id):
+	"""
+	Removes the specified user from the server.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		del _users[u_id]
 	except(KeyError):
@@ -105,6 +130,11 @@ def remove_user(u_id):
 
 
 def remove_message(message_id):
+	"""
+	Removes the specified message from the server.
+	Raises:
+		ValueError: Messsge ID does not exist in server.
+	"""
 	try:
 		del _messages[message_id]
 	except(KeyError):
