@@ -29,7 +29,7 @@ def user_getall(client_id):
 		_users{}: A global dictionary which stores all the users in the format of:
 			_users{ u_id : user_object}
 	'''
-	return [user_obj.to_json() for user_obj in user_iter()]
+	return {"users": [user_obj.get_user_profile() for user_obj in user_iter()]}
 
 @export("/user/profile", methods=["GET"])
 @authorise
@@ -147,14 +147,16 @@ def user_profiles_uploadphoto(client_id, img_url, x_start, y_start, x_end, y_end
 
 	"""
 	# Download the image
-	urllib.request.urlretrieve(img_url, "./static/" + client_id + ".pn")
+	location_url = f"./static/{client_id}.pn"
+	open(location_url,"w").close()
+	urllib.request.urlretrieve(img_url, location_url)
 	# Crop if image is too big
 	if y_end > 500 or x_end > 500:
-		imageObject = Image.open("./static/" + client_id + ".pn")
+		imageObject = Image.open(location_url)
 		cropped = imageObject.crop((0,0,500,500))
-		cropped.save("./static/" + client_id + ".pn")
+		cropped.save(location_url)
 	# Save url of image in user object
-		get_user(client_id)._profile_picture_url = f"http://localhost:{PORT}/static/{client_id}.pn"
+	get_user(client_id)._profile_picture_url = f"http://localhost:{PORT}/static/{client_id}.pn"
 
 	return {}
 

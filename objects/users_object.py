@@ -34,7 +34,7 @@ class User:
 		self.valid_email(email)
 		self._email = email
 		self._handle_str = name_first + name_last
-		self._profile_picture = None
+		self._profile_picture_url = None
 		self._channel_ids = set()
 		self._owner_channel_ids = set()
 		if self._u_id == 0:
@@ -111,12 +111,14 @@ class User:
 		return {"email": self._email,
                     "name_first": self._name_first,
                     "name_last": self._name_last,
-                    "handle_str": self._handle_str}
+                    "handle_str": self._handle_str,
+					"profile_image_url": self._profile_picture_url}
 
 	def to_json(self):
 		return {"u_id": self._u_id,
                     "name_first": self._name_first,
-                    "name_last": self._name_last}
+                    "name_last": self._name_last,
+					"profile_image_url": self._profile_picture_url}
 	
 	# Check if password is too short
 	def valid_password(self, password):
