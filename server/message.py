@@ -277,21 +277,25 @@ def message_unpin(client_id, message_id):
 @export("/search", methods=["GET"])
 @authorise
 def search(client_id, query_str):
-	"""
-	Searches for messages that match query_str
+	"""Searches for messages that match query_str
 
-	Given a query string, return a collection of messages
+	Given a query string, return a collection of messages 
 	in all of the channels that the user has joined that match the query
 
-	Args:
+	Args: 
 		client_id: An int used to identify a specific client
 		query_str: A str representing the message body the user wants to search
 
 	Returns:
 		message[]: A list of messages that matches the given query_str
 	"""
-
-	return {}
+	search_list = []
+	for message_obj in message_iter():
+		if query_str in message_obj.get_message():
+			msg_dict = message_obj.to_json(client_id)
+			search_list.append(msg_dict)
+	
+	return {"messages":search_list}
 
 
 def relevance_score(string):
