@@ -29,6 +29,7 @@ class Channel:
 			owner_id: ID of channel creator.
 			is_public: Boolean denoting public status.
 		Raises:
+			ValueError: Owner does not exist.
 		"""
 		self.set_name(name)
 		self._owners_set = set([owner_id])
@@ -51,6 +52,12 @@ class Channel:
 		self._is_public = is_public
 
 	def set_name(self,name):
+		"""
+		Args:
+			name: New name for this user.
+		Raises:
+			ValueError: Name is too long
+		"""
 		if len(name) > 20:
 			raise ValueError("Name cannot be over 20 characters")
 		self._name = name
@@ -84,8 +91,6 @@ class Channel:
 			message_id: ID of the message.
 		Raises:
 			ValueError: Message does not exist.
-		Returns:
-
 		"""
 		self._message_list.insert(0, message_id)
 		get_message(message_id).send()
@@ -221,7 +226,7 @@ class Channel:
 		get_user(u_id).get_channels().discard(self._id)
 
 
-	def to_json_members(self):
+	def to_members_json(self):
 		"""
 		Converts channel information to json format for displaying members.
 
@@ -235,7 +240,7 @@ class Channel:
                     owner_members=[get_user(u_id).to_json() for u_id in self._owners_set],
                     all_members=[get_user(u_id).to_json() for u_id in self._members_set])
 
-	def to_json_id(self):
+	def to_id_json(self):
 		"""
 		Converts channel infomation into a format for simple listing.
 
